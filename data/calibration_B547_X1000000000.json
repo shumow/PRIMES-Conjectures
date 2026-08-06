@@ -1,0 +1,14 @@
+{
+ "B": 547,
+ "X": 1000000000,
+ "n_smooth": 33923534,
+ "n_twins": 1102529,
+ "n_slice40": 14506,
+ "n_pool": 2715,
+ "omega_minus_mean": 4.229097605893186,
+ "omega_plus_mean": 4.069244935543278,
+ "e_random": 15.173828125,
+ "opt_survivors": 51,
+ "demand_bits": 752.5884743766386,
+ "n_used_primes": 93
+}

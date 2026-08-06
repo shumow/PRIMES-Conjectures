@@ -1,0 +1,10 @@
+B=547 (pi=101), X=1e+09
+smooth numbers <= X: 33923534
+twin pairs (m, m+1): 1102529
+  after m = 1 (mod 40): 14506
+  after p = 2m+1 prime: 2715  (pre-coloring pool)
+omega stats: minus mean 4.23 max 7, plus mean 4.07 max 6, total mean 8.30
+E[survivors | random partition] = 15.17 (0.559% of pool)
+optimized partition survivors: 51 (1.88% of pool) [vs random expectation 0.559%]
+demand: 93 primes, lcm ~ 753 bits; supply/demand = 0.068 (need >~ 1-2 w/ slack)
+saved to data/
