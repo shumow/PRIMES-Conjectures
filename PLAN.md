@@ -56,6 +56,14 @@ constraint. Heuristic solvability: 2^{|P|} ≫ |G| where |G| ≈ φ(Λ₋)φ(Λ�
       (n ≡ λ(p) mod ρ(p), ρ(p) | 10(p²−1)) used by Váňa. Test the theorem's
       *congruence conclusion* on synthetic prime tuples satisfying (b)–(d) with (c),(d)
       relaxed to small moduli.
+- [ ] **Map the admissible local conditions.** The mod-80 cell is (probably) one
+      of several admissible (mod 2^k, mod 5) condition patterns. Re-derive which
+      v₂ patterns and residues work — uniform pools with v₂(p+1) > 2 may be fine
+      with adjusted conditions. Payoff: if any admissible cell is reachable by the
+      isogeny-literature boosting polynomials p = 2xⁿ − 1 (natively
+      side-separating, and two-sided smoothness at half bit-size — see
+      doc/twin-smooth-review.md §2), the search gets dramatically easier. As
+      stated, mod 80 is provably unreachable by n = 2, 3 boosts.
 - [ ] Decide whether to also target general r (the ord_r(p) = 2 cases, where only
       p² − 1 needs controlling) — potential free win if some r gives thinner
       conditions than r = 5. Defer unless r = 5 pool statistics look bad.
@@ -63,6 +71,16 @@ constraint. Heuristic solvability: 2^{|P|} ≫ |G| where |G| ≈ φ(Λ₋)φ(Λ�
       (ask Pomerance / Granville; search BOINC archives beyond Primaboinca).
 
 ### Phase 1 — Pool harvesting + go/no-go statistics
+- [ ] **Phase 1a — run on existing data first (see doc/twin-smooth-review.md).**
+      Our pool primes p = 2m+1 are exactly twin-smooth pairs (m, m+1) with prime
+      sum — the objects the isogeny community mass-produced for B-SIDH/SQIsign.
+      Clone the public CHM implementation (Bruno et al., ASIACRYPT 2023); the
+      B = 547 run yields ~82M twin pairs. Slice m ≡ 1 (mod 40) (⟺ p ≡ 3 mod 80
+      + all 2-adic/mod-5 conditions), filter 2m+1 prime, compute factor
+      signatures, and run the coloring optimization for the max consistent
+      subpool vs. realized bits(Λ₋)+bits(Λ₊). **This is the go/no-go number and
+      needs no new number-theoretic software.** Calibrate density models against
+      the complete Størmer sets (B ≤ 113, Pell-equation enumeration).
 - [ ] **Harvester design (constructive, not sieved):** enumerate Q₋-smooth odd m,
       set p = 2m + 1; test p ≡ 3 (mod 80), p prime (BPSW; prove later), then
       trial-divide (p+1)/4 over Q₊. This scales to x = 10¹²⁺ without sieving.
@@ -103,6 +121,24 @@ constraint. Heuristic solvability: 2^{|P|} ≫ |G| where |G| ≈ φ(Λ₋)φ(Λ�
       (counterexample to both, or evidence separating the conjectures).
 - [ ] Write the paper. A negative result (quantified infeasibility of the L–P
       route at reachable scales) is also worth writing up.
+
+## Heuristic assumptions ledger
+
+What is proven vs. assumed in our feasibility estimates:
+1. **Theorems (unconditional):** gcd(p−1, p+1) = 2; the side-coprimality lemma;
+   the 2-adic bookkeeping given p ≡ 3 (mod 16); Størmer finiteness of twin
+   B-smooths for fixed B.
+2. **Exact but unmodeled local corrections:** for prime p and odd prime q,
+   P(q | p∓1) = 1/(q−1) each, mutually exclusive (not independent 1/q events).
+   Multiplies a computable singular-series constant into density estimates;
+   does not change exponents.
+3. **Conjectural (standard but unproven):** independence factorization
+   P(both sides smooth) ≈ ρ(u₋)ρ(u₊); and even the one-sided density
+   #{p ≤ x : p−1 y-smooth} ∼ ρ(u)π(x) is an open conjecture (Erdős–Pomerance
+   line; only weaker lower bounds are proven — Friedlander, Baker–Harman).
+4. **Empirical anchor:** the twin-smooth datasets (CHM B=547: 82M pairs;
+   complete Størmer sets B ≤ 113) let us *measure* rather than assume pool
+   densities — the heuristics only steer where we point the search.
 
 ## Risks
 1. **Side-coloring thins the pool below the linear-algebra threshold.** This is the
