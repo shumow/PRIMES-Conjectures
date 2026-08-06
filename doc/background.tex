@@ -1,0 +1,181 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{multicol}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem*{remark}{Remark}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\ord}{ord}
+
+\title{Hunting a Counterexample to Agrawal's Conjecture:\\Background and Strategy}
+\author{Dan Shumow \and Claude (Anthropic Fable~5)}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+\section{The conjecture and its status}
+
+For $n,r$ coprime, write $T(-1,n,r)$ for the congruence
+\begin{equation}\label{eq:aks}
+(X-1)^n \equiv X^n - 1 \pmod{n,\, X^r-1}.
+\end{equation}
+
+\begin{conjecture}[Agrawal; Bhattacharjee--Pandey 2001]\label{conj:agrawal}
+If $r$ is a prime not dividing $n$ and \eqref{eq:aks} holds, then $n$ is prime or
+$n^2 \equiv 1 \pmod r$.
+\end{conjecture}
+
+If true, a single congruence \eqref{eq:aks} at one $r = O(\log n)$ certifies
+primality, giving a deterministic $\tilde O(\log^3 n)$ test --- versus
+$\tilde O(\log^6 n)$ for the best proven variant (Lenstra--Pomerance Gaussian
+periods \cite{LP2019}). The status is peculiar: Lenstra and Pomerance
+\cite{LPremarks} gave a heuristic predicting $\gg x^{1-\varepsilon}$
+counterexamples below $x$, yet none is known; exhaustive search
+(Primaboinca, 2010--2020) cleared $n < 10^{17}$, and folklore places the smallest
+counterexample at hundreds of digits. Popovych \cite{Popovych09} proposed the
+repair of adding $(X+2)^n \equiv X^n+2$ as a second hypothesis; that variant is
+untouched by any heuristic or search.
+
+\emph{Our angle: abandon the smallest counterexample. Any counterexample
+disproves the conjecture, the heuristic density improves with size, and the
+construction below is deterministic --- if its arithmetic side conditions hold,
+the congruence \eqref{eq:aks} is guaranteed.}
+
+\section{The Lenstra--Pomerance construction ($r=5$)}
+
+\begin{theorem}[Lenstra--Pomerance \cite{LPremarks}; statement as in
+V\'a\v{n}a \cite{Vana09}, who supplies the $k\equiv 3$ case]\label{thm:lp}
+Let $n = p_1\cdots p_k$ with $p_i$ distinct primes such that
+\begin{enumerate}\itemsep0pt
+\item[(a)] $k$ is odd;
+\item[(b)] $p_i \equiv 3 \pmod{80}$ for all $i$;
+\item[(c)] $p_i - 1 \mid n-1$ for all $i$ \quad ($n$ is a Carmichael number);
+\item[(d)] $p_i + 1 \mid n+1$ for all $i$ \quad ($n$ is a Lucas--Carmichael number).
+\end{enumerate}
+Then $T(-1,n,5)$ holds and $n^2 \not\equiv 1 \pmod 5$.
+\end{theorem}
+
+Why this works, in one paragraph. Since $p \equiv 3 \pmod 5$ has order $4$ in
+$(\Z/5)^\times$, over $\F_p$ we have $X^5-1 = (X-1)\Phi_5(X)$ with $\Phi_5$
+irreducible, so $\Z[X]/(p, X^5-1) \cong \F_p \times \F_{p^4}$. The $\F_p$
+component of \eqref{eq:aks} is trivial. In $\F_{p^4}$, with $\zeta$ a primitive
+fifth root of unity, Frobenius gives $(\zeta-1)^{p^j} = \zeta^{p^j}-1$ for all
+$j$. Conditions (c),(d) say $n \equiv 1 \pmod{p-1}$ and $n \equiv -1
+\pmod{p+1}$, i.e.\ $n \equiv p \equiv p^3 \pmod{\lcm(p-1,p+1)}$; the mod-$80$
+condition pins the $2$-adic ambiguity, and one checks (V\'a\v{n}a's
+$\rho(p) \mid 10(p^2-1)$, \cite[Thm.~3.4]{Vana09}) that control modulo
+$10(p^2-1)$ --- not $p^4-1$ --- already forces $(\zeta-1)^n = \zeta^n - 1$.
+Finally $p_i \equiv 3 \pmod 5$ and $k$ odd give $n \equiv 3^k \in \{2,3\}
+\pmod 5$, so $n^2 \not\equiv 1 \pmod 5$.
+
+The pain is concentrated in (c)$\wedge$(d):
+
+\begin{lemma}[Side-coprimality]\label{lem:sides}
+If $n$ satisfies (c) and (d), then $\gcd(p_i-1,\, p_j+1) \mid 2$ for all $i,j$.
+\end{lemma}
+\begin{proof}
+An odd prime $q$ dividing both divides $n-1$ and $n+1$, hence $2$.
+\end{proof}
+
+So the odd primes supporting all the $p_i-1$ and those supporting all the
+$p_i+1$ must be \emph{disjoint sets}. No number that is simultaneously
+Carmichael and Lucas--Carmichael is known (none exists below $10^{18}$, by
+Pinch's tables \cite{Pinch}); Lemma~\ref{lem:sides} is the structural reason,
+and the reason the smallest example is expected to be enormous. Note (b) gives
+$v_2(p-1)=1$, $v_2(p+1)=2$, $5 \nmid p^2-1$, and for $k$ odd the $2$-adic parts
+of (c),(d) are automatic ($n \equiv 3 \bmod 4$); the problem lives entirely in
+odd moduli prime to~$5$.
+
+\section{Reduction to a subset-product problem}
+
+This is now a job for the Erd\H{o}s-style machinery behind large-scale
+Carmichael constructions \cite{AGP,LN}. Fix disjoint sets $Q_-, Q_+$ of odd
+primes $\neq 5$ and harvest the pool
+\[
+\mathcal{P} \;=\; \bigl\{\, p \le x \;:\; p \equiv 3 \!\!\pmod{80},\;
+\tfrac{p-1}{2} \text{ is } Q_-\text{-smooth},\;
+\tfrac{p+1}{4} \text{ is } Q_+\text{-smooth} \,\bigr\}.
+\]
+Put $\Lambda_- = 2\lcm\{p-1\}$, $\Lambda_+ = 4\lcm\{p+1\}$ over
+$\mathcal{P}$. For any $S \subseteq \mathcal{P}$ with $|S|$ odd, $|S| \ge 3$,
+the number $n = \prod_{p \in S} p$ satisfies Theorem~\ref{thm:lp} provided
+\begin{equation}\label{eq:target}
+n \equiv 1 \pmod{\Lambda_-} \qquad\text{and}\qquad n \equiv -1 \pmod{\Lambda_+},
+\end{equation}
+a condition \emph{stronger} than (c),(d) but linear in the exponent vector:
+taking discrete logarithms in each cyclic component of
+$(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$ (Pohlig--Hellman is cheap
+--- all orders are smooth by design), \eqref{eq:target} becomes a $0/1$
+subset-sum over $\bigoplus_i \Z/m_i$ with one extra $\Z/2$ component for the
+parity of $|S|$. Heuristically solvable once
+\[
+2^{|\mathcal{P}|} \;\gg\; |G|, \qquad
+|G| \approx \varphi(\Lambda_-)\,\varphi(\Lambda_+),
+\]
+i.e.\ $|\mathcal{P}| \gtrsim \log_2 \Lambda_- + \log_2 \Lambda_+$ with slack
+for the solver --- ballpark: a $15$--$30$k-bit group wants a pool of
+$50$--$100$k primes. Solvers, in escalating order: staged CRT \`a la
+L\"oh--Niebuhr \cite{LN}, Wagner's $k$-list generalized birthday algorithm
+\cite{Wagner} (the pool-rich regime is exactly its habitat), lattice reduction
+only for terminal low-dimensional corrections.
+
+Two design points. \emph{Harvesting is constructive, not sieved}: enumerate
+$Q_-$-smooth $m$, set $p = 2m+1$, test $p \equiv 3 \pmod{80}$ and primality,
+then trial-divide $(p+1)/4$ over $Q_+$; this reaches $x = 10^{12+}$ easily. An
+\emph{asymmetric split} looks best: $Q_+ = \{$odd primes $\le B\} \setminus
+\{5\}$ (the ``random side'', where $(p+1)/4$-smoothness is Dickman-governed),
+$Q_- \subset (B, B']$ medium primes (the ``constructive side'', disjointness
+automatic). The resulting $n$ would have thousands of prime factors and
+$10^4$--$10^5$ digits; verifying \eqref{eq:aks} directly at that size is a few
+core-hours, and testing Popovych's second congruence on any find is free ---
+either we kill both conjectures or we get the first data separating them.
+
+\section{Odds, honestly}
+
+For: the double-condition pipeline appears never to have been run at scale ---
+V\'a\v{n}a mined existing Carmichael tables (wrong haystack), Hegde--Devaraj
+\cite{HD21} stopped at density heuristics, and the modern subset-sum toolkit
+postdates the 2003 construction. Against: Lemma~\ref{lem:sides} thins the pool
+--- both-sided smoothness costs roughly $\rho(u)^2$ (Dickman) \emph{before}
+the disjointness tax, and if $\log|G|$ grows linearly with the pool the
+feasibility inequality never closes. Phase 1 of \texttt{PLAN.md} measures
+exactly this and produces a go/no-go number before any solver is built; a
+quantified infeasibility result for the L--P route would itself be worth
+writing up.
+
+\begin{multicols}{2}
+\begin{thebibliography}{9}\itemsep0pt\footnotesize
+\bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, \emph{PRIMES is in P},
+Ann.\ of Math.\ \textbf{160} (2004), 781--793.
+\bibitem{LPremarks} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Remarks on
+Agrawal's conjecture}, AIM workshop notes, 2003.
+\texttt{aimath.org/WWN/primesinp/articles/html/50a/}
+\bibitem{Popovych09} R.~Popovych, \emph{A note on Agrawal conjecture},
+Cryptology ePrint 2009/008.
+\bibitem{Vana09} T.~V\'a\v{n}a, \emph{Agrawal's conjecture and Carmichael
+numbers}, Comenius Univ.\ Bratislava, 2009.
+\bibitem{AGP} W.~R.~Alford, A.~Granville, C.~Pomerance, \emph{There are
+infinitely many Carmichael numbers}, Ann.\ of Math.\ \textbf{139} (1994),
+703--722.
+\bibitem{LN} G.~L\"oh, W.~Niebuhr, \emph{A new algorithm for constructing
+large Carmichael numbers}, Math.\ Comp.\ \textbf{65} (1996), 823--836.
+\bibitem{Pinch} R.~G.~E.~Pinch, \emph{The Carmichael numbers up to $10^{18}$},
+arXiv:math/0604376.
+\bibitem{Wagner} D.~Wagner, \emph{A generalized birthday problem}, CRYPTO 2002.
+\bibitem{HD21} A.~Hegde, P.~Devaraj, \emph{Heuristics for the construction of
+counterexamples to the Agrawal conjecture}, Springer PROMS \textbf{344}, 2021.
+\bibitem{LP2019} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Primality testing
+with Gaussian periods}, JEMS \textbf{21} (2019), 1229--1269.
+\end{thebibliography}
+\end{multicols}
+
+\end{document}
