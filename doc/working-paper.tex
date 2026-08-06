@@ -1,0 +1,479 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\cP}{\mathcal{P}}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\ord}{ord}
+
+\title{Toward a Counterexample to Agrawal's Conjecture\\
+via Twin Smooth Integers\\
+\large (working draft --- v0.1)}
+\author{Dan Shumow \and Claude (Anthropic Fable~5)}
+\date{August 6, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Agrawal's conjecture asserts that for coprime $n$ and prime $r$, the congruence
+$(X-1)^n \equiv X^n-1 \pmod{n,\,X^r-1}$ forces $n$ prime or $n^2 \equiv 1
+\pmod r$; if true it yields a deterministic $\tilde O(\log^3 n)$ primality
+test. Lenstra and Pomerance gave a heuristic construction suggesting
+counterexamples exist but are astronomically large; none is known, and
+exhaustive search is hopeless. We pursue a \emph{constructive} search for a
+counterexample of unrestricted size. Our contributions so far: (i) a reduction
+of the Lenstra--Pomerance construction to a two-sided subset-product problem
+over a partitioned smooth factor base; (ii) the observation that the candidate
+pool consists exactly of \emph{twin smooth integers with prime sum} in a fixed
+congruence class, connecting the search to the isogeny-cryptography parameter
+literature and its datasets; (iii) feasibility estimates from that literature's
+empirical supply curves, isolating a single unmeasured quantity --- the
+``coloring tax'' --- as the go/no-go criterion; and (iv) an obstruction: the
+boosting polynomials $2x^n-1$ of the twin-smooth literature can never satisfy
+the local conditions of the Lenstra--Pomerance theorem as stated, motivating a
+re-derivation of its admissible local conditions.
+\end{abstract}
+
+\section{Introduction}
+
+For coprime integers $n, r$ write $T(-1,n,r)$ for the congruence
+\begin{equation}\label{eq:aks}
+(X-1)^n \equiv X^n - 1 \pmod{n,\, X^r-1}.
+\end{equation}
+
+\begin{conjecture}[Agrawal; Bhattacharjee--Pandey \cite{BP01}]\label{conj:agrawal}
+If $r$ is a prime not dividing $n$ and $T(-1,n,r)$ holds, then $n$ is prime or
+$n^2 \equiv 1 \pmod r$.
+\end{conjecture}
+
+If Conjecture~\ref{conj:agrawal} were true, a single evaluation of
+\eqref{eq:aks} at one $r = O(\log n)$ would certify primality, giving a
+deterministic $\tilde O(\log^3 n)$ test, versus $\tilde O(\log^6 n)$ for the
+best proven algorithm \cite{LP2019}. Its status is strange: Lenstra and
+Pomerance \cite{LPremarks} gave a heuristic argument for $\gg x^{1-\varepsilon}$
+counterexamples below $x$, yet the conjecture has survived exhaustive search to
+$10^{17}$ (Primaboinca, 2010--2020) and folklore places the least counterexample
+at hundreds of digits. Popovych \cite{Popovych09} conjectured that adding the
+hypothesis $(X+2)^n \equiv X^n+2 \pmod{n,\,X^r-1}$ repairs the statement; his
+variant has no evidence against it.
+
+\emph{Program.} We abandon minimality. Any counterexample refutes
+Conjecture~\ref{conj:agrawal}; the L--P density heuristic \emph{improves} with
+size; and the construction of \S\ref{sec:lp} is deterministic --- when its
+arithmetic side conditions hold, \eqref{eq:aks} follows with no further luck
+required. The size of a counterexample produced this way is bounded only by the
+combinatorics of a subset-product problem (\S\ref{sec:subset}), whose raw
+material turns out to be the \emph{twin smooth integers} of isogeny-based
+cryptography (\S\ref{sec:twin}). Verifying a candidate $n$ of even $10^5$
+digits directly against \eqref{eq:aks} costs a few core-hours, and any find
+will also be tested against Popovych's second congruence.
+
+\section{The Lenstra--Pomerance construction}\label{sec:lp}
+
+\begin{theorem}[Lenstra--Pomerance \cite{LPremarks}; statement following
+V\'a\v{n}a \cite{Vana09}, who proves the $k \equiv 3 \pmod 4$ case]
+\label{thm:lp}
+Let $n = p_1 \cdots p_k$ with $p_1, \dots, p_k$ distinct primes such that
+\begin{enumerate}\itemsep1pt
+\item[(a)] $k$ is odd;
+\item[(b)] $p_i \equiv 3 \pmod{80}$ for all $i$;
+\item[(c)] $p_i - 1 \mid n - 1$ for all $i$ \hfill ($n$ is Carmichael);
+\item[(d)] $p_i + 1 \mid n + 1$ for all $i$ \hfill ($n$ is Lucas--Carmichael).
+\end{enumerate}
+Then $T(-1,n,5)$ holds and $n^2 \not\equiv 1 \pmod 5$; in particular such an
+$n$ with $k \ge 3$ is a counterexample to Conjecture~\ref{conj:agrawal}.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Since $p \equiv 3 \pmod 5$ has order $4$ in $(\Z/5)^\times$, over $\F_p$ the
+polynomial $X^5-1$ factors as $(X-1)\Phi_5(X)$ with $\Phi_5$ irreducible, so
+$\Z[X]/(p, X^5-1) \cong \F_p \times \F_{p^4}$. The $\F_p$ component of
+\eqref{eq:aks} is trivial. In $\F_{p^4}$, with $\zeta$ a primitive fifth root
+of unity, the Frobenius gives $(\zeta-1)^{p^j} = \zeta^{p^j}-1$ for every $j$.
+Conditions (c),(d) give $n \equiv 1 \pmod{p-1}$ and $n \equiv -1 \pmod{p+1}$,
+i.e.\ $n \equiv p \equiv p^3 \pmod{\lcm(p-1,p+1)}$, and the mod-$80$ condition
+resolves the $2$-adic ambiguity; V\'a\v{n}a's analysis of the quantity
+$\rho(p) \mid 10(p^2-1)$ \cite[Thm.~3.4]{Vana09} shows control modulo
+$10(p^2-1)$ suffices to conclude $(\zeta-1)^n = \zeta^n-1$ in each residue
+field. Lemma~\ref{lem:mod5} gives $n^2 \not\equiv 1 \pmod 5$.
+\todo{Phase 0: full independent re-derivation, both $k \bmod 4$ cases; see
+Question~\ref{q:cells}.}
+\end{proof}
+
+\begin{lemma}\label{lem:mod5}
+If $p_i \equiv 3 \pmod 5$ for all $i$ and $k$ is odd, then
+$n \equiv 3^k \equiv \pm 2 \pmod 5$; hence $n^2 \equiv 4 \not\equiv 1 \pmod 5$.
+\end{lemma}
+\begin{proof}
+$3^k \bmod 5$ cycles $3, 4, 2, 1$ with period $4$; odd $k$ gives $3$ or $2$,
+i.e.\ $\pm 2 \pmod 5$.
+\end{proof}
+
+The difficulty of satisfying (c) and (d) simultaneously is concentrated in the
+following trivial but decisive observation.
+
+\begin{lemma}[Side-coprimality]\label{lem:sides}
+If $n$ satisfies (c) and (d), then $\gcd(p_i-1,\,p_j+1) \mid 2$ for all $i,j$
+(including $i=j$). Consequently the odd primes dividing
+$\prod_i (p_i-1)$ and those dividing $\prod_i (p_i+1)$ form disjoint sets.
+\end{lemma}
+\begin{proof}
+An odd prime $q$ dividing $p_i-1$ and $p_j+1$ divides both $n-1$ and $n+1$,
+hence their difference $2$, a contradiction.
+\end{proof}
+
+\begin{remark}
+No integer that is simultaneously Carmichael and Lucas--Carmichael is known;
+none exists below $10^{18}$ \cite{Pinch}. Lemma~\ref{lem:sides} is the
+structural reason, and the reason the \emph{least} counterexample is expected
+to be enormous. It does not, however, obstruct \emph{large} solutions, which is
+what we seek.
+\end{remark}
+
+\begin{lemma}[$2$-adic bookkeeping]\label{lem:2adic}
+If $p \equiv 3 \pmod{16}$ then $v_2(p-1) = 1$ and $v_2(p+1) = 2$; if
+$p \equiv 3 \pmod 5$ then $5 \nmid (p-1)(p+1)$. If moreover every $p_i \equiv 3
+\pmod 4$ and $k$ is odd, then $n \equiv 3 \pmod 4$, so the $2$-power parts of
+conditions (c),(d) hold automatically.
+\end{lemma}
+\begin{proof}
+$p \equiv 3 \pmod{16}$ gives $p - 1 \equiv 2$ and $p+1 \equiv 4 \pmod{16}$,
+fixing the stated $2$-adic valuations; $p \equiv 3 \pmod 5$ gives $p \mp 1
+\equiv 2, 4 \pmod 5$. For the last claim, $n \equiv 3^k \equiv 3 \pmod 4$ for
+odd $k$, so $2 \mid n-1$ with $v_2(n-1) \ge 1 = v_2(p_i-1)$ and
+$4 \mid n+1$ with $v_2(n+1) \ge 2 = v_2(p_i+1)$.
+\end{proof}
+
+Thus under condition (b) the entire problem lives in odd moduli prime to $5$.
+
+\section{Reduction to a two-sided subset-product problem}\label{sec:subset}
+
+Fix disjoint finite sets $Q_-, Q_+$ of odd primes with $5 \notin Q_- \cup Q_+$,
+and define the \emph{pool}
+\[
+\cP \;=\; \Bigl\{\, p \ \text{prime} : p \equiv 3 \!\!\pmod{80},\;
+\tfrac{p-1}{2} \text{ is } Q_-\text{-smooth},\;
+\tfrac{p+1}{4} \text{ is } Q_+\text{-smooth} \Bigr\}.
+\]
+Let $\Lambda_- = 2\,\lcm\{p-1 : p \in \cP\}$ and
+$\Lambda_+ = 4\,\lcm\{p+1 : p \in \cP\}$.
+
+\begin{proposition}\label{prop:reduction}
+Let $S \subseteq \cP$ with $|S|$ odd, $|S| \ge 3$, and $n = \prod_{p \in S} p$.
+If
+\begin{equation}\label{eq:target}
+n \equiv 1 \pmod{\Lambda_-} \qquad\text{and}\qquad n \equiv -1 \pmod{\Lambda_+},
+\end{equation}
+then $n$ satisfies conditions (a)--(d) of Theorem~\ref{thm:lp}, hence is a
+counterexample to Conjecture~\ref{conj:agrawal}.
+\end{proposition}
+\begin{proof}
+(a),(b) hold by construction of $\cP$ and $|S|$. For (c): $p_i - 1 \mid
+\Lambda_-$ by definition of $\Lambda_-$, and $\Lambda_- \mid n-1$ by
+\eqref{eq:target}. Likewise (d) via $\Lambda_+ \mid n+1$. The elements of $S$
+are distinct primes, so $n$ is squarefree with $k = |S| \ge 3$, hence
+composite. Note $\gcd(\Lambda_-, \Lambda_+) = 2$ by Lemma~\ref{lem:sides}
+(disjointness of $Q_\pm$) and Lemma~\ref{lem:2adic}, so \eqref{eq:target} is
+consistent.
+\end{proof}
+
+Condition \eqref{eq:target} is \emph{stronger} than (c),(d) --- it imposes the
+full lcm rather than the lcm over $S$ --- but in exchange it is linear:
+taking discrete logarithms in each cyclic component of
+$(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$ (Pohlig--Hellman
+\cite{PH78} is cheap, all component orders being smooth by design),
+\eqref{eq:target} becomes a $0/1$ subset-sum over $\bigoplus_i \Z/m_i$, with
+one extra $\Z/2$ coordinate enforcing $|S|$ odd. The heuristic solvability
+condition is
+\begin{equation}\label{eq:feas}
+2^{|\cP|} \;\gg\; |G|, \qquad G = (\Z/\Lambda_-)^\times \times
+(\Z/\Lambda_+)^\times,
+\end{equation}
+i.e.\ $|\cP| \gtrsim \log_2 \Lambda_- + \log_2 \Lambda_+$ with slack for the
+solver. Candidate solvers, in escalating order: staged CRT in the style of
+L\"oh--Niebuhr's Carmichael factories \cite{LN}, Wagner's $k$-list generalized
+birthday algorithm \cite{Wagner} (designed for exactly this pool-rich regime),
+and lattice reduction only for terminal low-dimensional corrections.
+\todo{Phase 2: work out the staged-CRT schedule and the expected $|S|$.}
+
+\section{The twin-smooth dictionary}\label{sec:twin}
+
+\begin{lemma}[Dictionary]\label{lem:dict}
+Let $m \ge 1$ and $p = 2m+1$. Then $p \in \cP$ (for $Q_\pm$ large enough to
+contain the relevant primes) if and only if
+\begin{enumerate}\itemsep1pt
+\item[(i)] $m$ and $m+1$ are both smooth with respect to $Q_- \cup Q_+ \cup
+\{2\}$, with the odd part of $m$ being $Q_-$-smooth and the odd part of $m+1$
+being $Q_+$-smooth;
+\item[(ii)] $m \equiv 1 \pmod{40}$;
+\item[(iii)] $p$ is prime.
+\end{enumerate}
+Moreover (ii) alone implies $p \equiv 3 \pmod{80}$, $v_2(p-1)=1$,
+$v_2(p+1)=2$, and $5 \nmid m(m+1)$.
+\end{lemma}
+\begin{proof}
+$p - 1 = 2m$ and $p+1 = 2(m+1)$, so the smoothness conditions on
+$(p-1)/2 = m$ and $(p+1)/4 = (m+1)/2$ are exactly (i) once the $2$-adic
+valuations match. For (ii): $m \equiv 1 \pmod{40} \iff p = 2m+1 \equiv 3
+\pmod{80}$. Then $m$ is odd (so $v_2(p-1)=1$), $m \equiv 1 \pmod 4$ gives
+$m + 1 \equiv 2 \pmod 4$ (so $v_2(p+1) = 2$), and $m \equiv 1 \pmod 5$ gives
+$m \not\equiv 0$, $m+1 \equiv 2 \not\equiv 0 \pmod 5$.
+\end{proof}
+
+Pairs of consecutive smooth integers $(m, m+1)$ --- \emph{twin smooths} ---
+with $2m+1$ prime are precisely the parameters sought for the isogeny-based
+schemes B-SIDH \cite{BSIDH} and SQIsign, and 2020--2025 produced an industrial
+literature on generating them:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{PTE sieving} (Costello--Meyer--Naehrig \cite{CMN21}):
+Prouhet--Tarry--Escott solutions give degree-$n$ polynomial pairs differing by
+a constant that split into linear factors; yielded $240$--$256$-bit primes $p$
+with $p^2-1$ being $2^{15}$-smooth, up to $512$-bit at $2^{28}$-smooth.
+\item \textbf{CHM} (Bruno et al.\ \cite{BCCEMNS23}, optimizing
+Conrey--Holmstr\"om--McLaughlin \cite{CHM13}): iterative generation of
+\emph{near-complete} sets of twin $B$-smooths. Headline data: $B = 547$ yields
+$82{,}026{,}426$ pairs, the largest of $122$ bits; implementation public.
+\item \textbf{Pell/St\o rmer} (Buzek--Hasan--Liu--Naehrig--Vigil \cite{BHLNV};
+classical \cite{Stormer,Lehmer64}): for fixed $B$ the set of twin $B$-smooths
+is \emph{finite}, computable via Pell equations $x^2 - 2Dy^2 = 1$; complete
+sets known provably for $B \le 100$ and heuristically for $B \le 113$
+\cite{MSW}.
+\item \textbf{SVP records} (Mulder--Sterner--van Woerden \cite{MSW}): shortest
+vectors in a prime-number lattice locate the \emph{largest} twin for a given
+$B$ (records: $196$-bit at $B = 751$, $213$-bit at $B=997$), with an estimator
+for the largest twin as a function of $B$.
+\item \textbf{Boosting} (in \cite{BCCEMNS23,Sterner23}): evaluate
+$p_n(x) = 2x^n - 1$ at twin-smooth arguments to reach cryptographic sizes.
+\end{itemize}
+
+By Lemma~\ref{lem:dict}, a $1/40$ congruence slice of \emph{any} twin-smooth
+dataset, filtered for primality of $2m+1$, is a ready-made pool $\cP$ ---
+before the one condition their literature does not consider: the global
+side-partition of Lemma~\ref{lem:sides}.
+
+\section{Feasibility estimates}\label{sec:feasibility}
+
+\subsection{Supply and demand at $B = 547$}
+
+\emph{Demand.} $\log_2 \Lambda_- + \log_2 \Lambda_+ \le \sum_{2 < q \le B}
+\log_2 q^{e_q}$ where $q^{e_q}$ is the largest power appearing in any used
+$p \mp 1$; the side-partition splits this sum but does not double it. With
+$\pi(547) = 101$ primes and exponents capped by observed usage, this is
+$\approx \theta(547)/\ln 2 \approx 750$ bits plus modest slack from powers of
+small primes: call it $1000$--$1500$ bits, and less if the chosen subpool
+touches only a sub-universe of primes.
+
+\emph{Supply.} $82$M pairs at $B = 547$, $\div 40$ for the congruence slice
+(Lemma~\ref{lem:dict}(ii)), $\div \ln p \approx 20$--$55$ for primality of
+$2m+1$ at the dataset's typical sizes: roughly $5 \times 10^4$ pool candidates
+\emph{from existing data}. \todo{Phase 1a: regenerate the dataset and replace
+these estimates with exact histograms.}
+
+The cushion between supply and demand is therefore a factor $\approx 25$--$40$.
+Moreover it \emph{grows} with $B$: demand grows linearly
+($\approx 1.44\,B$ bits) while empirical twin counts grow like $B^{\alpha}$
+with $\alpha \approx 2.5$--$3$ (from $B = 113 \to 547$). St\o rmer finiteness
+caps the supply at each fixed $B$, but the ceiling recedes superlinearly.
+
+\subsection{The coloring tax}\label{sec:coloring}
+
+The unmeasured factor is the side-partition. Each pool element consumes
+$\omega_-(p) + \omega_+(p)$ prime-side assignments (the number of distinct odd
+primes dividing $(p-1)/2$ and $(p+1)/4$), and all chosen elements must respect
+one partition $Q_- \sqcup Q_+$. Under a uniformly random balanced partition, an
+element survives with probability $\approx 2^{-(\omega_- + \omega_+)}$, so the
+expected number of survivors is $\sum_{p \in \cP} 2^{-\omega(p)}$. At $B=547$,
+bulk-of-distribution twins ($30$--$50$ bits) have $\omega_- + \omega_+ \approx
+8$--$14$, predicting only \emph{tens} of survivors from $5 \times 10^4$
+candidates --- two orders of magnitude short of the $\sim$$1500$--$3000$
+needed.
+
+The program therefore rests on the question:
+
+\begin{question}\label{q:coloring}
+By how much does an \emph{optimized} partition beat a random one? Survivors
+correlate (elements sharing factor support survive together), supply is
+thickest exactly where $\omega$ is smallest, and demand shrinks with the
+effective prime universe. The complete St\o rmer sets ($B \le 113$) permit
+computing the exact optimum at small scale; the CHM set at $B = 547$ permits
+evaluating it at target scale. \todo{Phase 1a go/no-go: survival rate
+$\gtrsim 5\%$ means the direct route is live; $\lesssim 0.1\%$ kills it at
+fixed $B$.}
+\end{question}
+
+\subsection{Heuristic assumptions ledger}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Statement & Status & Role \\
+\midrule
+$\gcd(p-1,p+1)=2$; Lemmas \ref{lem:mod5}--\ref{lem:dict} & theorems & structure \\
+St\o rmer finiteness at fixed $B$ & theorem & supply ceiling \\
+Local densities $P(q \mid p\mp1) = \tfrac1{q-1}$, exclusive & exact & constants only \\
+Two-sided smoothness independence ($\rho(u_-)\rho(u_+)$) & conjectural & steering only \\
+One-sided density $\#\{p : p-1 \text{ smooth}\} \sim \rho(u)\pi(x)$ &
+open (Erd\H{o}s--Pomerance line) & steering only \\
+Empirical supply curves (CHM, St\o rmer sets) & data & replaces both \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{An obstruction to boosting, and admissible local conditions}
+\label{sec:boost}
+
+The boosting polynomials $p_n(x) = 2x^n - 1$ of \cite{BCCEMNS23,Sterner23} are
+structurally attractive here: for $n = 2$, $(p+1)/2 = x^2$ and $(p-1)/2 =
+(x-1)(x+1)$ with $\gcd(x, x^2-1) = 1$, so the two sides have automatically
+disjoint prime support --- Lemma~\ref{lem:sides} satisfied by construction ---
+and the two-sided smoothness burden moves to $(x, x^2-1)$ at \emph{half} the
+bit-size, where Dickman densities are far kinder. Unfortunately:
+
+\begin{proposition}\label{prop:boost}
+For every $n \ge 2$ and every integer $x$: $2x^n - 1 \not\equiv 3 \pmod{16}$.
+In particular no value of any $p_n$, $n \ge 2$, satisfies condition (b) of
+Theorem~\ref{thm:lp}. For $n = 2$ the obstruction is doubled: $x^2 \equiv 2
+\pmod 5$ is also unsolvable, while for $n = 3$ the mod-$5$ condition is
+satisfiable ($x \equiv 3 \pmod 5$) and only the $2$-adic obstruction remains.
+\end{proposition}
+\begin{proof}
+$2x^n \equiv 4 \pmod{16}$ requires $x^n \equiv 2 \pmod 8$. If $x$ is even then
+$4 \mid x^n$ (as $n \ge 2$), so $x^n \equiv 0$ or $4 \pmod 8$; if $x$ is odd
+then $x^n$ is odd. In no case is $x^n \equiv 2 \pmod 8$. For the mod-$5$
+claims: the squares modulo $5$ are $\{0,1,4\} \not\ni 2$, while $3^3 = 27
+\equiv 2 \pmod 5$.
+\end{proof}
+
+The obstruction is to condition (b) \emph{as stated}, not (necessarily) to the
+theorem's mechanism. Condition (b) fixes one convenient cell of local
+conditions ($p \equiv 3 \bmod 16$ giving $v_2(p\mp1) = (1,2)$, and
+$\ord_5(p) = 4$); V\'a\v{n}a's $\rho(p)$ framework suggests other cells may be
+admissible, e.g.\ pools with a uniform but different $2$-adic pattern
+$v_2(p+1) = v$ for $v > 2$, compensated in the mod-$2^k$ component of the
+target congruence \eqref{eq:target}.
+
+\begin{question}[Admissible local cells]\label{q:cells}
+Determine the full set of local conditions (residues mod $2^k$ and mod $5$,
+allowed $v_2$ patterns, and the required uniformity across the pool) under
+which the conclusion of Theorem~\ref{thm:lp} survives. In particular: is any
+admissible cell reachable by $p_n(x) = 2x^n - 1$ for some $n$, or by another
+side-separating polynomial family? A positive answer would collapse the
+coloring tax of \S\ref{sec:coloring} structurally and halve the effective
+smoothness size.
+\end{question}
+
+\noindent For $n = 3$: $p = 2x^3-1$ has $v_2(p+1) = 1 + 3v_2(x)$, so $x \equiv
+2 \pmod 4$ gives the uniform pattern $v_2(p+1) = 4$, $v_2(p-1) = 1$ ---
+a natural first test case for Question~\ref{q:cells}. \todo{Phase 0.}
+
+\section{Program}\label{sec:program}
+
+\begin{enumerate}\itemsep1pt
+\item[\textbf{P0.}] Independent re-derivation of Theorem~\ref{thm:lp};
+resolution of Question~\ref{q:cells}; numerical unit tests of the congruence
+machinery; prior-art due diligence (in particular whether the L--P construction
+was ever run at scale).
+\item[\textbf{P1a.}] Data-first go/no-go: regenerate the CHM $B=547$ set,
+apply the dictionary filters, and answer Question~\ref{q:coloring} by direct
+optimization; calibrate against the complete $B \le 113$ sets.
+\item[\textbf{P1b.}] If needed, a native harvester (constructive enumeration
+of one side, trial division on the other) at larger $B$ or targeted
+congruences.
+\item[\textbf{P2.}] Subset-product solver (staged CRT, Wagner), with the
+parity coordinate.
+\item[\textbf{P3.}] Assembly and dual independent verification of any find,
+including the direct computation of $T(-1,n,5)$ and the Popovych congruence;
+write-up (a quantified negative result at fixed $B$ is also publishable).
+\end{enumerate}
+
+\begin{thebibliography}{99}\itemsep1pt\small
+
+\bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, \emph{PRIMES is in P},
+Ann.\ of Math.\ \textbf{160} (2004), 781--793.
+
+\bibitem{BP01} R.~Bhattacharjee, P.~Pandey, \emph{Primality testing}, BTech
+thesis, IIT Kanpur, 2001.
+
+\bibitem{LPremarks} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Remarks on
+Agrawal's conjecture}, AIM workshop notes, 2003.
+\url{https://aimath.org/WWN/primesinp/articles/html/50a/}
+
+\bibitem{Popovych09} R.~Popovych, \emph{A note on Agrawal conjecture},
+Cryptology ePrint 2009/008.
+
+\bibitem{Vana09} T.~V\'a\v{n}a, \emph{Agrawal's conjecture and Carmichael
+numbers}, Comenius University Bratislava, 2009.
+
+\bibitem{HD21} A.~Hegde, P.~Devaraj, \emph{Heuristics for the construction of
+counterexamples to the Agrawal conjecture}, Springer PROMS \textbf{344}, 2021.
+
+\bibitem{LP2019} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Primality testing
+with Gaussian periods}, J.\ Eur.\ Math.\ Soc.\ \textbf{21} (2019), 1229--1269.
+
+\bibitem{Pinch} R.~G.~E.~Pinch, \emph{The Carmichael numbers up to $10^{18}$},
+arXiv:math/0604376.
+
+\bibitem{AGP} W.~R.~Alford, A.~Granville, C.~Pomerance, \emph{There are
+infinitely many Carmichael numbers}, Ann.\ of Math.\ \textbf{139} (1994),
+703--722.
+
+\bibitem{LN} G.~L\"oh, W.~Niebuhr, \emph{A new algorithm for constructing
+large Carmichael numbers}, Math.\ Comp.\ \textbf{65} (1996), 823--836.
+
+\bibitem{PH78} S.~Pohlig, M.~Hellman, \emph{An improved algorithm for
+computing logarithms over $GF(p)$\dots}, IEEE Trans.\ Inf.\ Theory \textbf{24}
+(1978), 106--110.
+
+\bibitem{Wagner} D.~Wagner, \emph{A generalized birthday problem}, CRYPTO 2002.
+
+\bibitem{BSIDH} C.~Costello, \emph{B-SIDH: supersingular isogeny
+Diffie--Hellman using twisted torsion}, ASIACRYPT 2020.
+
+\bibitem{CMN21} C.~Costello, M.~Meyer, M.~Naehrig, \emph{Sieving for twin
+smooth integers with solutions to the Prouhet--Tarry--Escott problem},
+EUROCRYPT 2021; ePrint 2020/1283.
+
+\bibitem{BCCEMNS23} G.~Bruno, M.~Corte-Real Santos, C.~Costello,
+J.~K.~Eriksen, M.~Meyer, M.~Naehrig, B.~Sterner, \emph{Cryptographic smooth
+neighbors}, ASIACRYPT 2023; ePrint 2022/1439.
+
+\bibitem{CHM13} J.~B.~Conrey, M.~A.~Holmstr\"om, T.~L.~McLaughlin,
+\emph{Smooth neighbors}, Experiment.\ Math.\ \textbf{22} (2013), 195--202.
+
+\bibitem{BHLNV} J.~Buzek, J.~Hasan, J.~Liu, M.~Naehrig, A.~Vigil,
+\emph{Finding twin smooth integers by solving Pell equations},
+arXiv:2211.04315.
+
+\bibitem{Sterner23} B.~Sterner, \emph{Towards optimally small smoothness
+bounds for cryptographic-sized twin smooth integers and their isogeny-based
+applications}, SAC 2024; ePrint 2023/1576.
+
+\bibitem{MSW} E.~Mulder, B.~Sterner, W.~van Woerden, \emph{Large smooth twins
+from short lattice vectors}, ANTS XVII.
+
+\bibitem{Stormer} C.~St\o rmer, \emph{Quelques th\'eor\`emes sur l'\'equation
+de Pell $x^2 - Dy^2 = \pm 1$ et leurs applications}, Skr.\ Norske Vid.\ Akad.,
+1897.
+
+\bibitem{Lehmer64} D.~H.~Lehmer, \emph{On a problem of St\o rmer}, Illinois
+J.\ Math.\ \textbf{8} (1964), 57--79.
+
+\end{thebibliography}
+
+\end{document}
