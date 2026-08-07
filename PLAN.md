@@ -1,162 +1,152 @@
-# Plan: Constructing a Counterexample to Agrawal's Conjecture
+# Plan v2: Constructing a Counterexample to Agrawal's Conjecture
 
-**Goal.** Exhibit a composite n and prime r ∤ n with
-(X−1)^n ≡ X^n − 1 (mod n, X^r − 1) and n² ≢ 1 (mod r).
-We do **not** seek the smallest counterexample. Any counterexample, of any size,
-disproves the conjecture; the Lenstra–Pomerance (L–P) heuristic says candidates get
-*denser* at large sizes, and their construction is deterministic: if the arithmetic
-side conditions hold, the congruence is guaranteed — no verification lottery.
+*Rewritten 2026-08-07 after Phase 1a calibration. v1 is in git history
+(commits 552330e..1925d7e). Supporting documents: doc/working-paper.pdf
+(math), data/FINDINGS.md (measurements), doc/twin-smooth-review.md
+(literature).*
 
-See `doc/background.tex` for the mathematical background at paper level.
+## What we know now (each item measured or proved, see FINDINGS.md)
 
-## Mathematical foundation
+1. **The reduction stands.** Pool primes p = 2m+1 with m ≡ 1 (mod 40),
+   (m, m+1) twin smooth over disjoint side-sets Q₋ | Q₊; subset with odd
+   cardinality and product ≡ (1 mod Λ₋, −1 mod Λ₊) ⇒ counterexample
+   (working paper Prop 3.1, machinery unit-tested).
+2. **The 0.06 invariant.** For partition-agnostic twin supply (sieve, CHM,
+   any completeness level, B = 100–547), the best side-partition keeps
+   ≈ 0.06 elements per demand-bit — element-greedy and direct
+   partition-space search agree. Feasibility needs ≳ 1–3. **The
+   dataset-mining route is dead as the primary hunt.**
+3. **Partition-first harvesting sidesteps the invariant.** Fix Q₋, Q₊ first;
+   enumerate m over Q₋ only; test (m+1)/2 over Q₊ only. Every hit is
+   compatible by construction; the cost moves into per-candidate yield,
+   which is a local (Dickman-type) probability, not a global combinatorial
+   obstruction.
+4. **Supply curves are anchored.** N(B) ~ B^5 (published counts 13,374 /
+   346,192 / 82M at B = 100/200/547); our closure reproduces the complete
+   sets to 99.7–99.98% with exact largest elements; PTE corpus contributes
+   0 pool candidates (residue coverage ~40× poorer than generic twins).
+5. **Boost obstruction.** 2xⁿ−1 ≡ 3 (mod 16) is unsolvable for all n ≥ 2:
+   the mod-80 cell is unreachable by the boost family (working paper
+   Prop 6.1). Whether *other* admissible cells exist is open (Question 6.2).
 
-**Theorem (Lenstra–Pomerance, r = 5; as stated in Váňa 2009, Thm 3.1).**
-Let n = p₁⋯p_k, distinct primes, with
-  (a) k ≡ 1 or 3 (mod 4)  [i.e. k odd],
-  (b) pᵢ ≡ 3 (mod 80) for all i,
-  (c) pᵢ − 1 | n − 1 for all i  (n is Carmichael),
-  (d) pᵢ + 1 | n + 1 for all i  (n is Lucas–Carmichael).
-Then (X−1)^n ≡ X^n − 1 (mod n, X⁵ − 1) while n² ≢ 1 (mod 5).
-(Check: p ≡ 3 (mod 5) ⇒ n ≡ 3^k ≡ 3 or 2 (mod 5) for k ≡ 1, 3 (mod 4).)
+## Track A — partition-first harvester (main line)
 
-**Key structural lemma (side-coprimality).** If n satisfies (c) and (d), then for all
-i, j (including i = j): gcd(pᵢ − 1, pⱼ + 1) | 2.
-*Proof:* an odd prime q dividing both divides n − 1 and n + 1, hence 2. ∎
-Consequence: the odd prime factors supporting {pᵢ − 1} and {pᵢ + 1} form **disjoint
-sets**. This is the real reason simultaneous Carmichael/Lucas–Carmichael numbers are
-so elusive, and it dictates the two-sided design below.
+**Design.** Asymmetric split. Q₊ = all odd primes ≤ B except 5 (the tested,
+density-critical side). Q₋ = a set of t medium primes in (B, B′] (the
+enumerated side — enumeration needs no density, only combinatorial volume).
+Disjointness is automatic. Enumerate candidates m = ∏_{q∈Q₋} q^{e_q}
+(j = Σe_q factors, j ≈ 3–5) restricted to m ≡ 1 (mod 40) and a size window;
+per candidate, trial-divide (m+1)/2 over Q₊ (early-abort), then BPSW on
+p = 2m+1.
 
-**2-adic bookkeeping.** p ≡ 3 (mod 16) ⇒ v₂(p−1) = 1, v₂(p+1) = 2. p ≡ 3 (mod 5) ⇒
-5 ∤ (p−1)(p+1). For k odd and all p ≡ 3 (mod 4): n ≡ 3 (mod 4), so the 2-adic parts
-of (c), (d) hold automatically. The search lives entirely in odd moduli prime to 5.
+**Back-of-envelope economics at B = 547, B′ = 5000** (to be replaced by A1
+measurements): t = 568 medium primes; j = 3 candidates ≈ 3·10⁷ (more with
+j = 4 and exponents); per-candidate success ≈ ρ(u)·(1/ln p) ≈ 10⁻³·⁵ at
+m ~ 2³⁰–2⁴⁰ ⇒ pool ~ 10⁴. Demand ≈ 12.3t + θ(B)/ln2 + exponent slack ≈
+7000 + 800 + slack bits. Ratio ≈ 1.2 — **marginal, which is exactly why A1
+measures before A3 commits compute.** Knobs: t, B, B′, j, exponent caps
+(reject q^e > 2¹³ on the plus side), size window, and only-count-used-primes
+demand accounting.
 
-**Reduction to subset-product.** Fix disjoint sets of odd primes Q₋, Q₊ (≠ 5) and a
-pool
-  P = { p ≤ x : p ≡ 3 (mod 80), (p−1)/2 is Q₋-smooth, (p+1)/4 is Q₊-smooth }.
-Let Λ₋ = 2·lcm{(p−1) : p ∈ P}, Λ₊ = 4·lcm{(p+1) : p ∈ P}. It suffices to find
-S ⊆ P, |S| odd ≥ 3, with n = ∏_{p∈S} p satisfying
-  n ≡ 1 (mod Λ₋) and n ≡ −1 (mod Λ₊).
-(Strictly stronger than (c),(d) — using the full lcm linearizes the problem.)
-Taking discrete logarithms component-wise (Pohlig–Hellman is cheap: all group orders
-are Q-smooth), this is a 0/1 subset-sum over ⊕ᵢ Z/mᵢ with an odd-cardinality
-constraint. Heuristic solvability: 2^{|P|} ≫ |G| where |G| ≈ φ(Λ₋)φ(Λ₊), i.e.
-  |P| ≳ bits(Λ₋) + bits(Λ₊), plus slack for the solver.
+- **A1. Yield calibration (prototype, python→C).** Enumerate ~10⁶ candidates
+  across a grid (B ∈ {547, 1000, 2000}, B′/B ∈ {5, 10, 20}, j ∈ {3,4,5},
+  m ∈ 2²⁵…2⁴⁵); measure the true yield curve (the ρ_Q analogue with the
+  Q₋-exclusion, mod-40 class, and prime-sum filters folded in) and the
+  realized demand-bits growth as pool accumulates. Deliverable: yield
+  table + fitted model in FINDINGS.md.
+  **Gate G1: some regime shows measured pool/demand ≥ 0.5 at prototype
+  scale with a fitted extrapolation ≥ 2.5 at production scale.** (The 0.06
+  baseline is the number to beat; partition-first must show ≥ ~10×.)
+- **A2. Parameter optimization.** Maximize projected pool/demand over the
+  measured curves; choose final (Q₋, Q₊, caps, window). Use the B=200/547
+  twin corpora to sanity-check the model where they overlap. Deliverable:
+  frozen harvest spec committed to the repo.
+  **Gate G2: projected pool ≥ 2.5 × demand bits ≥ 3000 usable elements.**
+- **A3. Production harvest.** C implementation (adapt chm_closure.c
+  infrastructure; pthreads; ~10⁹–10¹¹ candidates ≈ days of multicore).
+  Store elements with full factorizations + deterministic provenance.
+- **A4. Subset-product solver.** Pohlig–Hellman DL tables per cyclic
+  component (all orders smooth by design); then staged CRT à la
+  Löh–Niebuhr — satisfy one prime-power component at a time, maintaining a
+  basket of partial solutions, parity (|S| odd) as a Z/2 component; Wagner
+  k-list as the fallback for the final hard components; LLL only for a
+  terminal low-dimensional correction.
+  **Gate G3 (before running on real data): solver succeeds on synthetic
+  instances of the same dimensions** (random vectors in the same group,
+  planted solution) — separates solver bugs from data infeasibility.
+- **A5. Assembly & verification.** Two independent implementations
+  (python/sympy and C/GMP or FLINT) re-check: primality of every pᵢ
+  (proven, Pocklington/ECPP — the pᵢ are small), conditions (a)–(d),
+  direct computation of T(−1, n, 5), n² ≢ 1 (mod 5). Test Popovych's
+  (X+2)ⁿ congruence on the find. Write-up either way — a G1/G2 failure
+  becomes a quantified-infeasibility section in the working paper.
 
-## Phases
+## Track B — theory (Phase 0, runs parallel to A1–A2)
 
-### Phase 0 — Foundations (correctness before compute)
-- [ ] Re-derive the L–P theorem from scratch (both k mod 4 cases; we currently rely
-      on secondary sources — the AIM notes and Váňa's thesis. Váňa says the k ≡ 3
-      case was "left as an exercise" in the original). Write the proof in
-      `doc/background.tex` appendix or a separate note. Any error here poisons
-      everything downstream.
-- [ ] Unit-test the machinery numerically: for random small n ≡ 2, 3 (mod 5),
-      verify T(−1, n, 5) directly against the per-prime criterion
-      (n ≡ λ(p) mod ρ(p), ρ(p) | 10(p²−1)) used by Váňa. Test the theorem's
-      *congruence conclusion* on synthetic prime tuples satisfying (b)–(d) with (c),(d)
-      relaxed to small moduli.
-- [ ] **Map the admissible local conditions.** The mod-80 cell is (probably) one
-      of several admissible (mod 2^k, mod 5) condition patterns. Re-derive which
-      v₂ patterns and residues work — uniform pools with v₂(p+1) > 2 may be fine
-      with adjusted conditions. Payoff: if any admissible cell is reachable by the
-      isogeny-literature boosting polynomials p = 2xⁿ − 1 (natively
-      side-separating, and two-sided smoothness at half bit-size — see
-      doc/twin-smooth-review.md §2), the search gets dramatically easier. As
-      stated, mod 80 is provably unreachable by n = 2, 3 boosts.
-- [ ] Decide whether to also target general r (the ord_r(p) = 2 cases, where only
-      p² − 1 needs controlling) — potential free win if some r gives thinner
-      conditions than r = 5. Defer unless r = 5 pool statistics look bad.
-- [ ] Due diligence: has anyone run this at scale? Check for unpublished attempts
-      (ask Pomerance / Granville; search BOINC archives beyond Primaboinca).
+- **B1. Independent re-derivation of Theorem 2.1** (both k mod 4 cases;
+  currently trusted from AIM notes + Váňa). Deliverable: complete proof in
+  the working paper appendix. *Everything downstream leans on this.*
+- **B2. Admissible local cells (Question 6.2).** Map all (mod 2^k, mod 5)
+  patterns — including pool-uniform variants with v₂(p+1) = v > 2 — under
+  which the L–P mechanism survives. First test case: p = 2x³−1, x ≡ 2
+  (mod 4) ⇒ uniform v₂(p+1) = 4, v₂(p−1) = 1; mod-5 solvable (x ≡ 3).
+  **If any boost-reachable cell is admissible ⇒ open Track A′:** harvest at
+  x-level (half bit-size, structurally disjoint sides x vs x³−1), which
+  should dominate Track A economics — re-plan immediately.
+- **B3. General r.** For r with ord_r(p) = 2 the control modulus stays
+  p²−1; conditions and residue classes differ by r. Assess whether some
+  r ≠ 5 admits denser pools (more congruence classes ⇒ smaller slice
+  penalty than 1/16 within mod-40). Low effort, potentially free win.
+- **B4. Popovych side-question.** For any pool constructed here, what does
+  the (X+2) congruence require? Even partial analysis makes any eventual
+  find doubly informative (kills one conjecture or separates two).
 
-### Phase 1 — Pool harvesting + go/no-go statistics
-- [ ] **Phase 1a — run on existing data first (see doc/twin-smooth-review.md).**
-      Our pool primes p = 2m+1 are exactly twin-smooth pairs (m, m+1) with prime
-      sum — the objects the isogeny community mass-produced for B-SIDH/SQIsign.
-      Clone the public CHM implementation (Bruno et al., ASIACRYPT 2023); the
-      B = 547 run yields ~82M twin pairs. Slice m ≡ 1 (mod 40) (⟺ p ≡ 3 mod 80
-      + all 2-adic/mod-5 conditions), filter 2m+1 prime, compute factor
-      signatures, and run the coloring optimization for the max consistent
-      subpool vs. realized bits(Λ₋)+bits(Λ₊). **This is the go/no-go number and
-      needs no new number-theoretic software.** Calibrate density models against
-      the complete Størmer sets (B ≤ 113, Pell-equation enumeration).
-- [ ] **Harvester design (constructive, not sieved):** enumerate Q₋-smooth odd m,
-      set p = 2m + 1; test p ≡ 3 (mod 80), p prime (BPSW; prove later), then
-      trial-divide (p+1)/4 over Q₊. This scales to x = 10¹²⁺ without sieving.
-- [ ] **Asymmetric side design (first thing to evaluate):** Q₊ = all odd primes
-      ≤ B except 5 (the "random side" — (p+1)/4 smoothness is Dickman-governed);
-      Q₋ = primes in (B, B′] (the "constructive side" — m built from a controlled
-      set of medium primes, disjointness from Q₊ automatic). Tune B, B′, x,
-      #medium-primes-per-m.
-- [ ] Measure: pool yield per CPU-hour; realized bits(Λ₋) + bits(Λ₊) as a function
-      of pool size (exponents capped at what actually appears — expect lcm growth to
-      saturate); distribution of ω(p±1).
-- [ ] **Go/no-go:** projected |P| ≥ c·(bits Λ₋ + bits Λ₊) for c ≈ 2–3 at achievable
-      compute. Ballpark target: group ~ 15–30k bits ⇒ pool ~ 50–100k primes.
-      If unreachable for every (B, B′, x) tried, write up the negative result
-      (the quantified obstruction is publishable on its own) and pivot to
-      general-r / Hegde–Devaraj classes.
+## Track C — supporting/supply (opportunistic)
 
-### Phase 2 — Solver
-- [ ] Pohlig–Hellman tables: discrete logs of every pool prime in each cyclic
-      component of (Z/Λ₋)* × (Z/Λ₊)*.
-- [ ] 0/1 solver, in escalating order of sophistication:
-      (i) staged CRT à la Löh–Niebuhr (satisfy one prime-power component at a
-      time, maintaining a large family of partial solutions);
-      (ii) Wagner's generalized birthday / k-list algorithm on the component
-      lattice (the pool-rich regime is exactly where GBP shines);
-      (iii) lattice reduction (BKZ) only for a final low-dimensional correction
-      step — it will not scale to the full system.
-- [ ] Odd-|S| constraint = one extra Z/2 component. n composite is automatic
-      (|S| ≥ 3, distinct primes, squarefree).
+- **C1. Parallel closure runs** (pthreads on chm_closure.c) at B ≈ 250–400:
+  denser corpora for validating A1's model out-of-sample, and for
+  "partition-vote" analysis (which Q₋ | Q₊ the organic twins prefer — a
+  seed for A2's choice).
+- **C2. Congruence-targeted PTE sieve.** For a fixed PTE solution, m mod 40
+  is a polynomial condition on x: sieving only the right x-classes makes
+  every hit land in our congruence class (vs the measured 1/4000). Large
+  elements are demand-heavy, so this supplements rather than drives.
+- **C3. Costello/Naehrig outcomes.** The B=547 CHM corpus (or higher-B
+  runs, or their cluster infrastructure) upgrades C1 and A2 calibration;
+  interest from Sterner et al. could parallelize Track A′/A3. Questions
+  already prepared in doc/questions-for-craig-michael.md.
 
-### Phase 3 — Verification & write-up
-- [ ] Assemble n. Independently verify, with two implementations (e.g. python/sympy
-      and C/FLINT): distinctness and primality of all pᵢ (proven, e.g. ECPP or
-      Pocklington — the pᵢ are small); conditions (a)–(d); the congruence
-      T(−1, n, 5) computed directly; n² ≢ 1 (mod 5).
-- [ ] Test Popovych's second congruence (X+2)^n ≡ X^n + 2 on the found n — the
-      construction does not guarantee it, so either outcome is informative
-      (counterexample to both, or evidence separating the conjectures).
-- [ ] Write the paper. A negative result (quantified infeasibility of the L–P
-      route at reachable scales) is also worth writing up.
+## Decision tree
 
-## Heuristic assumptions ledger
+```
+A1 yield measured ──► G1 pass ──► A2 ──► G2 pass ──► A3 ──► A4(G3) ──► A5
+     │                   │                  │
+     │                   │ fail             │ fail
+     ▼                   ▼                  ▼
+B2 admissible cell?   raise B/B′, retry A1 once with 10× candidates;
+     │ yes            else: write up quantified negative for the
+     ▼                mod-80 cell; pivot to B2/B3 outcomes
+Track A′ (x-level harvest, half size) — re-run A1 economics there
+```
 
-What is proven vs. assumed in our feasibility estimates:
-1. **Theorems (unconditional):** gcd(p−1, p+1) = 2; the side-coprimality lemma;
-   the 2-adic bookkeeping given p ≡ 3 (mod 16); Størmer finiteness of twin
-   B-smooths for fixed B.
-2. **Exact but unmodeled local corrections:** for prime p and odd prime q,
-   P(q | p∓1) = 1/(q−1) each, mutually exclusive (not independent 1/q events).
-   Multiplies a computable singular-series constant into density estimates;
-   does not change exponents.
-3. **Conjectural (standard but unproven):** independence factorization
-   P(both sides smooth) ≈ ρ(u₋)ρ(u₊); and even the one-sided density
-   #{p ≤ x : p−1 y-smooth} ∼ ρ(u)π(x) is an open conjecture (Erdős–Pomerance
-   line; only weaker lower bounds are proven — Friedlander, Baker–Harman).
-4. **Empirical anchor:** the twin-smooth datasets (CHM B=547: 82M pairs;
-   complete Størmer sets B ≤ 113) let us *measure* rather than assume pool
-   densities — the heuristics only steer where we point the search.
+## Risk register (updated)
 
-## Risks
-1. **Side-coloring thins the pool below the linear-algebra threshold.** This is the
-   most likely failure mode and precisely why the smallest counterexample is believed
-   enormous. Phase 1 quantifies it before we invest in the solver.
-2. **Secondary-source error in the theorem statement** (mod-80 condition, k mod 4
-   cases). Mitigated by Phase 0 re-derivation.
-3. **lcm blow-up:** each pool prime enlarges Λ±; if bits(G) grows linearly with |P|
-   the feasibility inequality never closes. Mitigation: cap exponents, restrict m to
-   few medium primes, measure saturation early (Phase 1 metric).
-4. **Prior art:** the construction has been public since 2003. Due-diligence item in
-   Phase 0; worst case we replicate a known negative and say so.
+1. **Yield model wrong (A1 kills it).** ρ(u) with the Q₋-exclusion could
+   come in ≥ 10× low. Cost of finding out: ~a day of prototype compute.
+   Mitigation: B2/B3 open structurally different pools.
+2. **Demand-bits creep.** Λ₋ grows 12–13 bits per medium prime used; if
+   solutions need most of Q₋, ratio degrades toward the invariant. A2's
+   accounting must charge only used primes and cap exponents.
+3. **Solver at 8–15k-bit groups.** Löh–Niebuhr worked at comparable scales
+   in 1996; Wagner needs pool ≫ dimension — thin margins mean G3 synthetic
+   tests come *before* production harvest finishes.
+4. **Theorem risk (B1).** Unchanged: everything relies on secondary
+   sources until re-derived.
+5. **Prior art.** Unchanged; C3 due diligence continues.
 
-## Tooling
-- Prototype: Python + sympy/gmpy2. Production harvester + solver: C or Rust with
-  FLINT/GMP. Everything deterministic and seeded; all found pools/solutions
-  committed as data with generation parameters.
-- Repo layout: `doc/` (notes, paper), `harvest/`, `solve/`, `verify/`, `data/`.
+## Immediate next actions (this week)
 
-## References
-See `doc/background.tex` bibliography and `README.md` (literature survey).
+1. A1 prototype harvester (python, ~200 lines, reuse phase1a machinery);
+   first yield grid overnight.
+2. B1 re-derivation started in the working paper appendix.
+3. C1 pthreads patch to chm_closure.c (small change, big corpus payoff).
