@@ -46,9 +46,31 @@ Code: `code/verify_machinery.py`, `code/phase1a_calibration.py`,
    the optimized public implementation or a compiled port. This is question
    #1 in doc/questions-for-craig-michael.md.
 
+## Validation against published data (2026-08-07)
+
+`data/published/` holds a small verified corpus of published record pairs
+(collected by a ChatGPT agent from ePrint 2022/1439 and arXiv:2211.04315;
+all six rows re-verified arithmetically here: factorizations multiply to n,
+n+1 consecutive, smoothness bounds hold).
+
+- **B=100: our CHM closure finds 13,333 of the complete 13,374 pairs
+  (99.69%), including the exact published largest** (166055401586083680,
+  58 bits). Seeds are exhaustive to 1e7, so all 41 missing pairs are > 1e7:
+  the small end is *provably* complete, the deficit is confined to the tail.
+- **B=113: our closure maximum equals the published exhaustive record**
+  (19316158377073923834000, 75 bits), supporting near-completeness of our
+  33,118 count.
+- Published complete/near-complete counts now anchor the supply curve:
+  N(100) = 13,374; N(200) = 346,192 (original CHM); N(547) = 82,026,426.
+  Fitted exponent: alpha = 4.7 (100->200) to 5.4 (200->547) — confirms the
+  N(B) ~ B^5 estimate from our own runs.
+- No public bulk dataset located (the agent explicitly retracted an
+  unverified Zenodo claim) — the ask to Bruno et al. remains the fastest
+  path to B=547; our own closure is a credible substitute given a compiled
+  implementation. **Next validation anchor: B=200 must reproduce ~346,192**
+  (pure python is ~hours there; port the closure to C/Rust first).
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on
   what optimization achieves.
-- CHM closure completeness at B=113 not yet cross-checked against the
-  known complete set (MSvW report provable completeness for B ≤ 100).
