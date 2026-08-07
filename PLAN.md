@@ -48,7 +48,10 @@ measures before A3 commits compute.** Knobs: t, B, B′, j, exponent caps
 (reject q^e > 2¹³ on the plus side), size window, and only-count-used-primes
 demand accounting.
 
-- **A1. Yield calibration (prototype, python→C).** Enumerate ~10⁶ candidates
+- **A1. Yield calibration — DONE 2026-08-07, GATE G1 PASSED.** Measured
+  ratios up to 44x (B=2003, B'=20030, j=4); j=4, B'/B=10 is the sweet
+  spot; details in data/FINDINGS.md. Original spec follows.
+  (prototype, python→C). Enumerate ~10⁶ candidates
   across a grid (B ∈ {547, 1000, 2000}, B′/B ∈ {5, 10, 20}, j ∈ {3,4,5},
   m ∈ 2²⁵…2⁴⁵); measure the true yield curve (the ρ_Q analogue with the
   Q₋-exclusion, mod-40 class, and prime-sum filters folded in) and the

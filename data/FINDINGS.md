@@ -108,6 +108,43 @@ choosing WHICH partition to target, but the hunt itself should be
 partition-first. This vindicates the original asymmetric-split design in
 PLAN.md Phase 1 and doc/background.tex §3.
 
+## A1 yield calibration: GATE G1 PASSED (2026-08-07)
+
+`code/a1_yield_prototype.py`, 20M sampled candidates per cell, 12 cells;
+raw curves in `data/generated/a1_yield_grid.json`. Projection = measured
+per-candidate hit rate x C(t, j), against demand = full-Q₋ lcm bits +
+Q₊ ceiling (1.44B x 1.15 slack):
+
+| B | B′ | j | hit rate | proj. pool H | demand bits | **pool/demand** |
+|---|---|---|---|---|---|---|
+| 547 | 2735 | 3 | 1.1e-4 | 502 | 4094 | 0.12 |
+| 547 | 5470 | 4 | 2.0e-6 | 1.2e4 | 7896 | 1.50 (±16%) |
+| 1259 | 6295 | 4 | 4.2e-6 | 2.4e4 | 9273 | 2.57 (±11%) |
+| 1259 | 12590 | 4 | 2.4e-6 | 2.9e5 | 18309 | **15.7 (±14%)** |
+| 2003 | 10015 | 4 | 5.3e-6 | 1.6e5 | 14811 | **10.7 (±10%)** |
+| 2003 | 20030 | 4 | 2.1e-6 | 1.3e6 | 29138 | **44.4 (±16%)** |
+
+(j=3 cells land at 0.12-2.7 — the plan's pessimistic sketch was a j=3
+artifact. Full table in the JSON.)
+
+Findings:
+1. **Ratio scales ~ t^(j-1) x rate**: combinatorial volume C(t,j) grows
+   polynomially in t while Λ₋ grows only linearly — j=4 with B′/B = 10 is
+   the discovered sweet spot; j=5 (unmeasured) plausibly better still.
+2. Side-smoothness rates given the congruence track plain Dickman — the
+   Q₋-exclusion tax on the plus side is mild, as hoped.
+3. Production compute for the 15.7x cell: C(t,4) ~ 2^36.8 ~ 1.2e11
+   candidates; with the 1/16 mod-40 pre-filter and early-abort trial
+   division, ~40-100 CPU-hours in C — a weekend on 8 cores. The 44x cell
+   is ~10x that, still feasible.
+4. Partition-first beats the 0.06 invariant by a factor of ~200-700 in
+   the best cells: **the coloring obstruction is fully bypassed by
+   construction, and supply is no longer the binding constraint.**
+
+**A2 refinement targets:** measure j=5 and a finer (B, B′) grid around
+(1259-2003, 10x); exponent-capped enumeration; solver-slack modeling;
+then freeze the harvest spec.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on
