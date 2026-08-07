@@ -70,6 +70,44 @@ n+1 consecutive, smoothness bounds hold).
   implementation. **Next validation anchor: B=200 must reproduce ~346,192**
   (pure python is ~hours there; port the closure to C/Rust first).
 
+## Compiled CHM port + B=200 results (2026-08-07)
+
+`code/chm_closure.c` (C, __int128; build: `cc -O2 -o chm_closure chm_closure.c`)
+replaces the python closure. Validation anchors, all passed:
+
+| B | ours | published | max pair |
+|---|---|---|---|
+| 100 | 13,333 | 13,374 complete (99.69%) | exact match |
+| 113 | 33,118 | (count unpublished) | exact match w/ exhaustive record |
+| 200 | **346,110** | **346,192 original-CHM (99.976%)** | **exact match** (79 bits) |
+
+B=200 runs in ~3 min single-threaded (window 20,000, seeds to 1e7,
+9 rounds). B=547 would need parallelism + weeks, or the Bruno et al. corpus.
+
+**B=200 coloring measurement** (near-complete supply, biggest pool yet):
+346,110 twins -> 2,833 with m ≡ 1 (mod 40) -> **562 pool** (2m+1 prime).
+Mean total omega 9.8 over a 44-prime universe. Random-partition expectation
+0.66%; element-greedy optimization: 17 survivors (3.0%), ratio 0.060;
+**direct partition-space local search (60 restarts, hill climbing on prime
+side-flips): 16 survivors, ratio 0.061.**
+
+**The 0.06 invariant is not an optimizer artifact.** Seven measurements
+(five element-greedy across B/X/completeness, one full-set greedy, one
+partition-space search) all give survivors/demand-bits = 0.060-0.068 — a
+factor ~16-25 below feasibility. Hypothesis: partition-agnostic twin
+supply intrinsically pays ~2 fresh primes x ~7.5 bits per kept element.
+
+**Strategic consequence (partition-first harvesting).** The Phase 1b
+constructive harvester inverts the problem: fix the partition Q- | Q+ FIRST,
+enumerate m as products of Q- primes, keep those with (m+1)/2 being
+Q+-smooth and 2m+1 prime. Every harvested element is compatible by
+construction — the coloring tax moves into harvest yield, where it is a
+per-element Dickman cost rather than a global combinatorial obstruction.
+The twin corpora (CHM/PTE) remain essential for calibration and for
+choosing WHICH partition to target, but the hunt itself should be
+partition-first. This vindicates the original asymmetric-split design in
+PLAN.md Phase 1 and doc/background.tex §3.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on

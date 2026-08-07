@@ -1,0 +1,14 @@
+B=200 (46 primes), seedX=10000000, window=20000
+seeds: 40300 twins
+round 1: +116212 (total 156512)
+round 2: +127144 (total 283656)
+round 3: +50664 (total 334320)
+round 4: +9936 (total 344256)
+round 5: +1590 (total 345846)
+round 6: +239 (total 346085)
+round 7: +23 (total 346108)
+round 8: +2 (total 346110)
+round 9: +0 (done)
+wrote 346110 twins to ../data/generated/twins_B200.txt
+B=200 closure: 346110 twins, max 79 bits, skipped_bigd=19846663
+max = 589864439608716991201560

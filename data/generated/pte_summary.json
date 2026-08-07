@@ -1,0 +1,123 @@
+{
+ "upstream_commit": "f1b9a5275098565d5407d2ad869f8a34d49e6f69",
+ "files": {
+  "size-12_28_490076399058449_to_508213394906208.txt": {
+   "header_lines": 1,
+   "records": 228,
+   "p_prime": 0,
+   "smooth_ok": 228,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-12_28_508213394906208_to_526350390753968.txt": {
+   "header_lines": 2,
+   "records": 217,
+   "p_prime": 1,
+   "smooth_ok": 217,
+   "LP_congruence_ok": 1,
+   "LP_eligible": 0
+  },
+  "size-6-squ_22_110680464442257309696_to_110680569995373576192.txt": {
+   "header_lines": 1,
+   "records": 116,
+   "p_prime": 1,
+   "smooth_ok": 116,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6-squ_22_73786888333907984384_to_73786941110466117632.txt": {
+   "header_lines": 1,
+   "records": 82,
+   "p_prime": 2,
+   "smooth_ok": 82,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6-squ_22_73786941110466117632_to_73786976294838206464.txt": {
+   "header_lines": 1,
+   "records": 54,
+   "p_prime": 1,
+   "smooth_ok": 54,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6-squ_22_74939897799445053440_to_74940038536933408768.txt": {
+   "header_lines": 1,
+   "records": 267,
+   "p_prime": 8,
+   "smooth_ok": 267,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6-squ_23_18446745173221179392_to_18447869973616394240.txt": {
+   "header_lines": 3,
+   "records": 20,
+   "p_prime": 0,
+   "smooth_ok": 0,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6-squ_23_73786976294838206464_to_73788102194745049088.txt": {
+   "header_lines": 2,
+   "records": 419,
+   "p_prime": 12,
+   "smooth_ok": 419,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6_16_1099511627776_to_2199023255552.txt": {
+   "header_lines": 1,
+   "records": 6851,
+   "p_prime": 252,
+   "smooth_ok": 6851,
+   "LP_congruence_ok": 3,
+   "LP_eligible": 0
+  },
+  "size-6_16_17592186044416_to_35184372088832.txt": {
+   "header_lines": 1,
+   "records": 1490,
+   "p_prime": 44,
+   "smooth_ok": 1490,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6_16_2199023255552_to_4398046511104.txt": {
+   "header_lines": 1,
+   "records": 4847,
+   "p_prime": 177,
+   "smooth_ok": 4847,
+   "LP_congruence_ok": 1,
+   "LP_eligible": 0
+  },
+  "size-6_16_4398046511104_to_8796093022208.txt": {
+   "header_lines": 1,
+   "records": 3309,
+   "p_prime": 123,
+   "smooth_ok": 3309,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  },
+  "size-6_16_8796093022208_to_17592186044416.txt": {
+   "header_lines": 1,
+   "records": 2170,
+   "p_prime": 86,
+   "smooth_ok": 2170,
+   "LP_congruence_ok": 0,
+   "LP_eligible": 0
+  }
+ },
+ "total_records": 20070,
+ "unique_twins": 20069,
+ "duplicates": 1,
+ "p_prime_records": 707,
+ "LP_congruence_ok_records": 5,
+ "LP_eligible_records": 0,
+ "parse_or_verify_failures": [],
+ "side_compatibility": {
+  "eligible_records": 0,
+  "distinct_minus_side_primes": 0,
+  "distinct_plus_side_primes": 0,
+  "primes_demanded_on_both_sides": 0,
+  "example_conflicts": []
+ }
+}
