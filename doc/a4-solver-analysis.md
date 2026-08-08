@@ -60,6 +60,19 @@ the difficulty actually is.
    2-power-heavier or smaller-odd-part group. Cheap to assess, potentially
    reframes the whole solver problem.
 
+## UPDATE 2026-08-07: co-design study done (path 1) — viable window found
+
+Path (1) executed (code/a5_codesign.py, a5_yield.py; data/FINDINGS.md).
+Constraining both factor bases to odd-smooth-shifted primes (odd part of q-1
+<= t0) shrinks the solver's odd support from {336 primes <= 6269} to
+{24 primes <= 97} at t0=100, while the co-designed harvest ratio stays ~7.7
+(above the G2 gate) at B=2003, B'=60090, j=4. So the odd-part subset-sum moves
+into the SMALL-PRIME regime, where per-prime linear algebra + CRT/MITM is
+applicable. The odd DIMENSION stays large (~24k bits) -- co-design trades
+prime size for dimension -- so a real odd-part solver is still needed, but now
+in a tractable regime rather than a hopeless one. Next: build+test the
+small-prime odd-part solver and re-attempt G3 on the co-designed spec.
+
 ## Recommendation
 
 Pursue **(1)+(2) together**: add a "2-power-heavy Q₋" option to the harvester

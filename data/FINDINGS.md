@@ -219,6 +219,43 @@ cores), stops at ~10⁴ elements. **G2 PASSED** (gate 2.5); proceed to A3/A4.
   (3) general r (Track B3) for a friendlier group. Recommendation: (1)+(2)
   together, re-attempt G3 on the co-designed spec, hold A3 until it passes.
 
+## A5 harvest/solver co-design: viable window found (2026-08-07)
+
+`code/a5_codesign.py` (characterization), `code/a5_yield.py` (measured yield);
+full picture in doc/a4-solver-analysis.md. Constrain BOTH factor bases to
+odd-smooth-shifted primes (odd part of q-1 ≤ t0), capping the solver group's
+max odd prime at t0.
+
+**Characterization** (frozen band, cheap): tightening t0 shrinks the odd-prime
+support hard — max odd prime 6269→47 and distinct odd primes 336→14 at t0=50 —
+but the odd *dimension* (bits) only partly shrinks, since recovering yield
+needs many primes (odd bits scale with #primes). So co-design trades prime
+SIZE, not dimension.
+
+**Measured co-designed yield** (both bases constrained, 12M samples/cell; low
+hit counts, ±40%):
+
+| t0 | B | B′ | ratio | max odd ℓ | #distinct odd |
+|---|---|---|---|---|---|
+| 50 | 1259 | 40060 | 1.1 | 47 | 14 |
+| 100 | 1259 | 40060 | 2.6 | 97 | 24 |
+| **100** | **2003** | **60090** | **7.7** | **97** | **24** |
+| 200 | 1259 | 40060 | 14.5 | 199 | 45 |
+| 50 | 631 | 40060 | 0.0 | 47 | 14 |
+
+**Verdict — co-design works.** A viable window exists: **t0=100, B=2003,
+B′=60090, j=4** gives ratio ~7.7 (above the G2 gate 2.5) while shrinking the
+solver's odd support from {336 primes ≤6269} to **{24 primes ≤97}** — the
+structural change that moves the odd-part subset-sum into the small-prime
+regime where per-prime linear algebra + CRT/MITM is applicable. t0=200
+(ratio 14.5, 45 primes ≤199) is the safety-margin fallback. Small plus-bound
+(B=631) kills yield — constrain Q₊ by smoothness, don't shrink B.
+
+**Next:** (a) confirm the ratio with more samples / the C harvester (current
+±40%); (b) build + test the small-prime odd-part solver on the co-designed
+group (24 primes ≤97) and re-attempt G3. Co-design achieved its goal: it makes
+the solver's odd part small-prime while keeping the harvest above the gate.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on

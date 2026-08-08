@@ -1,4 +1,24 @@
-# Frozen harvest specification (Gate G2)
+# Harvest specification
+
+> **UPDATE 2026-08-07 (co-design, supersedes the pure-yield spec below).**
+> The A4 solver's group is ~84% odd-prime bits with primes up to ~6269 — the
+> real bottleneck. The A5 co-design study (data/FINDINGS.md, doc/
+> a4-solver-analysis.md) constrains both factor bases to odd-smooth-shifted
+> primes (odd part of q−1 ≤ t0), capping the solver's max odd prime.
+>
+> **Co-designed spec (recommended target): t0 = 100, Q₊ = odd primes ≤ 2003
+> with (q−1) odd-part 100-smooth, Q₋ = primes in (2003, 60090] with (q−1)
+> odd-part 100-smooth, j = 4, m ≡ 1 mod 40.** Measured ratio ~7.7 (above the
+> G2 gate; ±40% at current sample size), solver odd-support {24 primes ≤ 97}
+> vs the uncoded {336 primes ≤ 6269}. Fallback t0 = 200 (ratio ~14.5, 45
+> primes ≤ 199). This spec is pending (a) a higher-sample ratio confirmation
+> and (b) a G3 pass with the small-prime odd-part solver.
+>
+> The pure-yield spec below (ignoring the solver) is retained for reference.
+
+---
+
+# Frozen harvest specification (Gate G2) — pure-yield (superseded)
 
 *Frozen 2026-08-07 from A1/A2 calibration. Supersedes the back-of-envelope
 sketch in PLAN.md §Track A. All numbers measured; see data/generated/
