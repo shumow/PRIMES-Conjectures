@@ -319,6 +319,54 @@ reproduced. Net: the path is now correctly identified and de-walled; the
 remaining work is well-scoped (full ω-solver + divisor-harvest), and both are
 concrete.
 
+## N1: divisor-paradigm harvest (H8) is unharvestable under the double condition (2026-08-08)
+
+`code/a9_divisor_harvest.py`. Fixed disjoint factor bases T₋, T₊ (side-
+coprimality), enumerated squarefree divisors m of ∏T₋, kept pool primes
+p = 2m+1 with m ≡ 1 (mod 40), 2m+1 prime, (m+1)/2 squarefree over T₊.
+
+**Measured yield/density (multiple scales):**
+
+| T₋ bound | T₊ range | \|T₋\|+\|T₊\| | pool | mean density | max density |
+|---|---|---|---|---|---|
+| 90 | 97–220 | 45 | 1 | 0.178 | 0.178 |
+| 120 | 127–300 | 60 | 1 | 0.067 | 0.067 |
+| 150 | 160–360 | 68 | 2 | 0.074 | 0.088 |
+| 60 | 67–160 | 34 | 0 | — | — |
+
+**The divisor paradigm cannot give a pool that is both non-empty AND
+high-density.** Small T₋ (needed for decent density = ω(m)/\|T₋\|) → ~empty;
+larger T₋ → density collapses and pool stays ~empty. Root cause: the DOUBLE
+condition (both p−1 | Λ₋ and p+1 | Λ₊ for fixed moduli) is the product of two
+rare events — far more restrictive than AGHS's single p−1 | Λ.
+
+**The identity-density gap (the crux).** The AGHS ω-solver exploits pool primes
+being ≡ 1 on MANY components (high density). Comparison:
+- **AGHS pools** (p−1 | highly-composite Λ): density ~0.3–0.5.
+- **Our harvestable H7 pools** (p−1 = 2m, m = product of j≈4 medium primes):
+  density ≈ j/(#distinct medium primes) ≈ **0.003–0.008** — ~100× lower.
+- **Divisor-paradigm H8** (would give AGHS density): **unharvestable** (~empty).
+
+So there is a **structural mismatch**: under the double Carmichael+Lucas
+condition we can have a harvestable pool (H7, but ~100× too low density for
+ω-reduction) OR AGHS-like density (H8, but ~empty) — not both. The S6 ω-solver
+is not straightforwardly applicable.
+
+**Caveats (why this is strong evidence, not absolute proof):** tested
+squarefree divisors only (prime-power Λ untested, but analysis says it doesn't
+help — high density needs m keeping full powers, still forcing large m);
+enormous-scale untested (density trend is against us); and the FULL AGHS
+algorithm on low-density H7 pools is untested (my a8 solver is too weak to
+settle it). The honest status: the H8→S6 path as conceived is blocked; whether
+the real AGHS algorithm tolerates H7's low density is the one open escape.
+
+**Strategic fork (see PLAN.md).** Options: (a) implement the full AGHS solver
+and test it directly on low-density H7 pools (the one untested escape);
+(b) seek a solver designed for low-density many-prime pools; (c) pursue theory
+(B1/B2/B3) / different r for a friendlier group; (d) write up the quantified
+infeasibility of the L–P route via this solver family as a negative result
+(anticipated from the start as publishable).
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on

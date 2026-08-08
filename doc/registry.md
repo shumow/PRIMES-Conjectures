@@ -22,7 +22,7 @@ Method analysis: `doc/a4-solver-analysis.md`, `doc/twin-smooth-review.md`.
 | **H5 corpus-stream** | `b547_pool_analysis.py` | ✅ | stream full TwinSmooths B=547 corpus → pool | needs private data in scratchpad; 73,163-element pool |
 | **H6 partition-first** | `a1_yield_prototype.py`, `a2_grid.py` | ✅🔬 | fix Q₋/Q₊ first, enumerate m over Q₋, test (m+1)/2 over Q₊ | the **main-line** harvester; measurement mode; ratio 13.8–44 |
 | **H7 co-designed** | `a5_codesign.py`, `a5_yield.py` | ✅🔬 | H6 + both factor bases odd-smooth-constrained (odd part of q−1 ≤ t0) | caps solver max-odd-prime (6269→97); ratio ~7.7 at t0=100/B=2003 |
-| **H8 divisor-paradigm** | *(not built)* | ⬜ planned | fix highly-composite Λ₋,Λ₊; harvest m \| Λ₋/2, (m+1) \| Λ₊/2 | required for the AGHS ω-solver (S6); makes primes ≡1 on many components |
+| **H8 divisor-paradigm** | `a9_divisor_harvest.py` | ❌ tested/blocked | fix highly-composite Λ₋,Λ₊; harvest m \| Λ₋/2, (m+1) \| Λ₊/2 | N1 (2026-08-08): ~empty pool (0–2) under the double condition; can't get non-empty AND high-density. Gives AGHS density but unharvestable |
 
 **Harvester selection.** For a real production pool use **H6/H7** (partition-first
 — supply is over-provisioned, ratio ≫ gate). For ground-truth/validation corpora

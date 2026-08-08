@@ -95,6 +95,17 @@ demand accounting.
        (m+1) | Lambda+/2, so primes are = 1 on many components (the structure
        omega-reduction needs). Re-run A1/A2 economics under this paradigm.
   Hold A3 until the omega-solver passes G3 on divisor-harvested pools.
+  **N1 RESULT (2026-08-08, code/a9_divisor_harvest.py): H8 is unharvestable
+  under the double condition** -- ~empty pool (0-2 primes) at all feasible
+  scales; can't get non-empty AND AGHS-like high density. Our harvestable H7
+  pools have ~100x lower identity-density (~0.004) than AGHS (~0.5), so the
+  omega-solver is not straightforwardly applicable. STRATEGIC FORK:
+   (a) implement the FULL AGHS solver and test directly on low-density H7 pools
+       (the one untested escape -- my a8 solver is too weak to settle it);
+   (b) find a solver for low-density many-prime pools;
+   (c) theory B1/B2/B3 or different r for a friendlier group;
+   (d) write up the quantified infeasibility of the L-P route via this solver
+       family (a negative result anticipated as publishable from the start).
 - **A3. Production harvest.** C implementation (adapt chm_closure.c
   infrastructure; pthreads; ~10⁹–10¹¹ candidates ≈ days of multicore).
   Store elements with full factorizations + deterministic provenance.
