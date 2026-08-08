@@ -1,0 +1,4 @@
+b547_pool_stats.json holds AGGREGATE statistics only, derived from the
+private TwinSmooths/twins_data corpus (shared by M. Naehrig). No raw twin
+values from that corpus are stored in this repository. Regenerate with
+code/b547_pool_analysis.py against a local clone of the private data.

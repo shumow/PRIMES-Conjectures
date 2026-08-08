@@ -1,3 +1,7 @@
 code/chm_closure
 *.aux
 *.log.aux
+data/generated/b547_run.log
+data/generated/a1_run.log
+data/generated/import_run.log
+data/generated/chm_B200.log

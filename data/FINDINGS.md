@@ -145,6 +145,31 @@ Findings:
 (1259-2003, 10x); exponent-capped enumeration; solver-slack modeling;
 then freeze the harvest spec.
 
+## Definitive B=547 coloring measurement (2026-08-07)
+
+Source: complete TwinSmooths/twins_data corpus (private, shared by M. Naehrig;
+raw data kept OUT of this repo — aggregate stats only). `code/b547_pool_analysis.py`.
+
+- Streamed all **82,026,426** pairs; **642,495** have m ≡ 1 (mod 40);
+  **pool = 73,163** with 2m+1 prime (27x the largest pool tested before).
+- Mean total omega 14.9 over the odd-prime universe.
+- Random-partition expectation 25.6 survivors; **best partition-space local
+  search (30 restarts): 82 survivors, demand 984 bits, ratio 0.083.**
+- **The 0.06 invariant holds at full scale** (0.060-0.083 across B=100-547,
+  pools 78 -> 73,163). Dataset-mining is conclusively dead: measured, not
+  extrapolated, on the entire published corpus.
+- Contrast with A1 partition-first (15-44) is now airtight: same conjecture,
+  filters, and optimizer; the only difference is fixing the partition FIRST.
+  ~300-500x separation, demonstrated at scale on both sides.
+
+Completeness audit against the complete corpus (bonus from having exact data):
+N(100)=13,374 (our closure 13,333=99.7%), N(113)=33,233 (99.65%),
+N(200)=348,840 (our closure 346,110=99.2%; note the original-CHM published
+346,192 was itself ~0.8% short of complete). Zero false positives: every twin
+our C closure emits is in the corpus. Repo also has B=1300 data to 115 bits +
+per-prime histograms -- out-of-sample validation material for the A1/A2 model
+in our target region.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on

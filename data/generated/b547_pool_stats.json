@@ -1,0 +1,13 @@
+{
+ "B": 547,
+ "total_twins": 82026426,
+ "congruence_pass": 642495,
+ "pool": 73163,
+ "omega_minus_mean": 7.516504243948444,
+ "omega_plus_mean": 7.395514125992647,
+ "e_random": 25.620367504656315,
+ "best_partition_survivors": 82,
+ "survivor_demand_bits": 984.1,
+ "ratio": 0.0833,
+ "minutes": 0.8
+}
