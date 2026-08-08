@@ -27,8 +27,10 @@ Method analysis: `doc/a4-solver-analysis.md`, `doc/twin-smooth-review.md`.
 **Harvester selection.** For a real production pool use **H6/H7** (partition-first
 — supply is over-provisioned, ratio ≫ gate). For ground-truth/validation corpora
 use **H1** (provably complete small end) or **H3** (near-complete fixed-B, fast).
-**H5** taps Michael's full B=547 data. **H4** is calibration-only. **H8** is the
-next build, needed to feed **S6**.
+**H5** taps Michael's full B=547 data. **H4** is calibration-only. **H8** is
+**blocked** (N1: unharvestable under the double condition) — so the AGHS-density
+pool the ω-solver wanted is unavailable; the live question is whether a real
+solver tolerates H6/H7's ~100× lower density.
 
 ---
 
@@ -65,15 +67,19 @@ applies to the deprecated mining route.
 
 ## Recommended combinations
 
-- **Production target (pending):** H8 (divisor-paradigm) → S6 (ω-guided), with
-  V4 sizing the group and V1 verifying the final n. Blocked on completing S6 + H8.
+- **Former production target (now blocked):** H8 → S6. N1 showed H8 is
+  unharvestable under the double condition, so this route is closed as conceived.
 - **Current best measured:** H7 (co-designed, ratio 7.7, max-odd-prime 97) →
-  *solver TBD*; S4/S6 cap below its ~24k odd bits, which is why H8→S6 is needed.
+  *solver open*. The open question is whether the FULL AGHS ω-solver (S6, not yet
+  built) tolerates H7's low identity-density (~0.004 vs AGHS ~0.5). This is the
+  one untested escape; needs the real S6, not the a8 stub.
 - **Validation / calibration:** H1 or H3 (complete-ish corpus) → S1 (coloring)
   reproduces the 0.06 mining wall and V3's model checks. Historical baseline.
 - **Regression harness for new solvers:** synthetic instances from
-  `a8_omega_solver.make_structured` / `a6_oddsolver.make_codesigned`, run S4
-  (exact, small) as an oracle against S6 (scalable) on the same planted instances.
+  `a8_omega_solver.make_structured` (tunable identity-density ρ) / 
+  `a6_oddsolver.make_codesigned`, run S4 (exact, small) as an oracle against any
+  new scalable solver on the same planted instances — and sweep ρ down to
+  H7's ~0.004 to test low-density tolerance directly.
 
 ## Gate status (see PLAN.md)
 
