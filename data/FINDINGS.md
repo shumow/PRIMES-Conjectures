@@ -256,6 +256,34 @@ regime where per-prime linear algebra + CRT/MITM is applicable. t0=200
 group (24 primes ≤97) and re-attempt G3. Co-design achieved its goal: it makes
 the solver's odd part small-prime while keeping the harvest above the gate.
 
+## A6 small-prime odd-part solver, G3 re-attempt: NOT passed — dimension is the wall (2026-08-08)
+
+`code/a6_oddsolver.py`. Two solvers tested on faithful co-designed synthetic
+instances (small primes ≤97, planted solutions):
+
+- **2-part: GF(2) exact, scales** (from A4: 4586 components solved in 12s).
+- **Odd part (heuristic): annealing** within the GF(2) solution family stalls
+  at ≥19 odd components (dense kernel XOR moves too disruptive).
+- **Odd part (exact): meet-in-the-middle** solves the small instances annealing
+  cannot (N=24/D=11 instant; N=40/D=15 in 11s) but is exponential in N, capping
+  ~N=40 / ~15 odd components / ~40 odd bits.
+
+Both cap **2–3 orders of magnitude below** the co-designed spec (~thousands of
+odd components, ~24k odd bits). **G3 NOT passed.** Diagnosis: co-design capped
+the max odd prime (6269→97) but **not the odd dimension**, and dimension is the
+obstruction. Capping dimension too would need near-Fermat (2-power-heavy)
+primes, which are too sparse for the harvest — a real yield/solver tension.
+
+**The path is concrete, not a dead end.** Subset-product ≡ 1 in (Z/L)* at this
+scale is exactly what the Löh–Niebuhr / AGP **constructive** Carmichael
+algorithm does (Carmichael numbers with millions of prime factors have been
+built this way). It succeeds by exploiting staged construction / structured
+prime selection, not by solving a generic dense subset-sum. Our Carmichael
+condition (n ≡ 1 mod Λ₋) is directly in its scope; the Lucas–Carmichael twist
+(n ≡ −1 mod Λ₊) is the added piece. **Next build: adapt the Löh–Niebuhr
+constructive method to the double condition** — the proven tool for this exact
+problem, replacing the generic solvers that provably don't scale here.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on

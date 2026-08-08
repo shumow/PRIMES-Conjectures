@@ -66,14 +66,22 @@ demand accounting.
   13.8, pool ~2.5e5, demand ~18k bits. j=5 deferred to the C harvester.
   Original spec follows.
   **Gate G2: projected pool ≥ 2.5 × demand bits ≥ 3000 usable elements.**
-- **A4/G3 STATUS 2026-08-07: solver is the binding constraint; A3 ON HOLD.**
-  G3 phase-1 (doc/a4-solver-analysis.md): the 2-part of the group is
-  GF(2)-linear and solves at full scale, but is only ~16% of demand bits; the
-  ~84% odd-prime part (~15k bits, ℓ up to ~6269) is an unsolved subset-sum.
-  Next: (1) harvest co-design toward 2-power-heavy q-1 (re-run A1/A2 under the
-  constraint); (2) proper odd-part solver (Wagner block / lattice / structured
-  integer LA); (3) general r for a friendlier group. Re-attempt G3 on the
-  co-designed spec; hold A3 until G3 passes.
+- **A4/A5/A6 STATUS 2026-08-08: solver is the binding constraint; A3 ON HOLD.**
+  Chain of findings (doc/a4-solver-analysis.md, data/FINDINGS.md):
+   - A4/G3: the group's 2-part is GF(2)-linear and solves at full scale, but is
+     only ~16% of demand bits; the ~84% odd part (~15k bits, ℓ up to 6269) is
+     an unsolved subset-sum.
+   - A5 co-design: constraining both factor bases to odd-smooth-shifted primes
+     shrinks the odd support to {24 primes ≤97} while keeping harvest ratio
+     ~7.7 (above gate). Caps the odd PRIME, not the odd DIMENSION.
+   - A6/G3 re-attempt: NOT passed. Generic solvers (annealing, exact MITM) cap
+     2-3 orders of magnitude below the ~24k-bit odd dimension. Dimension is the
+     wall; capping it needs near-Fermat primes (too sparse) -> yield/solver
+     tension.
+  **Next build (A6-v2): adapt the Loeh-Niebuhr / AGP CONSTRUCTIVE Carmichael
+  algorithm** (proven to build subset-product = 1 in (Z/L)* with millions of
+  prime factors) to our double Carmichael + Lucas-Carmichael condition. This is
+  the proven tool for this exact problem. Hold A3 until it passes G3.
 - **A3. Production harvest.** C implementation (adapt chm_closure.c
   infrastructure; pthreads; ~10⁹–10¹¹ candidates ≈ days of multicore).
   Store elements with full factorizations + deterministic provenance.
