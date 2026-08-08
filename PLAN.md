@@ -5,6 +5,9 @@
 (math), data/FINDINGS.md (measurements), doc/twin-smooth-review.md
 (literature).*
 
+**Component registry** (all harvesters/solvers/validators as reusable,
+combinable options, with status and selection guidance): `doc/registry.md`.
+
 ## What we know now (each item measured or proved, see FINDINGS.md)
 
 1. **The reduction stands.** Pool primes p = 2m+1 with m ≡ 1 (mod 40),
