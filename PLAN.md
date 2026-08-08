@@ -66,6 +66,14 @@ demand accounting.
   13.8, pool ~2.5e5, demand ~18k bits. j=5 deferred to the C harvester.
   Original spec follows.
   **Gate G2: projected pool ≥ 2.5 × demand bits ≥ 3000 usable elements.**
+- **A4/G3 STATUS 2026-08-07: solver is the binding constraint; A3 ON HOLD.**
+  G3 phase-1 (doc/a4-solver-analysis.md): the 2-part of the group is
+  GF(2)-linear and solves at full scale, but is only ~16% of demand bits; the
+  ~84% odd-prime part (~15k bits, ℓ up to ~6269) is an unsolved subset-sum.
+  Next: (1) harvest co-design toward 2-power-heavy q-1 (re-run A1/A2 under the
+  constraint); (2) proper odd-part solver (Wagner block / lattice / structured
+  integer LA); (3) general r for a friendlier group. Re-attempt G3 on the
+  co-designed spec; hold A3 until G3 passes.
 - **A3. Production harvest.** C implementation (adapt chm_closure.c
   infrastructure; pthreads; ~10⁹–10¹¹ candidates ≈ days of multicore).
   Store elements with full factorizations + deterministic provenance.

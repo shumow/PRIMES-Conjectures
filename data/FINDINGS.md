@@ -198,6 +198,27 @@ j=4; m ≡ 1 mod 40; exponent cap 2¹³. Ratio 13.8, pool ~2.5e5, demand ~18k
 bits, mean 50-bit elements. Production ~10²–10³ core-hours (few days on 8–16
 cores), stops at ~10⁴ elements. **G2 PASSED** (gate 2.5); proceed to A3/A4.
 
+## A4 solver, G3 phase-1: the solver is the binding constraint (2026-08-07)
+
+`code/a4_solver.py`; full analysis in doc/a4-solver-analysis.md.
+**G3 NOT yet passed** — and finding that now, before the A3 harvest, is the win.
+
+- The condition linearizes to subset-sum in G = (Z/Λ₋)*×(Z/Λ₊)*, a product of
+  cyclic prime-power components. Pool N ≫ dim ⇒ solutions dense; a 0/1 one is
+  the crux.
+- **2-part is GF(2)-linear and solves at full scale** (frozen spec B=1259,
+  B′=12590: 4586 components, mod-2 system solved in 12s).
+- **But the 2-part is only ~16% of the demand bits.** ~84% (≈15,000 bits at
+  the frozen spec) lives in odd-prime components with primes ℓ up to ~6269.
+  This overturned the assumption that the 2-torsion was the bulk. The
+  prototype's odd-part closer fails even at ~60-bit odd scale.
+- **Conclusion:** supply is solved (G1/G2); the ~15k-bit odd-prime subset-sum
+  is the real problem. Paths: (1) harvest co-design toward 2-power-heavy q−1
+  to shrink the odd part (couples back to A2, at a yield cost); (2) a proper
+  odd-part solver (Wagner block-variant / lattice / structured integer LA);
+  (3) general r (Track B3) for a friendlier group. Recommendation: (1)+(2)
+  together, re-attempt G3 on the co-designed spec, hold A3 until it passes.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on
