@@ -49,10 +49,13 @@ candidates, before the primality and coloring filters.
    smooth twins..." (SAC 2024; ePrint 2023/1576).** PTE-style pairs allowing a
    few quadratic factors; better smoothness bounds at 384/512 bits.
 6. **Mulder, Sterner, van Woerden, "Large smooth twins from short lattice
-   vectors" (ANTS XVII).** SVP in a Schnorr-style prime-number lattice finds the
-   *largest* twin for a given B. Status of completeness: provable for
-   **B ≤ 100**, heuristic to **B ≤ 113**; records: 196-bit twin at B = 751,
-   213-bit at B = 997. Includes an estimator for the largest B-smooth twin.
+   vectors" (ANTS XVII 2026; ePrint 2025/1462).** SVP in a Schnorr-style prime-
+   number lattice finds the *largest* twin for a given B. Status of
+   completeness: provable for **B ≤ 100**, heuristic to **B ≤ 113**; records:
+   196-bit twin at B = 751, 213-bit at B = 997. Includes an estimator for the
+   largest B-smooth twin. Detailed applicability analysis in §"Lattice method"
+   below — Michael Naehrig pointed to this as the current SOTA twin-smooth
+   finder (2026-08-07).
 7. Background: Conrey–Holmström–McLaughlin, "Smooth neighbors" (Exp. Math.
    2013); Størmer (1897); Lehmer (1964); Corte-Real Santos et al., "Finding
    practical parameters for isogeny-based cryptography" (CiC 2024).
@@ -107,6 +110,44 @@ saturates, and the only levers are B (grows bits(G) ~ linearly in π(B)) and
 coloring efficiency. The known complete sets (B ≤ 113) let us compute the
 *exact* supply and exact coloring optimum at small scale and extrapolate with
 confidence before committing CPU to B in the 500–5000 range.
+
+## Lattice method (MSW, ePrint 2025/1462) — applicability analysis
+
+Read the construction 2026-08-07 (prompted by Naehrig). **Verdict: SOTA for
+the *largest* twin at bound B, but a structural mismatch for our harvest — and
+it reintroduces exactly the coloring tax partition-first construction escapes.**
+
+*Construction (Def. 5.1).* Prime-number lattice: column i is prime pᵢ, top
+entry α·log(pᵢ), rest a scaled identity. A lattice vector (integer coords xᵢ)
+represents ∏pᵢ^{xᵢ}; a short vector forces ∏pᵢ^{xᵢ} ≈ 1, so the positive-
+exponent primes multiply to a, the negative-exponent primes to b, with
+a − b = ±1 = a smooth twin. **The sign of xᵢ chooses which side (m vs m+1)
+prime pᵢ lands on.** BKZ/G6K sieving in a well-scaled such lattice yields the
+extremal (largest) twins; αopt is tuned to minimise ‖v‖/gh(L).
+
+*Why it does not fit our need:*
+1. **Partition = fixing every prime's sign = a cone, not a sublattice.** Our
+   condition "Q₋ primes only in m, Q₊ primes only in m+1" is xᵢ ≤ 0 on Q₋,
+   xᵢ ≥ 0 on Q₊ — an orthant-like cone. Lattices are closed under negation;
+   cones are not, so SVP/BKZ cannot be restricted to it. One can only *filter*
+   short vectors by sign pattern, at cost ≈ 2^{−ω} (ω ≈ 15 primes used) — the
+   **same exponential partition penalty that produces our 0.06 mining wall**
+   (data/FINDINGS.md). The lattice does not escape it; only partition-*first*
+   enumeration does, by never generating an incompatible candidate.
+2. **Extremal finder, not a population sieve.** Their §7.4 flags "find *all*
+   B-smooth twins" as the main open obstruction ("not all smooth twins
+   correspond to short vectors"). The method targets the *largest* twin at B
+   (196–213 bit records); our pool wants thousands of *medium* (~30–45 bit)
+   twins. Wrong end of the size distribution.
+
+*Where it could still matter:* (a) as a Track C corpus generator if we ever
+want a few very large pool elements; (b) the honest answer to "best pure
+twin-smooth algorithm" for record sizes. *Speculative hybrid* (Track B
+curiosity, likely not worth it at our small sizes): a CVP whose target encodes
+m ≡ 1 (mod 40) as a coset, with per-prime αᵢ weights biasing but not forcing
+the side assignment — but the sign-cone obstruction (1) is fundamental, so
+this cannot beat direct partition-first enumeration where m is only 30–45 bits
+and enumeration is cheap. **Net: does not change the plan.**
 
 ## What none of their work covers (our novel ground)
 

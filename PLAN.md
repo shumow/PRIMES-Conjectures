@@ -114,6 +114,13 @@ demand accounting.
   is a polynomial condition on x: sieving only the right x-classes makes
   every hit land in our congruence class (vs the measured 1/4000). Large
   elements are demand-heavy, so this supplements rather than drives.
+- **C4. Lattice twin-finder (MSW, ePrint 2025/1462).** SOTA for *largest*
+  twin at bound B (Naehrig's pointer, 2026-08-07). Analyzed in
+  doc/twin-smooth-review.md: structurally a poor fit for our harvest — the
+  partition is a sign-cone, not a sublattice, so imposing it costs 2^{-omega}
+  (the same tax partition-first escapes), and the method is extremal not
+  population. Retained only as a possible corpus generator for very large pool
+  elements; does not change Track A.
 - **C3. Costello/Naehrig outcomes.** The B=547 CHM corpus (or higher-B
   runs, or their cluster infrastructure) upgrades C1 and A2 calibration;
   interest from Sterner et al. could parallelize Track A′/A3. Questions
