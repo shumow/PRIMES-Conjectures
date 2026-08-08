@@ -78,10 +78,20 @@ demand accounting.
      2-3 orders of magnitude below the ~24k-bit odd dimension. Dimension is the
      wall; capping it needs near-Fermat primes (too sparse) -> yield/solver
      tension.
-  **Next build (A6-v2): adapt the Loeh-Niebuhr / AGP CONSTRUCTIVE Carmichael
-  algorithm** (proven to build subset-product = 1 in (Z/L)* with millions of
-  prime factors) to our double Carmichael + Lucas-Carmichael condition. This is
-  the proven tool for this exact problem. Hold A3 until it passes G3.
+  **A7/A8 correction (2026-08-08): the A6 'wall' was a mis-diagnosis.** AGHS
+  (arXiv:1203.6664) built a Carmichael number with 10^10 prime factors via a
+  SUBEXPONENTIAL omega-guided subset-product reduction over (Z/Lambda)*,
+  including the full odd part -- no small-odd-part requirement. So the solver
+  is not fundamentally blocked. Two-part next build:
+   (i) implement the full AGHS omega-solver (two potentials omega/omega-bar,
+       birthday step, non-uniformity) -- a first top-down version
+       (code/a8_omega_solver.py) solves only the easy regime (r<=20); the full
+       algorithm is a multi-turn build;
+   (ii) redesign the harvest to the DIVISOR paradigm -- fix highly-composite
+       Lambda-, Lambda+ and harvest twin primes p=2m+1 with m | Lambda-/2 and
+       (m+1) | Lambda+/2, so primes are = 1 on many components (the structure
+       omega-reduction needs). Re-run A1/A2 economics under this paradigm.
+  Hold A3 until the omega-solver passes G3 on divisor-harvested pools.
 - **A3. Production harvest.** C implementation (adapt chm_closure.c
   infrastructure; pthreads; ~10⁹–10¹¹ candidates ≈ days of multicore).
   Store elements with full factorizations + deterministic provenance.

@@ -284,6 +284,41 @@ condition (n ≡ 1 mod Λ₋) is directly in its scope; the Lucas–Carmichael t
 constructive method to the double condition** — the proven tool for this exact
 problem, replacing the generic solvers that provably don't scale here.
 
+## A7/A8: the A6 "dimension wall" was a mis-diagnosis — AGHS is the tool (2026-08-08)
+
+Investigating the Löh–Niebuhr adaptation led to Alford–Grantham–Hayman–Shallue,
+*Constructing Carmichael numbers through improved subset-product algorithms*
+(arXiv:1203.6664), who built a Carmichael number with **10,333,229,505 prime
+factors** — subset-product ≡ 1 in (Z/Λ)* including the full odd part.
+
+**Key correction to A6.** They do NOT use exact linear algebra and do NOT
+require a small odd part. They use a **subexponential ω-guided reduction**: a
+distance-to-identity potential ω(a) = highest CRT component where a ≠ 1, and
+build products that zero components top-down. The exact 0/1 constraint (which
+makes polynomial elimination impossible) is exactly why the method is
+subexponential rather than polynomial — not a wall, a complexity class.
+**So the odd-dimension "wall" from A6 is not fundamental**; it was the wrong
+solver.
+
+**The real requirement — and the harvest redesign it forces.** ω-reduction
+needs pool primes that are ≡ 1 (identity) on MANY components — the AGHS
+structure where **p − 1 | Λ** (a fixed highly-composite modulus), so p ≡ 1 mod
+every prime power dividing p−1. Our current harvest builds m as a product of j
+medium primes, so p = 2m+1 is ≡ 1 on only ~j components — dense group vectors,
+the worst case for ω-reduction. **The adaptation therefore has two parts:**
+(1) implement the full AGHS ω-solver (two potentials ω/ω̄, birthday step,
+non-uniformity exploitation); (2) redesign the harvest to the **divisor
+paradigm** — fix highly-composite Λ₋, Λ₊ and harvest twin primes p = 2m+1 with
+m | Λ₋/2 and (m+1) | Λ₊/2.
+
+**Status (`code/a7_lohniebuhr.py`, `code/a8_omega_solver.py`).** A first
+ω-reducer (strict top-down, one potential) runs and solves the easy regime
+(r ≤ 20 components, high identity-density) but not beyond — the full
+subexponential AGHS algorithm is a substantial multi-turn build not yet
+reproduced. Net: the path is now correctly identified and de-walled; the
+remaining work is well-scoped (full ω-solver + divisor-harvest), and both are
+concrete.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on
