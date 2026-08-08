@@ -1,0 +1,111 @@
+{
+ "real_pool_size": 73163,
+ "validation": [
+  {
+   "Bs": 100,
+   "Bp": 547,
+   "window": [
+    28,
+    40
+   ],
+   "real": 9,
+   "predicted": 6.4,
+   "pred_over_real": 0.71,
+   "breakdown": {
+    "4": {
+     "est": 6.414875000000064,
+     "hits": 15,
+     "inwin": 2999989,
+     "logC": 20.3
+    },
+    "5": {
+     "est": 0.0,
+     "hits": 0,
+     "inwin": 970128,
+     "logC": 24.1
+    }
+   }
+  },
+  {
+   "Bs": 150,
+   "Bp": 547,
+   "window": [
+    30,
+    44
+   ],
+   "real": 10,
+   "predicted": 7.0,
+   "pred_over_real": 0.7,
+   "breakdown": {
+    "4": {
+     "est": 6.966960000000112,
+     "hits": 29,
+     "inwin": 3000000,
+     "logC": 19.5
+    },
+    "5": {
+     "est": 0.0,
+     "hits": 0,
+     "inwin": 2968169,
+     "logC": 23.1
+    }
+   }
+  },
+  {
+   "Bs": 200,
+   "Bp": 547,
+   "window": [
+    32,
+    46
+   ],
+   "real": 7,
+   "predicted": 2.8,
+   "pred_over_real": 0.41,
+   "breakdown": {
+    "4": {
+     "est": 2.8421250000000247,
+     "hits": 25,
+     "inwin": 3000000,
+     "logC": 18.4
+    },
+    "5": {
+     "est": 0.0,
+     "hits": 0,
+     "inwin": 3000000,
+     "logC": 21.7
+    }
+   }
+  },
+  {
+   "Bs": 100,
+   "Bp": 547,
+   "window": [
+    24,
+    36
+   ],
+   "real": 13,
+   "predicted": 13.5,
+   "pred_over_real": 1.04,
+   "breakdown": {
+    "3": {
+     "est": 5.413099999999951,
+     "hits": 231,
+     "inwin": 2619381,
+     "logC": 16.1
+    },
+    "4": {
+     "est": 8.125508333333414,
+     "hits": 19,
+     "inwin": 2999766,
+     "logC": 20.3
+    },
+    "5": {
+     "est": 0.0,
+     "hits": 0,
+     "inwin": 3658,
+     "logC": 24.1
+    }
+   }
+  }
+ ]
+}

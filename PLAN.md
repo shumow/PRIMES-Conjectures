@@ -60,10 +60,11 @@ demand accounting.
   **Gate G1: some regime shows measured pool/demand ≥ 0.5 at prototype
   scale with a fitted extrapolation ≥ 2.5 at production scale.** (The 0.06
   baseline is the number to beat; partition-first must show ≥ ~10×.)
-- **A2. Parameter optimization.** Maximize projected pool/demand over the
-  measured curves; choose final (Q₋, Q₊, caps, window). Use the B=200/547
-  twin corpora to sanity-check the model where they overlap. Deliverable:
-  frozen harvest spec committed to the repo.
+- **A2. Parameter optimization — DONE 2026-08-07, GATE G2 PASSED.** Model
+  validated conservative (0.68x) against the complete B=547 corpus; frozen
+  spec in doc/harvest-spec.md (Q₊ ≤ 1259, Q₋ ⊂ (1259,12590], j=4): ratio
+  13.8, pool ~2.5e5, demand ~18k bits. j=5 deferred to the C harvester.
+  Original spec follows.
   **Gate G2: projected pool ≥ 2.5 × demand bits ≥ 3000 usable elements.**
 - **A3. Production harvest.** C implementation (adapt chm_closure.c
   infrastructure; pthreads; ~10⁹–10¹¹ candidates ≈ days of multicore).

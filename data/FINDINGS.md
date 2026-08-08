@@ -170,6 +170,34 @@ our C closure emits is in the corpus. Repo also has B=1300 data to 115 bits +
 per-prime histograms -- out-of-sample validation material for the A1/A2 model
 in our target region.
 
+## A2: model validated on real data; spec frozen; GATE G2 PASSED (2026-08-07)
+
+**Out-of-sample validation** (`code/a2_validate_and_extend.py`): the A1/A2
+sampler vs the complete B=547 corpus (exhaustive to 122 bits), four asymmetric
+splits — predicted/real = 0.71, 0.70, 0.41, 1.04 (geo-mean 0.68). The model is
+**conservative, never optimistic**; per-candidate physics reproduces real
+complete-corpus counts at j=3,4. (Real counts small, 7–13, since asymmetric
+bands within B≤547 are narrow; validates physics not absolute scale.)
+
+**Extended grid** (`code/a2_grid.py`, 8M samples/cell, j=4,5,6, B∈[1009,2003],
+B′/B∈{10,15,20}). All 9 trustworthy cells (≥8 hits) are j=4; j=5,6 hit-starved
+(0–1 hits) — deferred to the C harvester. Reliable j=4 ratios:
+
+| B | B′ | ratio | pool | demand bits | mean bits | rel.err |
+|---|---|---|---|---|---|---|
+| 1259 | 12590 | 13.8 | 2.5e5 | 18117 | 50 | ±24% |
+| 1259 | 18885 | 41.0 | 1.1e6 | 27101 | 51 | ±26% |
+| 2003 | 20030 | 45.5 | 1.3e6 | 28768 | 52 | ±24% |
+| 2003 | 40060 | 209  | 1.2e7 | 57514 | 54 | ±32% |
+
+Ratio grows with B′ but so does the solver's group modulus — the tradeoff that
+sets the frozen spec (doc/harvest-spec.md).
+
+**Frozen spec:** Q₊ = odd primes ≤1259 (≠5); Q₋ = primes in (1259, 12590];
+j=4; m ≡ 1 mod 40; exponent cap 2¹³. Ratio 13.8, pool ~2.5e5, demand ~18k
+bits, mean 50-bit elements. Production ~10²–10³ core-hours (few days on 8–16
+cores), stops at ~10⁴ elements. **G2 PASSED** (gate 2.5); proceed to A3/A4.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on
