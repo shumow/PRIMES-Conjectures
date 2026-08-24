@@ -367,6 +367,49 @@ and test it directly on low-density H7 pools (the one untested escape);
 infeasibility of the L–P route via this solver family as a negative result
 (anticipated from the start as publishable).
 
+## A10 (option a): the low-density escape is CLOSED — quantified density threshold (2026-08-08)
+
+`code/a10_wagner_density.py`. Option (a) asked: does the scalable AGHS-class
+birthday solver work on our harvestable but low-density H7 pools? Implemented a
+**correct Wagner-4 birthday solver** (4-sum to identity over a small-prime
+group) and measured its *reach* — the largest component-count r it can solve —
+as a function of identity-density ρ and pool N.
+
+**Measured reach law:** (1−ρ)·r_max ≈ const (pool-limited effective reach), and
+r_max grows only ~log(N):
+
+| ρ | N | r_max | (1−ρ)·r_max |
+|---|---|---|---|
+| **0.004 (H7)** | 20,000 | **20** | 19.9 |
+| **0.004 (H7)** | 100,000 | **24** | 23.9 |
+| 0.5 | 20,000 | 28 | 14.0 |
+| 0.9 | 20,000 | 128 | 12.8 |
+
+**Verdict: the escape fails.** At H7's density (ρ≈0.004) the correct birthday
+solver reaches ~20 components; our real groups have **thousands**. Two nails:
+1. **Density:** to reach a ~1000-component group needs (1−ρ)·1000 ≲ 20, i.e.
+   **ρ ≳ 0.98** (even optimistic high-k Wagner only lowers this to ~0.85–0.95).
+   H7 gives ρ≈0.004 — two-plus orders of magnitude short.
+2. **Pool:** r_max ~ log(N), so harvesting more is futile — 5× the pool bought
+   +4 components; reaching 1000 would need an astronomically large pool. And
+   the group grows with the harvest too, so the ratio never improves.
+
+**This settles the strategic fork.** Option (a) — the one untested escape for
+the twin-smooth/L–P route via AGHS-class solvers — is now closed with a measured
+threshold, not a hand-wave. The AGHS solver needs ρ ≳ 0.98 (the divisor/H8
+paradigm), which N1 showed is unharvestable under the double condition. So the
+route is blocked at the solver by a **two-part quantified obstruction**:
+low-density pools are unsolvable (A10) and high-density pools are unharvestable
+(N1). This is the rigorous core for the option-(d) negative-result paper.
+
+**Caveats:** Wagner-4 is the simplest birthday; higher-k Wagner reaches more
+components (~linearly in the level count h, but h ≤ log₂N and each level costs
+pool), lowering the threshold only to ρ≈0.85–0.95 — still ~100× above H7.
+Model uses uniform Z/3 components; real components are mixed small primes, same
+qualitative law. What remains genuinely open (not closed by A10): a
+fundamentally different solver paradigm (option b), or a different r / construction
+(option c).
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on

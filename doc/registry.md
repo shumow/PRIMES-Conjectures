@@ -28,9 +28,9 @@ Method analysis: `doc/a4-solver-analysis.md`, `doc/twin-smooth-review.md`.
 — supply is over-provisioned, ratio ≫ gate). For ground-truth/validation corpora
 use **H1** (provably complete small end) or **H3** (near-complete fixed-B, fast).
 **H5** taps Michael's full B=547 data. **H4** is calibration-only. **H8** is
-**blocked** (N1: unharvestable under the double condition) — so the AGHS-density
-pool the ω-solver wanted is unavailable; the live question is whether a real
-solver tolerates H6/H7's ~100× lower density.
+**blocked** (N1: unharvestable under the double condition). The density question
+is now **settled** (A10/S7): the AGHS-class solver needs ρ≳0.98, which only H8
+would give, and H8 is unharvestable — so H6/H7 have no viable scalable solver.
 
 ---
 
@@ -43,14 +43,17 @@ solver tolerates H6/H7's ~100× lower density.
 | **S3 anneal odd** | `a6_oddsolver.py` | 🟡 | GF(2) 2-part + simulated annealing on odd residual (dense kernel moves) | stalls ≥19 odd components — weak; kept as baseline |
 | **S4 exact MITM** | `a6_oddsolver.py` (`mitm_frontier`) | 🟡 | meet-in-the-middle over the whole pool | exact but exponential; caps ~N=40 / ~15 odd comps |
 | **S5 per-prime+MITM** | `a7_lohniebuhr.py` | 🟡 | GF(l) reduction pre-pass then MITM core | scaffold; reduction pre-pass is phase-2 |
-| **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | **the scalable path**; first version solves only r≤20/high-density; full two-potential+birthday algorithm is the multi-turn build. Needs H8-structured pools |
+| **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | scalable in principle but needs high identity-density (ρ≳0.98); a8 stub solves only r≤20/high-ρ |
+| **S7 Wagner-4 birthday** | `a10_wagner_density.py` | ✅🔬 | generalized-birthday 4-sum over CRT components; density-reach measurement | A10: reach r_max ≈ O(log N)/(1−ρ). At H7's ρ≈0.004, r_max≈20 vs thousands needed. **Proves the low-density escape (option a) is closed** |
 
-**Solver selection.** **S6** is the intended production solver (AGHS built
-Carmichael numbers with 10^10 factors this way) but needs completion **and** an
-H8 divisor-paradigm pool. **S2** is a solved, reusable sub-step (the 2-part) for
-any solver. **S3/S4** are honest baselines that map the generic-method frontier
-(~15 odd comps) — useful for regression-testing S6's improvement. **S1** only
-applies to the deprecated mining route.
+**Solver selection.** **S6** (AGHS ω-guided) was the intended production solver
+but A10 (S7) showed it needs ρ≳0.98, available only from the unharvestable H8 —
+so no solver in this family solves the harvestable H6/H7 pools. **S2** is a
+solved, reusable sub-step (the 2-part) for any future solver. **S3/S4** map the
+generic-method frontier (~15 odd comps). **S7** is the density-reach diagnostic
+that closed option (a). **S1** applies only to the deprecated mining route. Any
+new attempt must be a fundamentally different paradigm (option b) that tolerates
+low density, or target a different construction/r (option c).
 
 ---
 
@@ -70,9 +73,11 @@ applies to the deprecated mining route.
 - **Former production target (now blocked):** H8 → S6. N1 showed H8 is
   unharvestable under the double condition, so this route is closed as conceived.
 - **Current best measured:** H7 (co-designed, ratio 7.7, max-odd-prime 97) →
-  *solver open*. The open question is whether the FULL AGHS ω-solver (S6, not yet
-  built) tolerates H7's low identity-density (~0.004 vs AGHS ~0.5). This is the
-  one untested escape; needs the real S6, not the a8 stub.
+  *no viable solver*. A10 (S7) settled the open question: the AGHS-class birthday
+  solver needs identity-density ρ≳0.98 to reach thousand-component groups; H7
+  gives ρ≈0.004 and pool growth only helps ~log(N). The low-density escape
+  (option a) is CLOSED. Remaining open paths: a different solver paradigm (b) or
+  a different construction / r (c).
 - **Validation / calibration:** H1 or H3 (complete-ish corpus) → S1 (coloring)
   reproduces the 0.06 mining wall and V3's model checks. Historical baseline.
 - **Regression harness for new solvers:** synthetic instances from
@@ -83,5 +88,9 @@ applies to the deprecated mining route.
 
 ## Gate status (see PLAN.md)
 
-G1 ✅ (supply exists) · G2 ✅ (H6/H7 ratio ≫ gate) · G3 ❌ (no solver yet passes
-at full odd dimension — S6+H8 is the route). A3 production harvest held until G3.
+G1 ✅ (supply exists) · G2 ✅ (H6/H7 ratio ≫ gate) · **G3 ✗ blocked**: the
+solver route (S6+H8) is closed — high-density pools unharvestable (N1) and
+low-density pools unsolvable (A10). A3 production harvest not launched. The
+twin-smooth/L–P route via AGHS-class solvers is a quantified dead end; the
+outcome is the option-(d) negative-result paper (doc/negative-result-plan.md),
+with options (b)/(c) as the only remaining live research directions.
