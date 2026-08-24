@@ -28,9 +28,9 @@ Method analysis: `doc/a4-solver-analysis.md`, `doc/twin-smooth-review.md`.
 — supply is over-provisioned, ratio ≫ gate). For ground-truth/validation corpora
 use **H1** (provably complete small end) or **H3** (near-complete fixed-B, fast).
 **H5** taps Michael's full B=547 data. **H4** is calibration-only. **H8** is
-**blocked** (N1: unharvestable under the double condition) — so the AGHS-density
-pool the ω-solver wanted is unavailable; the live question is whether a real
-solver tolerates H6/H7's ~100× lower density.
+**blocked** (N1: unharvestable under the double condition). The density question
+is now **settled** (A10/S7): the AGHS-class solver needs ρ≳0.98, which only H8
+would give, and H8 is unharvestable — so H6/H7 have no viable scalable solver.
 
 ---
 
@@ -46,12 +46,14 @@ solver tolerates H6/H7's ~100× lower density.
 | **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | scalable in principle but needs high identity-density (ρ≳0.98); a8 stub solves only r≤20/high-ρ |
 | **S7 Wagner-4 birthday** | `a10_wagner_density.py` | ✅🔬 | generalized-birthday 4-sum over CRT components; density-reach measurement | A10: reach r_max ≈ O(log N)/(1−ρ). At H7's ρ≈0.004, r_max≈20 vs thousands needed. **Proves the low-density escape (option a) is closed** |
 
-**Solver selection.** **S6** is the intended production solver (AGHS built
-Carmichael numbers with 10^10 factors this way) but needs completion **and** an
-H8 divisor-paradigm pool. **S2** is a solved, reusable sub-step (the 2-part) for
-any solver. **S3/S4** are honest baselines that map the generic-method frontier
-(~15 odd comps) — useful for regression-testing S6's improvement. **S1** only
-applies to the deprecated mining route.
+**Solver selection.** **S6** (AGHS ω-guided) was the intended production solver
+but A10 (S7) showed it needs ρ≳0.98, available only from the unharvestable H8 —
+so no solver in this family solves the harvestable H6/H7 pools. **S2** is a
+solved, reusable sub-step (the 2-part) for any future solver. **S3/S4** map the
+generic-method frontier (~15 odd comps). **S7** is the density-reach diagnostic
+that closed option (a). **S1** applies only to the deprecated mining route. Any
+new attempt must be a fundamentally different paradigm (option b) that tolerates
+low density, or target a different construction/r (option c).
 
 ---
 
@@ -86,5 +88,9 @@ applies to the deprecated mining route.
 
 ## Gate status (see PLAN.md)
 
-G1 ✅ (supply exists) · G2 ✅ (H6/H7 ratio ≫ gate) · G3 ❌ (no solver yet passes
-at full odd dimension — S6+H8 is the route). A3 production harvest held until G3.
+G1 ✅ (supply exists) · G2 ✅ (H6/H7 ratio ≫ gate) · **G3 ✗ blocked**: the
+solver route (S6+H8) is closed — high-density pools unharvestable (N1) and
+low-density pools unsolvable (A10). A3 production harvest not launched. The
+twin-smooth/L–P route via AGHS-class solvers is a quantified dead end; the
+outcome is the option-(d) negative-result paper (doc/negative-result-plan.md),
+with options (b)/(c) as the only remaining live research directions.
