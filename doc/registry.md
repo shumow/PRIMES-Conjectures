@@ -77,8 +77,8 @@ low density, or target a different construction/r (option c).
   *no viable solver*. A10 (S7) settled the open question: the AGHS-class birthday
   solver needs identity-density ρ≳0.98 to reach thousand-component groups; H7
   gives ρ≈0.004 and pool growth only helps ~log(N). The low-density escape
-  (option a) is CLOSED. Remaining open paths: a different solver paradigm (b) or
-  a different construction / r (c).
+  (option a) is CLOSED, and A11 closed option (c) — no modulus r is friendlier.
+  Only a fundamentally different low-density solver paradigm (option b) remains.
 - **Validation / calibration:** H1 or H3 (complete-ish corpus) → S1 (coloring)
   reproduces the 0.06 mining wall and V3's model checks. Historical baseline.
 - **Regression harness for new solvers:** synthetic instances from
