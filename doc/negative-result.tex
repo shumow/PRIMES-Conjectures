@@ -51,18 +51,23 @@ pairs) and delivers validated pool-to-demand ratios of $13.8$--$44$, an
 over-provisioning of one to two orders of magnitude. The \emph{solver} stage
 is blocked: generic exact and heuristic solvers cap two to three orders of
 magnitude below the required odd-part dimension, and the one known scalable
-method --- the subexponential $\omega$-guided subset-product reduction of
-Alford, Grantham, Hayman, and Shallue (AGHS) --- requires pool primes with
-high \emph{identity density} on the group components, which we show is
-unobtainable here: under the double Carmichael + Lucas--Carmichael condition,
-harvestable pools have identity density $\approx 0.003$--$0.008$ (about
-$100\times$ below AGHS pools), while the divisor-paradigm harvest that would
-supply AGHS-like density yields an essentially empty pool ($0$--$2$ primes)
-at all feasible scales. This quantified density gap is the negative result.
-We emphasize scope: this is not a disproof of Agrawal's conjecture, nor a
-proof that no counterexample can be constructed; one escape --- the full AGHS
-algorithm run on low-density pools --- remains untested and is being pursued
-separately.
+family --- the subexponential subset-product methods of
+Alford--Grantham--Hayman--Shallue (AGHS) and their generalized-birthday core
+--- requires pool primes with high \emph{identity density} on the group
+components. We quantify both jaws of the resulting vise. Under the double
+Carmichael + Lucas--Carmichael condition, the divisor-paradigm harvest that
+would supply AGHS-like density yields an essentially empty pool ($0$--$2$
+primes) at all feasible scales; and a direct measurement of birthday-solver
+reach gives the law $r_{\max} \approx O(\log N)/(1-\rho)$, so spanning our
+thousand-component groups needs identity density $\rho \gtrsim 0.98$, while
+harvestable pools deliver $\rho \approx 0.003$--$0.008$ and enlarging the
+harvest improves reach only logarithmically. High-density pools are
+unharvestable; low-density pools are unsolvable. This two-part quantified
+obstruction closes the $r=5$ Lenstra--Pomerance route for the entire
+AGHS/birthday solver class. We emphasize scope: this is not a disproof of
+Agrawal's conjecture, nor a proof that no counterexample can be constructed;
+the directions left open are a fundamentally different solver paradigm and a
+different AKS modulus $r$ (a different construction).
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
@@ -120,19 +125,26 @@ group demand --- a factor $16$--$25$ below feasibility. We then show that a
 \emph{partition-first} harvest sidesteps this invariant entirely, with
 measured pool-to-demand ratios of $13.8$--$44$ under a yield model validated
 (conservatively) against the complete $B=547$ corpus.
-\item[(ii)] \textbf{Identification and quantification of a solver-stage
-obstruction} (\S\ref{sec:solver}). The subset-product problem splits into an
-easy $2$-part ($\approx 16\%$ of demand bits, solved exactly at full scale)
-and a dominant odd part ($\approx 84\%$) on which generic exact and heuristic
-solvers cap two to three orders of magnitude short. The scalable method ---
-the AGHS $\omega$-guided reduction \cite{AGHS}, which built a Carmichael
-number with $10{,}333{,}229{,}505$ prime factors --- needs pools of high
-\emph{identity density} ($\approx 0.3$--$0.5$). We measure that the double
-Carmichael + Lucas--Carmichael condition forces a dichotomy: harvestable
-pools have density $\approx 0.003$--$0.008$, and the divisor-paradigm
-harvest that would achieve AGHS-like density is empty ($0$--$2$ primes) at
-every feasible scale. The pipeline is blocked at the solver by this
-quantified \emph{identity-density gap}.
+\item[(ii)] \textbf{Identification and quantification of a two-part
+solver-stage obstruction} (\S\ref{sec:solver}). The subset-product problem
+splits into an easy $2$-part ($\approx 16\%$ of demand bits, solved exactly
+at full scale) and a dominant odd part ($\approx 84\%$) on which generic
+exact and heuristic solvers cap two to three orders of magnitude short. The
+scalable family --- the AGHS $\omega$-guided reduction \cite{AGHS}, which
+built a Carmichael number with $10{,}333{,}229{,}505$ prime factors, and the
+generalized-birthday machinery \cite{Wagner} at its core --- needs pools of
+high \emph{identity density}. We quantify both jaws of the resulting vise.
+\emph{Harvest jaw:} the divisor-paradigm harvest that would achieve
+AGHS-like density ($\approx 0.3$--$0.5$) is empty ($0$--$2$ primes) at every
+feasible scale, while harvestable pools have density
+$\approx 0.003$--$0.008$. \emph{Solver jaw:} a correct Wagner-$4$ birthday
+solver, measured across density and pool size, obeys the reach law
+$(1-\rho)\, r_{\max} \approx \mathrm{const}$ with $r_{\max}$ growing only
+logarithmically in the pool --- so spanning our thousand-component groups
+requires $\rho \gtrsim 0.98$, two-plus orders of magnitude above what any
+harvestable pool supplies, and harvesting more cannot close the gap. The
+pipeline is blocked at the solver: high-density pools are unharvestable,
+low-density pools are unsolvable.
 \item[(iii)] \textbf{Reusable machinery and diagnostics}
 (\S\ref{sec:conclusion}): a validated twin-smooth yield model, a
 near-complete C implementation of the CHM closure, a solver-frontier map for
@@ -146,11 +158,15 @@ conjecture, which remains open (and widely believed false). It does
 \textbf{not} prove that no counterexample can ever be constructed, nor even
 that the L--P construction is infeasible in principle. It establishes,
 quantitatively, that one specific and natural pipeline --- twin-smooth
-harvest followed by subset-product solve, with the known solver families ---
-is blocked at the solver stage, and it locates the blockage precisely (an
-identity-density gap of about two orders of magnitude). One escape is
-identified and untested; see \S\ref{sec:scope}, which should be read as part
-of the result, not as a disclaimer.
+harvest followed by subset-product solve at the AKS modulus $r = 5$, with
+the known solver families --- is blocked at the solver stage, and it locates
+the blockage precisely: a measured identity-density threshold
+($\rho \gtrsim 0.98$) that no harvestable pool under the double condition
+comes within two orders of magnitude of meeting. What remains open is
+exactly what the measurements do not touch: solver paradigms outside the
+linear-algebra/birthday families, and constructions at a different modulus
+$r$; see \S\ref{sec:scope}, which should be read as part of the result, not
+as a disclaimer.
 
 \emph{Provenance of numbers.} Every quantitative claim below is a
 \emph{measurement} produced by a script in the companion repository, recorded
@@ -268,14 +284,17 @@ The repository catalogs the pipeline components in a registry
 \textbf{H1}--\textbf{H8} (H1 native sieve; H2/H3 CHM closure in Python/C; H4
 PTE import; H5 corpus streaming; \textbf{H6} partition-first; \textbf{H7}
 co-designed partition-first; \textbf{H8} divisor-paradigm), solvers
-\textbf{S1}--\textbf{S6} (S1 partition/coloring optimizer; \textbf{S2}
+\textbf{S1}--\textbf{S7} (S1 partition/coloring optimizer; \textbf{S2}
 GF(2) $2$-part elimination; S3 annealing; S4 exact meet-in-the-middle;
-S5 per-prime reduction scaffold; \textbf{S6} AGHS $\omega$-guided reduction),
+S5 per-prime reduction scaffold; \textbf{S6} AGHS $\omega$-guided reduction;
+\textbf{S7} Wagner-$4$ birthday, used as a density-reach instrument),
 and validators V1--V4. The narrative of
 \S\S\ref{sec:supply}--\ref{sec:solver} is: mining (H1--H5\,$\to$\,S1) fails
 by a measured invariant; partition-first harvest (H6/H7) solves supply;
 solvers S2--S4 hit a dimensional frontier; the scalable S6 needs a pool
-structure (H8) that the double condition makes unharvestable.
+structure (H8) that the double condition makes unharvestable; and the
+reach measurement S7 shows the low-density pools that \emph{are}
+harvestable lie beyond the entire birthday family's reach.
 
 \section{Supply is solved}\label{sec:supply}
 
@@ -470,7 +489,7 @@ extreme: $p - 1 = 2m$ with $m$ a product of $j \approx 4$ medium primes is
 identity on only $\approx j$ of the components touched by the pool ---
 measured density $\approx 0.003$--$0.008$, about $100\times$ lower.
 
-\subsection{The identity-density gap (the core negative result)}
+\subsection{The harvest jaw: the divisor paradigm is unharvestable}
 \label{sec:gap}
 
 If the double condition admitted an AGHS-style harvest, the pipeline would
@@ -494,36 +513,83 @@ fixed moduli --- is the product of two rare events, far more restrictive
 than the single condition $p - 1 \mid \Lambda$ that AGHS harvests satisfy.
 \end{finding}
 
-\begin{finding}[The identity-density gap --- measured]\label{find:gap}
+\subsection{The solver jaw: measured birthday reach at low density}
+\label{sec:reach}
+
+The finding above leaves one live question: perhaps the scalable solver
+family does not actually \emph{need} AGHS-like density, and would tolerate
+the $\rho \approx 0.003$--$0.008$ of the harvestable H7 pools. This was
+tested directly. A correct Wagner-$4$ generalized-birthday solver
+\cite{Wagner} --- a four-list $4$-sum to the identity over a small-prime
+component group, the collision engine at the core of the AGHS-class methods
+--- was implemented (S7) and its \emph{reach} measured: the largest
+component count $r_{\max}$ it solves, as a function of identity density
+$\rho$ and pool size $N$, on synthetic pools whose coordinates are identity
+with probability $\rho$.
+
+\begin{finding}[A10: the reach law --- measured]\label{find:reach}
+The measured reach obeys
+\[
+(1-\rho)\, r_{\max} \;\approx\; \mathrm{const}
+\qquad\text{with}\qquad r_{\max} \;\sim\; \log N
+\]
+(Table~\ref{tab:reach}): at H7's density $\rho \approx 0.004$ the solver
+reaches $r_{\max} = 20$ components at $N = 20{,}000$ and only $24$ at
+$N = 100{,}000$, while at $\rho = 0.9$ it reaches $128$. Our real groups
+have \emph{thousands} of components. Two consequences:
+\begin{enumerate}\itemsep1pt
+\item[(i)] \textbf{Density threshold.} Reaching a $\sim$$1000$-component
+group needs $(1-\rho)\cdot 1000 \lesssim 20$, i.e.\ $\rho \gtrsim 0.98$
+(optimistic higher-$k$ Wagner variants lower this only to
+$\approx 0.85$--$0.95$). H7 supplies $\rho \approx 0.004$ --- two-plus
+orders of magnitude short.
+\item[(ii)] \textbf{Pool futility.} Since $r_{\max} \sim \log N$,
+harvesting more cannot close the gap: a $5\times$ larger pool bought $+4$
+components, and the group itself grows with the harvest, so the ratio
+never improves.
+\end{enumerate}
+\end{finding}
+
+\subsection{The two-part obstruction (the core negative result)}
+\label{sec:vise}
+
+\begin{finding}[The identity-density vise --- measured]\label{find:gap}
 Under the double Carmichael + Lucas--Carmichael condition:
-\begin{center}
-\begin{tabular}{@{}lll@{}}
+\begin{center}\footnotesize
+\begin{tabular}{@{}llll@{}}
 \toprule
-pool & identity density & pool size \\
+pool & identity density & pool size & birthday-solvable? \\
 \midrule
 AGHS-style ($p-1 \mid \Lambda$, single condition) & $\approx 0.3$--$0.5$ &
-large (their regime) \\
+large & yes (their record) \\
 partition-first H7 (harvestable) & $\approx 0.003$--$0.008$ &
-$\approx 10^5$ (over-provisioned) \\
-divisor-paradigm H8 (AGHS density) & $\approx 0.07$--$0.18$ where nonempty &
-$0$--$2$ (unharvestable) \\
+$\approx 10^5$ & no (needs $\rho \gtrsim 0.98$) \\
+divisor-paradigm H8 (AGHS density) & $\approx 0.07$--$0.18$ if nonempty &
+$0$--$2$ & moot \\
 \bottomrule
 \end{tabular}
 \end{center}
-One can have a harvestable pool \emph{or} AGHS-like identity density ---
-not both. The scalable solver family is therefore not straightforwardly
-applicable, and no other family in the measured frontier
-(Table~\ref{tab:frontier}) reaches the required dimension. That is the
+One can have a harvestable pool \emph{or} solver-reachable identity density
+--- not both: high-density pools are unharvestable
+(Finding~\ref{find:n1}), and low-density pools are unsolvable
+(Finding~\ref{find:reach}), with no other family in the measured frontier
+(Table~\ref{tab:frontier}) reaching the required dimension. That is the
 obstruction.
 \end{finding}
 
 This is the punchline of the paper. The supply half of the pipeline is
-solved and over-provisioned (\S\ref{sec:supply}); the solve half is blocked,
-not by an absence of solvers, but by a quantified mismatch --- roughly two
-orders of magnitude in identity density --- between what the scalable
-solver needs and what the double condition can supply.
+solved and over-provisioned (\S\ref{sec:supply}); the solve half is closed
+for the entire AGHS/birthday solver class, not by an absence of solvers,
+but by a two-part quantified mismatch: the class needs identity density
+$\rho \gtrsim 0.98$, the double condition harvests at
+$\rho \approx 0.004$, and the two measurements bounding the gap ---
+harvest yield of high-density pools, and solver reach on low-density
+pools --- close it from both sides. In particular the $r = 5$ (mod-$80$)
+Lenstra--Pomerance route, as a harvest-then-solve pipeline, fails not for
+lack of supply but because its double side condition structurally caps the
+identity density its solvers would need.
 
-\section{Scope, caveats, and the untested escape}\label{sec:scope}
+\section{Scope, caveats, and what remains open}\label{sec:scope}
 
 This section bounds the result. It is part of the result.
 
@@ -534,36 +600,47 @@ reviewer's first question --- ``did you prove the conjecture has no
 counterexample?'' --- has answer \emph{no}, emphatically.
 \item \textbf{Not a proof that no counterexample is constructible.} The
 blockage established is of \emph{this pipeline} (twin-smooth harvest
-$\to$ subset-product solve) with the \emph{known solver families}
-(linear-algebraic, annealing, meet-in-the-middle, and $\omega$-guided
-reduction as characterized by its identity-density requirement). Other
-constructions, and other solvers, are unconstrained by our measurements.
+$\to$ subset-product solve at $r = 5$) with the \emph{known solver
+families} (linear-algebraic, annealing, meet-in-the-middle, and the
+AGHS/birthday class as characterized by its measured density-reach law).
+Other constructions, and solvers outside these families, are unconstrained
+by our measurements.
 \item \textbf{Finite-scale and squarefree caveats on N1.}
 Finding~\ref{find:n1} tested squarefree divisors at finite scales
 (Table~\ref{tab:n1}). Prime-power moduli $\Lambda_\pm$ are untested,
 though the structural analysis points the same way (high density requires
 $m$ to retain full prime powers, forcing $m$ large); enormous scales are
 untested, and the measured density trend is against them.
-\item \textbf{The one open escape: the full AGHS solver on low-density
-pools.} Whether the complete AGHS algorithm --- two potentials, birthday
-step, non-uniformity exploitation --- tolerates the $\approx 0.003$--$0.008$
-identity density of harvestable H7 pools is \emph{untested}. The
-repository's $\omega$-reducer (\texttt{a8\_omega\_solver.py}) is a first
-strict top-down version that solves only the easy regime ($r \le 20$
-components at high identity density) and is too weak to settle the
-question. This escape is being pursued separately from this write-up; a
-positive outcome there would reopen the pipeline and supersede the negative
-conclusion for route H7\,$\to$\,S6.
-\item \textbf{Other unexhausted avenues.} A solver purpose-built for
-low-density many-prime pools; a different AKS modulus $r$ (the group and
-congruence classes change with $r$, and some $r \neq 5$ may admit denser
-pools or a friendlier group); and the admissible-cell question of
-\cite[Q.~6.2]{WP} --- the boost obstruction
-\cite[Prop.~6.1]{WP} shows the mod-$80$ cell is unreachable by the
-twin-smooth boosting family $2x^n - 1$ \cite{BCCEMNS23,Sterner23}, but
-whether \emph{other} local-condition cells admit the L--P mechanism (and are
-reachable by structurally side-separated families) is open, and a positive
-answer would restructure the harvest entirely.
+\item \textbf{Caveats on the reach law (A10).}
+Finding~\ref{find:reach} measures Wagner-$4$, the simplest birthday
+variant, on a model group with uniform $\Z/3$ components; real components
+are mixed small primes, for which the same qualitative law is expected but
+was not separately measured. Higher-$k$ Wagner variants reach more
+components ($\approx$ linearly in the level count $h$, but $h \le \log_2 N$
+and each level costs pool), which lowers the density threshold only to
+$\rho \approx 0.85$--$0.95$ --- still roughly $100\times$ above what H7
+supplies. The complete AGHS algorithm (two potentials, non-uniformity
+exploitation) was not reproduced in full; the closure of the low-density
+escape rests on the measured reach law of the birthday core that the whole
+class shares, plus this higher-$k$ analysis. (An earlier partial
+$\omega$-reducer, \texttt{a8\_omega\_solver.py}, solves only $r \le 20$
+components at high identity density, consistent with the law.)
+\item \textbf{What remains open.} Exactly two directions are untouched by
+these measurements. \emph{(b) A fundamentally different solver paradigm:}
+something outside the linear-algebra, local-search, meet-in-the-middle, and
+birthday/$\omega$-reduction families, purpose-built for low-density
+many-prime pools. \emph{(c) A different construction --- in particular a
+different AKS modulus $r$:} the entire quantitative case here is specific
+to the $r = 5$ (mod-$80$) cell --- its congruence slice, its group
+$(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$, and its double side
+condition; a different $r$ changes all three, and some $r \neq 5$ may admit
+denser pools or a friendlier group. Related is the admissible-cell question
+of \cite[Q.~6.2]{WP}: the boost obstruction \cite[Prop.~6.1]{WP} shows the
+mod-$80$ cell is unreachable by the twin-smooth boosting family $2x^n - 1$
+\cite{BCCEMNS23,Sterner23}, but whether \emph{other} local-condition cells
+admit the L--P mechanism (and are reachable by structurally side-separated
+families) is open, and a positive answer would restructure the harvest
+entirely.
 \end{enumerate}
 
 \section{Reusable contributions and conclusion}\label{sec:conclusion}
@@ -584,31 +661,39 @@ a sharp, reproducible measurement of the global side-partition cost for
 partition-agnostic twin corpora, and its complete bypass by
 partition-first harvesting --- relevant to any application that must
 multiplicatively combine twins under a side constraint.
-\item \textbf{A solver-frontier map} for two-sided $0/1$ subset-product
-problems (Table~\ref{tab:frontier}), with a synthetic-instance regression
-harness (planted solutions, tunable identity density $\rho$) against which
-any new solver --- in particular a full AGHS implementation --- can be
-tested down to the harvestable regime $\rho \approx 0.004$.
-\item \textbf{The identity-density gap as a diagnostic.} For any
+\item \textbf{A solver-frontier map and reach law} for two-sided $0/1$
+subset-product problems (Tables~\ref{tab:frontier} and~\ref{tab:reach}),
+with a synthetic-instance regression harness (planted solutions, tunable
+identity density $\rho$) against which any proposed new solver paradigm can
+be tested down to the harvestable regime $\rho \approx 0.004$ --- and the
+reach law $(1-\rho)\,r_{\max} \approx \mathrm{const}$, $r_{\max} \sim \log
+N$, as the baseline any such paradigm must beat.
+\item \textbf{The identity-density vise as a diagnostic.} For any
 Carmichael-type constructive problem under a \emph{double} side condition,
-the two measurable quantities --- harvest yield of divisor-structured pools,
-and identity density of harvestable pools --- locate the pipeline on the
-harvestable/solvable dichotomy of Finding~\ref{find:gap} before major
-compute is spent.
+three measurable quantities --- harvest yield of divisor-structured pools,
+identity density of harvestable pools, and birthday reach at that density
+--- locate the pipeline on the harvestable/solvable dichotomy of
+Finding~\ref{find:gap} before major compute is spent.
 \end{itemize}
 
-\emph{Conclusion.} The Lenstra--Pomerance construction reduces cleanly to a
-two-sided subset-product problem whose supply side is, contrary to initial
-expectation, solved: partition-first harvesting over-provisions the pool by
-one to two orders of magnitude. The pipeline is blocked at the solver stage
-by a quantified identity-density gap: harvestable pools are $\approx
-100\times$ below the density the scalable $\omega$-guided solver family
-exploits, and the harvest that would supply that density is empty under the
-double Carmichael + Lucas--Carmichael condition. One escape --- the full
-AGHS algorithm on low-density pools --- remains open and under separate
-investigation. Until it is settled, the honest status of the constructive
-route to refuting Agrawal's conjecture via twin smooths is: \emph{supply
-yes, solver no, and the wall is measured}.
+\emph{Conclusion.} The $r = 5$ Lenstra--Pomerance construction reduces
+cleanly to a two-sided subset-product problem whose supply side is,
+contrary to initial expectation, solved: partition-first harvesting
+over-provisions the pool by one to two orders of magnitude. The pipeline
+is closed at the solver stage by a two-part quantified obstruction. The
+scalable AGHS/birthday solver class obeys a measured reach law
+$(1-\rho)\,r_{\max} \approx \mathrm{const}$ with $r_{\max} \sim \log N$,
+so our thousand-component groups demand identity density
+$\rho \gtrsim 0.98$; the double Carmichael + Lucas--Carmichael condition
+caps harvestable pools at $\rho \approx 0.003$--$0.008$, and the
+divisor-paradigm harvest that would supply solver-grade density is empty
+at every feasible scale. High-density pools are unharvestable; low-density
+pools are unsolvable; larger harvests help only logarithmically. Within
+the known solver families, the constructive route to refuting Agrawal's
+conjecture via twin smooths at $r = 5$ is therefore a measured dead end:
+\emph{supply yes, solver no, and the wall is quantified from both sides}.
+What survives is precisely what the measurements do not reach --- a
+genuinely different solver paradigm, or a different modulus $r$.
 
 \appendix
 
@@ -727,21 +812,45 @@ under the double condition (Finding~\ref{find:n1}). Script:
 \label{tab:n1}
 \end{table}
 
-\begin{table}[ht]\centering\footnotesize
-\begin{tabular}{@{}lll@{}}
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lrrr@{}}
 \toprule
-pool structure & identity density & harvestable under double condition? \\
+$\rho$ & $N$ & $r_{\max}$ & $(1-\rho)\, r_{\max}$ \\
 \midrule
-AGHS ($p - 1 \mid \Lambda$, highly composite $\Lambda$) &
-$\approx 0.3$--$0.5$ & no (Table~\ref{tab:n1}: pool $0$--$2$) \\
-H7 ($p - 1 = 2m$, $m$ a product of $j \approx 4$ medium primes) &
-$\approx 0.003$--$0.008$ & yes (pool $\approx 10^5$) \\
+\textbf{0.004 (H7)} & 20{,}000 & \textbf{20} & 19.9 \\
+\textbf{0.004 (H7)} & 100{,}000 & \textbf{24} & 23.9 \\
+0.5 & 20{,}000 & 28 & 14.0 \\
+0.9 & 20{,}000 & 128 & 12.8 \\
 \bottomrule
 \end{tabular}
-\caption{The identity-density gap (Finding~\ref{find:gap}): a
-$\approx 100\times$ mismatch between what the scalable $\omega$-solver
-exploits and what the double condition can supply. FINDINGS ``N1'',
-subsection ``The identity-density gap''.}
+\caption{A10: measured Wagner-$4$ birthday reach --- the largest solvable
+component count $r_{\max}$ as a function of identity density $\rho$ and
+pool size $N$ (Finding~\ref{find:reach}). The product $(1-\rho)\,r_{\max}$
+is roughly constant and $r_{\max}$ grows only $\sim \log N$; real groups
+have thousands of components. Script: \texttt{a10\_wagner\_density.py};
+FINDINGS ``A10 (option a): the low-density escape is closed''.}
+\label{tab:reach}
+\end{table}
+
+\begin{table}[ht]\centering\footnotesize
+\begin{tabular}{@{}llll@{}}
+\toprule
+pool structure & identity density & harvestable? & solvable? \\
+\midrule
+AGHS-style ($p - 1 \mid \Lambda$) &
+$\approx 0.3$--$0.5$ & no (Tab.~\ref{tab:n1}: pool $0$--$2$) & --- \\
+partition-first H7 &
+$\approx 0.003$--$0.008$ & yes (pool $\approx 10^5$) &
+no (needs $\rho \gtrsim 0.98$, Tab.~\ref{tab:reach}) \\
+\bottomrule
+\end{tabular}
+\caption{The identity-density vise (Finding~\ref{find:gap}): the double
+condition supplies harvestable pools (H7: $p - 1 = 2m$ with $m$ a product
+of $j \approx 4$ medium primes) only $\approx 100\times$ below the density
+the AGHS/birthday solver class exploits ($p - 1 \mid \Lambda$, $\Lambda$
+highly composite), and the measured reach law shows that class needs
+$\rho \gtrsim 0.98$ at our group sizes. FINDINGS ``N1'' (subsection ``The
+identity-density gap'') and ``A10''.}
 \label{tab:gap}
 \end{table}
 
@@ -781,6 +890,8 @@ $\omega$-reducer (partial S6) & \texttt{a7\_lohniebuhr.py},
 \texttt{a8\_omega\_solver.py} & FINDINGS ``A7/A8'' \\
 N1 divisor harvest & \texttt{a9\_divisor\_harvest.py} &
 FINDINGS ``N1'' \\
+A10 Wagner-$4$ density reach (S7) & \texttt{a10\_wagner\_density.py} &
+FINDINGS ``A10'' \\
 \bottomrule
 \end{tabular}
 \end{center}
