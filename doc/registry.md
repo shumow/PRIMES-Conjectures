@@ -65,6 +65,7 @@ low density, or target a different construction/r (option c).
 | V2 PTE import tests | `test_pte_import.py` | re-verifies every imported record (reconstruction, factorization, smoothness, primality) |
 | V3 yield validation | `a2_validate_and_extend.py` | checks the harvest yield model against the complete B=547 corpus (model is conservative, 0.68×) |
 | V4 group decomposition | `a4_solver.py` (`study_mod2_scale`) | 2-part vs odd-part bits, max odd prime, #distinct — sizes any pool for the solver |
+| V5 general-r degree | `a11_general_r.py` | harvest-burden degree per AKS modulus r (option c): floor is 2 (double condition), intrinsic to all r |
 
 ---
 
@@ -91,6 +92,9 @@ low density, or target a different construction/r (option c).
 G1 ✅ (supply exists) · G2 ✅ (H6/H7 ratio ≫ gate) · **G3 ✗ blocked**: the
 solver route (S6+H8) is closed — high-density pools unharvestable (N1) and
 low-density pools unsolvable (A10). A3 production harvest not launched. The
-twin-smooth/L–P route via AGHS-class solvers is a quantified dead end; the
-outcome is the option-(d) negative-result paper (doc/negative-result-plan.md),
-with options (b)/(c) as the only remaining live research directions.
+twin-smooth/L–P route via AGHS-class solvers is a quantified dead end.
+**Option (c) also closed (A11):** no AKS modulus r gives a friendlier group —
+the double condition is intrinsic to every r (floor degree 2, = r=5; usually
+worse). Outcome is the option-(d) negative-result paper
+(doc/negative-result-plan.md). Only option (b) — a fundamentally different
+low-density solver paradigm — remains as a (long-shot) live direction.

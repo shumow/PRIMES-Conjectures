@@ -410,6 +410,44 @@ qualitative law. What remains genuinely open (not closed by A10): a
 fundamentally different solver paradigm (option b), or a different r / construction
 (option c).
 
+## A11 (option c): no AKS modulus r gives a friendlier group — double condition is intrinsic (2026-08-24)
+
+`code/a11_general_r.py`. For the T(−1,n,r) construction, a pool prime p with
+ord_r(p)=d makes the congruence controlled by ord(X−1) in F_{p^d}* (the ρ(p)
+quantity; = 10(p²−1) for r=5 per Váňa). The **harvest burden** = the cyclotomic
+levels e carrying the *p-dependent* (large-prime, ℓ>r) part of that control;
+degree = Σ φ(e). Measured over sample primes for each r (minimal valid
+d=ord_r(g)>2):
+
+| r | best d | harvest degree | levels | meaning |
+|---|---|---|---|---|
+| **5** | 4 | **2** | {1,2} | (p−1)(p+1)=p²−1 — the double condition |
+| 7 | 3 | 3 | {1,3} | needs Φ₃(p)=p²+p+1 (worse) |
+| 11 | 5 | 5 | {1,5} | needs Φ₅(p)~p⁴ (far worse) |
+| 13,17,29,37,41 | 4 | **2** | {1,2} | identical to r=5 |
+| 19,31 | 3 | 3 | {1,3} | worse |
+| 23 | 11 | 11 | {1,11} | catastrophic |
+
+**Verdict: the floor is degree 2, never 1.** Every r ≡ 1 (mod 4) gives exactly
+the r=5 structure — the *same* double Carmichael+Lucas condition on p²−1, hence
+the *same* N1/A10 obstruction. Every other r is strictly worse (bigger
+cyclotomic factors Φ_e(p) ~ p^{φ(e)} to make smooth, higher group dimension).
+
+**Why degree 1 (a single p−1 condition, which would sidestep the wall) is
+impossible:** the p-dependent control lives only at level 1 iff ζ_r ∈ F_p iff
+ord_r(p)=1; but a valid counterexample (n² ≢ 1 mod r) forces ord_r(g)=d>2. So
+degree ≥ 2 always. **The double condition is intrinsic to the AKS construction
+for every modulus r**, not a quirk of r=5.
+
+**Consequence:** option (c) does not reopen a positive path. This *strengthens*
+the negative result: it is not "the r=5 route is blocked" but "every AKS-modulus
+route is blocked — at best identically to r=5, usually worse."
+
+**Caveat:** I computed the level-structure of ρ(p)=ord(X−1) empirically (sample
+primes, p^d−1 factored); the full general-r construction (exact power n ≡ mod
+ρ, precise validity) is not re-derived (B1 territory), but the harvest-degree
+conclusion depends only on ρ(p)'s cyclotomic levels, which is what was measured.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on
