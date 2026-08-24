@@ -8,3 +8,5 @@ data/generated/chm_B200.log
 data/generated/a2_run.log
 data/generated/a2_grid.log
 data/generated/a5_yield.log
+doc/negative-result.log
+doc/negative-result.out

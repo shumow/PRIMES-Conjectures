@@ -45,6 +45,6 @@ remain in the text. Deliberate omissions and small deviations:
 - §5's "one open escape" (full AGHS solver on low-density H7 pools) is stated
   as being pursued separately — update that sentence if the option-(a) work
   on `main` resolves it before submission.
-- Build artifacts (`doc/negative-result.log`/`.out`) are left untracked; add
-  them to `.gitignore` on `main` if desired (this branch avoids editing
-  `.gitignore` to prevent conflicts).
+- Build artifacts (`doc/negative-result.log`/`.out`) are ignored via a
+  two-line append to `.gitignore` (the only file shared with `main` this
+  branch touches; the append is additive and should merge cleanly).
