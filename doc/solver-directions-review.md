@@ -6,6 +6,12 @@ option-b brief. Purpose: identify and honestly assess every direction that could
 reopen — or definitively close — the solver stage of the pipeline. This document
 recommends; it does not decide. No numbers in FINDINGS.md are re-measured here.*
 
+*Companion documents: `doc/solver-review-overview.md` (2-page narrative of how
+the project arrived here and what this review adds) and
+`doc/solver-directions-review-details.md` (claim-by-claim provenance tiers,
+full derivations, and the verification status of every external source —
+read it before trusting any specific number below).*
+
 **Access caveat.** The research environment could search the open web but could
 not fetch full PDFs (egress proxy blocks arxiv.org, eprint.iacr.org, journal
 sites). Assessments marked ⚠ are based on abstracts, secondary sources, and
@@ -245,8 +251,15 @@ of Λ while demand bits grow only linearly, so twin-divisor coincidences
 (a | M/2 with the p+1-side condition landing in N) eventually proliferate.
 Moreover, in this regime pool primes are comparable in size to Λ itself, so
 each p is identity on the components covered by p∓1 — **identity-density
-ρ ≈ 0.3–0.5, the AGHS regime**, where the A10 objection (which killed ρ ≈
-0.004 pools) does not apply. What Chen–Greene lacked was *over-provisioning*:
+ρ ≈ 0.3–0.5 (heuristic estimate, details §8.4), the AGHS regime**, where the
+A10 objection (which killed ρ ≈ 0.004 pools) does not apply. Important
+caveat: Chen–Greene's eligibility conditions are *order*-divisibility
+(ord_p(2) | M and a rank-of-apparition condition), which is **weaker** than
+the strict p∓1-divisibility our L–P conditions (c),(d) require — so their
+1,248 is an optimistic bound for us, not a transferred count; conversely,
+Váňa's ρ(p) | 10(p²−1) hints our necessary condition may itself weaken to
+order-type (a B1 question). Both variants are what A12 must measure (details
+§8.3). What Chen–Greene lacked was *over-provisioning*:
 with ~2^10 expected solutions among 2^1248 subsets, their pool sat essentially
 at the existence threshold (pool ≈ demand bits, ratio ≈ 1), far below what
 list-merge or ω-reduction methods need (pool ≫ bits).
