@@ -1,0 +1,877 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{definition}
+\newtheorem{finding}[theorem]{Finding}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\cP}{\mathcal{P}}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\ord}{ord}
+\setlength{\emergencystretch}{1.5em}
+
+\title{On the Infeasibility of Constructing Lenstra--Pomerance
+Counterexamples to Agrawal's Conjecture\\
+via Twin-Smooth Subset Products}
+\author{Dan Shumow \and Claude (Anthropic Fable~5)}
+\date{August 24, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Agrawal's conjecture asserts that for $r$ prime, $r \nmid n$, the congruence
+$(X-1)^n \equiv X^n-1 \pmod{n,\,X^r-1}$ forces $n$ prime or $n^2 \equiv 1
+\pmod r$; if true it yields a deterministic $\tilde O(\log^3 n)$ primality
+test. The only known route to a counterexample is the Lenstra--Pomerance
+construction: a squarefree $n = p_1\cdots p_k$ that is simultaneously
+Carmichael and Lucas--Carmichael, with side conditions, at a size heuristics
+place at hundreds of digits or (far) beyond --- out of reach of search, but
+potentially in reach of \emph{construction}. We report on a systematic attempt
+to execute that construction as a two-stage pipeline: harvest a pool of
+admissible primes (twin-smooth integers with prime sum in a fixed congruence
+class), then solve a two-sided 0/1 subset-product problem over
+$(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$. The outcome is
+asymmetric. The \emph{supply} stage is solved: a partition-first harvest
+sidesteps a measured combinatorial obstruction (a universal
+$\approx 0.06$ survivors-per-demand-bit invariant of partition-agnostic twin
+corpora, measured up to the complete $B=547$ corpus of $82{,}026{,}426$
+pairs) and delivers validated pool-to-demand ratios of $13.8$--$44$, an
+over-provisioning of one to two orders of magnitude. The \emph{solver} stage
+is blocked: generic exact and heuristic solvers cap two to three orders of
+magnitude below the required odd-part dimension, and the one known scalable
+method --- the subexponential $\omega$-guided subset-product reduction of
+Alford, Grantham, Hayman, and Shallue (AGHS) --- requires pool primes with
+high \emph{identity density} on the group components, which we show is
+unobtainable here: under the double Carmichael + Lucas--Carmichael condition,
+harvestable pools have identity density $\approx 0.003$--$0.008$ (about
+$100\times$ below AGHS pools), while the divisor-paradigm harvest that would
+supply AGHS-like density yields an essentially empty pool ($0$--$2$ primes)
+at all feasible scales. This quantified density gap is the negative result.
+We emphasize scope: this is not a disproof of Agrawal's conjecture, nor a
+proof that no counterexample can be constructed; one escape --- the full AGHS
+algorithm run on low-density pools --- remains untested and is being pursued
+separately.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+For coprime integers $n, r$ write $T(-1,n,r)$ for the congruence
+\begin{equation}\label{eq:aks}
+(X-1)^n \equiv X^n - 1 \pmod{n,\, X^r-1}.
+\end{equation}
+
+\begin{conjecture}[Agrawal; Bhattacharjee--Pandey \cite{BP01}, popularized
+in the AKS paper \cite{AKS}]\label{conj:agrawal}
+If $r$ is a prime not dividing $n$ and $T(-1,n,r)$ holds, then $n$ is prime or
+$n^2 \equiv 1 \pmod r$.
+\end{conjecture}
+
+If Conjecture~\ref{conj:agrawal} were true, a single evaluation of
+\eqref{eq:aks} at one $r = O(\log n)$ would certify primality, giving a
+deterministic $\tilde O(\log^3 n)$ test, versus $\tilde O(\log^6 n)$ for the
+best proven algorithm \cite{LP2019}. Its status is strange: Lenstra and
+Pomerance \cite{LPremarks} gave a heuristic argument for
+$\gg x^{1-\varepsilon}$ counterexamples below $x$, yet the conjecture has
+survived exhaustive search to $10^{17}$ (Primaboinca, 2010--2020) and
+folklore places the least counterexample at hundreds of digits. The only
+concrete counterexample route --- the Lenstra--Pomerance (L--P) construction
+(Theorem~\ref{thm:lp} below), extended by Popovych \cite{Popovych09} and
+Hegde--Devaraj \cite{HD21} --- demands an $n$ that is simultaneously a
+Carmichael and a Lucas--Carmichael number with additional congruence
+conditions; no such number is known, and none exists below $10^{18}$
+\cite{Pinch}.
+
+\emph{The constructive program.} Since any counterexample refutes the
+conjecture, minimality can be abandoned. The L--P density heuristic
+\emph{improves} with size, and the construction is deterministic: when its
+arithmetic side conditions hold, \eqref{eq:aks} follows with no further luck
+required. This suggests a pipeline in the style of the large-scale Carmichael
+constructions of Alford--Granville--Pomerance \cite{AGP} and L\"oh--Niebuhr
+\cite{LN}: \textbf{harvest} a pool $\cP$ of primes satisfying the local
+conditions --- which turn out to be exactly the \emph{twin smooth integers
+with prime sum} of isogeny-based cryptography
+\cite{BSIDH,CMN21,BCCEMNS23,BHLNV,MSW} in a fixed congruence class --- and
+then \textbf{solve} for a subset $S \subseteq \cP$ whose product satisfies a
+two-sided congruence, a 0/1 subset-product problem in the group
+$(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$
+(Proposition~\ref{prop:reduction}). This paper reports what happened when
+that pipeline was built and measured end to end.
+
+\emph{Contributions.}
+\begin{enumerate}\itemsep2pt
+\item[(i)] \textbf{A validated, over-provisioned supply method}
+(\S\ref{sec:supply}). We first measure a universal obstruction to mining
+existing twin-smooth corpora: across bounds $B = 100$--$547$ and pool sizes
+$78$ to $73{,}163$ (the complete $B=547$ corpus of $82{,}026{,}426$ pairs),
+the best side-partition retains only $\approx 0.06$ pool elements per bit of
+group demand --- a factor $16$--$25$ below feasibility. We then show that a
+\emph{partition-first} harvest sidesteps this invariant entirely, with
+measured pool-to-demand ratios of $13.8$--$44$ under a yield model validated
+(conservatively) against the complete $B=547$ corpus.
+\item[(ii)] \textbf{Identification and quantification of a solver-stage
+obstruction} (\S\ref{sec:solver}). The subset-product problem splits into an
+easy $2$-part ($\approx 16\%$ of demand bits, solved exactly at full scale)
+and a dominant odd part ($\approx 84\%$) on which generic exact and heuristic
+solvers cap two to three orders of magnitude short. The scalable method ---
+the AGHS $\omega$-guided reduction \cite{AGHS}, which built a Carmichael
+number with $10{,}333{,}229{,}505$ prime factors --- needs pools of high
+\emph{identity density} ($\approx 0.3$--$0.5$). We measure that the double
+Carmichael + Lucas--Carmichael condition forces a dichotomy: harvestable
+pools have density $\approx 0.003$--$0.008$, and the divisor-paradigm
+harvest that would achieve AGHS-like density is empty ($0$--$2$ primes) at
+every feasible scale. The pipeline is blocked at the solver by this
+quantified \emph{identity-density gap}.
+\item[(iii)] \textbf{Reusable machinery and diagnostics}
+(\S\ref{sec:conclusion}): a validated twin-smooth yield model, a
+near-complete C implementation of the CHM closure, a solver-frontier map for
+the double-condition subset-product problem, and the density gap itself as a
+diagnostic applicable to other Carmichael-type constructions under a double
+side condition.
+\end{enumerate}
+
+\emph{What is not claimed.} This paper does \textbf{not} disprove Agrawal's
+conjecture, which remains open (and widely believed false). It does
+\textbf{not} prove that no counterexample can ever be constructed, nor even
+that the L--P construction is infeasible in principle. It establishes,
+quantitatively, that one specific and natural pipeline --- twin-smooth
+harvest followed by subset-product solve, with the known solver families ---
+is blocked at the solver stage, and it locates the blockage precisely (an
+identity-density gap of about two orders of magnitude). One escape is
+identified and untested; see \S\ref{sec:scope}, which should be read as part
+of the result, not as a disclaimer.
+
+\emph{Provenance of numbers.} Every quantitative claim below is a
+\emph{measurement} produced by a script in the companion repository, recorded
+in its findings log; Appendix~\ref{app:repro} maps each claim to the script
+and data file that produced it. Throughout we distinguish \emph{proved}
+statements (the lemmas of \S\ref{sec:construction}), \emph{measured}
+quantities (ratios, densities, solver frontiers), and \emph{heuristic or
+conjectural} inputs (the L--P counterexample-density heuristic, Dickman-type
+yield extrapolations). The ``blocked'' conclusion is an empirical and
+structural argument, not a theorem.
+
+\section{The construction and its reduction}\label{sec:construction}
+
+The statements in this section are proved in the companion working paper
+\cite{WP}; we restate them without proof, except where the proof is one line.
+
+\begin{theorem}[Lenstra--Pomerance \cite{LPremarks}; statement following
+V\'a\v{n}a \cite{Vana09}, who proves the $k \equiv 3 \pmod 4$ case]
+\label{thm:lp}
+Let $n = p_1 \cdots p_k$ with $p_1, \dots, p_k$ distinct primes such that
+\begin{enumerate}\itemsep1pt
+\item[(a)] $k$ is odd;
+\item[(b)] $p_i \equiv 3 \pmod{80}$ for all $i$;
+\item[(c)] $p_i - 1 \mid n - 1$ for all $i$ \hfill ($n$ is Carmichael);
+\item[(d)] $p_i + 1 \mid n + 1$ for all $i$ \hfill ($n$ is Lucas--Carmichael).
+\end{enumerate}
+Then $T(-1,n,5)$ holds and $n^2 \not\equiv 1 \pmod 5$; in particular such an
+$n$ with $k \ge 3$ is a counterexample to Conjecture~\ref{conj:agrawal}.
+\end{theorem}
+
+The entire difficulty of satisfying (c) and (d) simultaneously is
+concentrated in the following trivial but decisive observation.
+
+\begin{lemma}[Side-coprimality]\label{lem:sides}
+If $n$ satisfies (c) and (d), then $\gcd(p_i-1,\,p_j+1) \mid 2$ for all $i,j$
+(including $i=j$). Consequently the odd primes dividing
+$\prod_i (p_i-1)$ and those dividing $\prod_i (p_i+1)$ form disjoint sets.
+\end{lemma}
+\begin{proof}
+An odd prime $q$ dividing $p_i-1$ and $p_j+1$ divides both $n-1$ and $n+1$,
+hence their difference $2$, a contradiction.
+\end{proof}
+
+Under condition (b) the $2$-adic and mod-$5$ parts of (c),(d) are automatic
+\cite[Lem.~2.5]{WP}, so the problem lives entirely in odd moduli prime to
+$5$, split by Lemma~\ref{lem:sides} into two disjoint prime universes --- a
+``minus side'' supporting the $p_i - 1$ and a ``plus side'' supporting the
+$p_i + 1$.
+
+\subsection{Reduction to a two-sided subset-product problem}
+
+Fix disjoint finite sets $Q_-, Q_+$ of odd primes with
+$5 \notin Q_- \cup Q_+$, and define the \emph{pool}
+\[
+\cP \;=\; \Bigl\{\, p \ \text{prime} : p \equiv 3 \!\!\pmod{80},\;
+\tfrac{p-1}{2} \text{ is } Q_-\text{-smooth},\;
+\tfrac{p+1}{4} \text{ is } Q_+\text{-smooth} \Bigr\}.
+\]
+Let $\Lambda_- = 2\,\lcm\{p-1 : p \in \cP\}$ and
+$\Lambda_+ = 4\,\lcm\{p+1 : p \in \cP\}$.
+
+\begin{proposition}[{\cite[Prop.~3.1]{WP}}]\label{prop:reduction}
+Let $S \subseteq \cP$ with $|S|$ odd, $|S| \ge 3$, and $n = \prod_{p \in S} p$.
+If
+\begin{equation}\label{eq:target}
+n \equiv 1 \pmod{\Lambda_-} \qquad\text{and}\qquad n \equiv -1 \pmod{\Lambda_+},
+\end{equation}
+then $n$ satisfies conditions (a)--(d) of Theorem~\ref{thm:lp}, hence is a
+counterexample to Conjecture~\ref{conj:agrawal}.
+\end{proposition}
+
+Condition \eqref{eq:target} is stronger than (c),(d) --- it imposes the full
+lcm rather than the lcm over $S$ --- but in exchange it is linear: taking
+discrete logarithms in each cyclic component of
+$G = (\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$ (Pohlig--Hellman
+\cite{PH78} is cheap, all component orders being smooth by design),
+\eqref{eq:target} becomes a $0/1$ subset-sum over $\bigoplus_i \Z/m_i$, with
+one extra $\Z/2$ coordinate enforcing $|S|$ odd. The heuristic solvability
+condition is $2^{|\cP|} \gg |G|$, i.e.\
+$|\cP| \gtrsim \log_2 \Lambda_- + \log_2 \Lambda_+$ (the \emph{demand bits})
+with slack for the solver.
+
+\subsection{The twin-smooth dictionary}
+
+\begin{lemma}[Dictionary; {\cite[Lem.~4.1]{WP}}]\label{lem:dict}
+Let $m \ge 1$ and $p = 2m+1$. Then $p \in \cP$ (for $Q_\pm$ large enough to
+contain the relevant primes) if and only if
+\begin{enumerate}\itemsep1pt
+\item[(i)] $m$ and $m+1$ are both smooth with respect to
+$Q_- \cup Q_+ \cup \{2\}$, with the odd part of $m$ being $Q_-$-smooth and
+the odd part of $m+1$ being $Q_+$-smooth;
+\item[(ii)] $m \equiv 1 \pmod{40}$;
+\item[(iii)] $p$ is prime.
+\end{enumerate}
+Moreover (ii) alone implies $p \equiv 3 \pmod{80}$, $v_2(p-1)=1$,
+$v_2(p+1)=2$, and $5 \nmid m(m+1)$.
+\end{lemma}
+
+Pairs of consecutive smooth integers $(m, m+1)$ --- \emph{twin smooths} ---
+with $2m+1$ prime are precisely the parameters sought for the isogeny-based
+schemes B-SIDH \cite{BSIDH} and SQIsign, and 2020--2025 produced an
+industrial literature on generating them: PTE sieving \cite{CMN21,Sterner23},
+the optimized Conrey--Holmstr\"om--McLaughlin (CHM) iteration
+\cite{CHM13,BCCEMNS23} (whose $B=547$ run yields $82{,}026{,}426$ pairs),
+Pell/St\o rmer complete sets \cite{Stormer,Lehmer64,BHLNV}, and
+lattice-based record hunts \cite{MSW}. By Lemma~\ref{lem:dict}, a congruence
+slice of any twin-smooth dataset, filtered for primality of $2m+1$, is a
+ready-made pool --- before the one condition that literature never needs: the
+\emph{global} side-partition forced by Lemma~\ref{lem:sides}.
+
+\subsection{Pipeline vocabulary}\label{sec:pipeline}
+
+The repository catalogs the pipeline components in a registry
+(\texttt{doc/registry.md}) whose identifiers we adopt: harvesters
+\textbf{H1}--\textbf{H8} (H1 native sieve; H2/H3 CHM closure in Python/C; H4
+PTE import; H5 corpus streaming; \textbf{H6} partition-first; \textbf{H7}
+co-designed partition-first; \textbf{H8} divisor-paradigm), solvers
+\textbf{S1}--\textbf{S6} (S1 partition/coloring optimizer; \textbf{S2}
+GF(2) $2$-part elimination; S3 annealing; S4 exact meet-in-the-middle;
+S5 per-prime reduction scaffold; \textbf{S6} AGHS $\omega$-guided reduction),
+and validators V1--V4. The narrative of
+\S\S\ref{sec:supply}--\ref{sec:solver} is: mining (H1--H5\,$\to$\,S1) fails
+by a measured invariant; partition-first harvest (H6/H7) solves supply;
+solvers S2--S4 hit a dimensional frontier; the scalable S6 needs a pool
+structure (H8) that the double condition makes unharvestable.
+
+\section{Supply is solved}\label{sec:supply}
+
+This section establishes the positive half: pool supply is not the binding
+constraint. All quantities are measurements; scripts and data files are
+listed in Appendix~\ref{app:repro}.
+
+\subsection{Mining fixed corpora is dead: the $0.06$ invariant}
+\label{sec:invariant}
+
+The obvious first move is to mine the existing twin-smooth corpora: take all
+twins $(m,m+1)$ below a smoothness bound $B$, keep the dictionary slice
+($m \equiv 1 \pmod{40}$, $2m+1$ prime), and then choose the side-partition
+$Q_- \sqcup Q_+$ maximizing the number of \emph{surviving} elements ---
+those whose $m$-support lies entirely in $Q_-$ and $(m+1)/2$-support in
+$Q_+$. Feasibility requires survivors comparable to the demand bits of the
+group they generate.
+
+\begin{finding}[The $0.06$ mining invariant --- measured]\label{find:invariant}
+Across seven experiments spanning $B = 100$--$547$, truncated and complete
+corpora, and pool sizes $78$ to $73{,}163$, the optimized partition retains
+\[
+\frac{\#\text{survivors}}{\#\text{demand bits}} \;\approx\; 0.060\text{--}0.083,
+\]
+with element-greedy optimization and direct partition-space local search
+agreeing (Table~\ref{tab:invariant}). Feasibility needs this ratio
+$\gtrsim 1$; the shortfall is a factor $16$--$25$.
+\end{finding}
+
+The measurement includes the \emph{complete} $B=547$ corpus of
+$82{,}026{,}426$ pairs (shared by M.~Naehrig; $642{,}495$ pairs with
+$m \equiv 1 \pmod{40}$, of which $73{,}163$ have $2m+1$ prime): the best
+partition found keeps $82$ survivors against $984$ demand bits (ratio
+$0.083$). The invariant is thus measured, not extrapolated, on the entire
+published supply. The mechanism is visible in the data: partition-agnostic
+twins carry a mean total of $\approx 15$ distinct odd primes across both
+sides at $B = 547$, so each kept element ``spends'' roughly two fresh primes
+($\approx 15$ bits of new demand) that no later element may straddle.
+Optimization beats a random partition by $3.4$--$4.4\times$, but no
+optimizer can beat the arithmetic: \textbf{dataset mining is dead as a
+primary route}.
+
+\subsection{Partition-first harvesting (H6) and its gates}
+\label{sec:partitionfirst}
+
+The invariant is a property of \emph{partition-agnostic} supply. Inverting
+the order --- fix the partition \emph{first}, then harvest only compatible
+elements --- removes it by construction. Concretely (harvester H6): choose
+$Q_+$ = the odd primes $\le B$ (except $5$) and $Q_-$ = a band of medium
+primes in $(B, B']$; enumerate $m$ as products of $j$ primes of $Q_-$
+restricted to $m \equiv 1 \pmod{40}$; per candidate, trial-divide $(m+1)/2$
+over $Q_+$ and test $p = 2m+1$ for primality. Every hit is compatible with
+the partition by construction; the cost moves from a global combinatorial
+obstruction into per-candidate yield, a local Dickman-type probability.
+
+Two pre-registered gates governed the program. \textbf{G1} (yield exists):
+some measured cell must show pool/demand $\ge 0.5$ at prototype scale with a
+fitted extrapolation $\ge 2.5$. \textbf{G2} (production spec): a frozen
+specification with projected pool/demand $\ge 2.5$ and $\ge 3000$ usable
+elements. Both passed:
+
+\begin{finding}[Partition-first supply --- measured]\label{find:supply}
+On the measured $j=4$ grid (Table~\ref{tab:ratios}), pool-to-demand ratios
+reach $13.8$ at $(B, B') = (1259, 12590)$ --- the frozen production
+specification: $Q_+ =$ odd primes $\le 1259$ ($\neq 5$), $Q_- \subset
+(1259, 12590]$, $j = 4$, projected pool $\approx 2.5\times 10^5$ elements of
+mean $50$ bits against $\approx 18{,}100$ demand bits --- and up to
+$41$--$45.5$ at larger $B'$. Partition-first thus beats the mining invariant
+by a factor of roughly $200$--$700$ in the best cells.
+\end{finding}
+
+\begin{finding}[Model validation --- measured, conservative]
+\label{find:validation}
+The sampling-based yield model behind Table~\ref{tab:ratios} was validated
+out-of-sample against the complete $B=547$ corpus (exhaustive twin
+population to $122$ bits): across four asymmetric splits it predicted
+$0.41$--$1.04\times$ the true pool counts (geometric mean $0.68$) --- i.e.\
+the model is conservative, never optimistic, and the contrast with the
+mining route ($\approx 300$--$500\times$ separation) is measured at scale on
+both sides with the same congruence, filters, and optimizer.
+\end{finding}
+
+\subsection{Corpus and closure validation}\label{sec:closure}
+
+Supporting the supply claims, the repository's C implementation of the CHM
+closure (H3, \texttt{chm\_closure.c}) was validated against ground truth:
+it recovers $13{,}333$ of the complete $13{,}374$ pairs at $B = 100$
+($99.7\%$), $33{,}118$ at $B=113$ ($99.65\%$ of the complete $33{,}233$),
+and $346{,}110$ at $B = 200$ --- $99.98\%$ of the originally published
+$346{,}192$ and $99.2\%$ of the true complete count $348{,}840$ (the
+published figure was itself $0.8\%$ short), with zero false positives and
+exact agreement on the largest pair in each case. The anchored counts
+$N(100) = 13{,}374$, $N(200) = 348{,}840$, $N(547) = 82{,}026{,}426$ fit
+$N(B) \sim B^{\alpha}$ with $\alpha \approx 4.7$--$5.4$, so fixed-$B$
+supply, while finite (St\o rmer \cite{Stormer,Lehmer64}), grows steeply in
+$B$.
+
+\medskip
+\noindent\textbf{Conclusion of \S\ref{sec:supply}.} Supply is abundant,
+validated, and over-provisioned by one to two orders of magnitude relative
+to the heuristic feasibility threshold. Whatever blocks the pipeline is
+downstream.
+
+\section{The solver obstruction}\label{sec:solver}
+
+By Proposition~\ref{prop:reduction} the remaining task is: given the pool,
+find $S$ with $|S|$ odd and $\prod_{p\in S} p \equiv (1, -1)$ in
+$G = (\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$. Via CRT, $G$
+decomposes into cyclic prime-power components $\Z/\ell^a$ arising from the
+prime-power parts of each $q - 1$, $q \in Q_- \cup Q_+$; Pohlig--Hellman
+discrete logarithms turn the target into a $0/1$ subset-sum, NP-hard in
+general and tractable only through structure. With pool size
+$N \gg \dim G$, solutions are heuristically super-dense; \emph{finding} a
+$0/1$ one is the crux.
+
+\subsection{The $2$-part is easy --- and small}\label{sec:twopart}
+
+Every component reduced mod $2$ is linear over $\mathrm{GF}(2)$ (the
+unknowns being $0/1$), so the $2$-part of the system, plus the parity row,
+solves by Gaussian elimination. This scales without difficulty:
+
+\begin{finding}[Measured]\label{find:gf2}
+At the frozen specification $(B, B') = (1259, 12590)$ the group has $4586$
+cyclic components and the full $\mathrm{GF}(2)$ system solves in $12$
+seconds (solver S2). But the $2$-part accounts for only $\approx 16\%$ of
+the demand bits.
+\end{finding}
+
+This overturned the program's working assumption that the $2$-torsion was
+the bulk of the problem. The remaining $\approx 84\%$ ---
+$\approx 15{,}000$ bits at the frozen spec --- lives in odd-prime
+components with primes $\ell$ up to $6269$.
+
+\subsection{The odd part defeats the generic solvers}\label{sec:oddpart}
+
+Two generic attacks on the odd part were built and pushed to their limits on
+faithful synthetic instances with planted solutions
+(Table~\ref{tab:frontier}): simulated annealing inside the
+$\mathrm{GF}(2)$ solution family (S3) stalls at $\ge 19$ odd components,
+and exact meet-in-the-middle (S4) solves what annealing cannot
+($N{=}40$, $15$ odd components, in $11$s) but is exponential in $N$, capping
+near $N \approx 40$ pool elements, $\approx 15$ odd components,
+$\approx 40$ odd bits. (Wagner's generalized-birthday algorithm
+\cite{Wagner}, the other natural generic candidate, needs list sizes
+exponential in the odd bit-count in its classic form and was not
+competitive in this regime.)
+
+A harvest/solver co-design (H7) attacks the odd part from the supply side:
+constraining both factor bases to primes $q$ whose $q-1$ has odd part
+$t_0$-smooth caps the largest odd prime in the group. Measured co-designed
+cells (Table~\ref{tab:codesign}) show a viable window --- at
+$t_0 = 100$, $B = 2003$, $B' = 60090$ the harvest ratio stays $7.7$ (above
+the G2 gate) while the odd support shrinks from $336$ primes $\le 6269$ to
+$24$ primes $\le 97$. But co-design caps the odd prime \emph{size}, not the
+odd \emph{dimension}: recovering yield requires many primes, and the odd
+part remains at $\approx 24{,}000$ bits across thousands of components ---
+two to three orders of magnitude beyond the S3/S4 frontier. Squeezing the
+dimension itself would require near-Fermat ($2$-power-heavy) primes, which
+are too sparse to harvest: a genuine yield/solver tension.
+
+\begin{finding}[Measured]\label{find:frontier}
+Generic exact and heuristic solvers for the odd part cap at $\approx 15$ odd
+components / $\approx 40$ odd bits, versus $\approx 24{,}000$ odd bits
+(thousands of components) required at the co-designed specification --- a
+shortfall of two to three orders of magnitude that co-design provably (by
+measurement) does not close.
+\end{finding}
+
+\subsection{The scalable method and what it requires}\label{sec:aghs}
+
+The frontier of Finding~\ref{find:frontier} is not the end of the story,
+because subset-products $\equiv 1$ in $(\Z/\Lambda)^\times$ at vastly larger
+scales \emph{have} been solved: Alford, Grantham, Hayman, and Shallue
+\cite{AGHS}, building on L\"oh--Niebuhr \cite{LN} and the AGP machinery
+\cite{AGP}, constructed a Carmichael number with $10{,}333{,}229{,}505$
+prime factors. Their method is not linear algebra: it is a subexponential
+$\omega$-guided reduction, driving a distance-to-identity potential (the
+highest CRT component at which a partial product differs from the identity)
+to zero top-down, with a birthday step. It has no small-odd-part
+requirement, which is precisely why the generic-solver frontier above is a
+statement about the wrong solver family rather than about the problem.
+
+The method does, however, have a structural input requirement. AGHS pools
+consist of primes $p$ with $p - 1 \mid \Lambda$ for a fixed highly composite
+$\Lambda$: such a $p$ is $\equiv 1$ on \emph{every} component whose prime
+power divides $p-1$, i.e.\ the pool vectors are identity on a large fraction
+of the components. Call this fraction the \emph{identity density} of a pool
+element. High identity density is what makes $\omega$-reduction move: most
+steps must leave most components untouched. AGHS-style pools have identity
+density $\approx 0.3$--$0.5$. Our partition-first pools are the opposite
+extreme: $p - 1 = 2m$ with $m$ a product of $j \approx 4$ medium primes is
+identity on only $\approx j$ of the components touched by the pool ---
+measured density $\approx 0.003$--$0.008$, about $100\times$ lower.
+
+\subsection{The identity-density gap (the core negative result)}
+\label{sec:gap}
+
+If the double condition admitted an AGHS-style harvest, the pipeline would
+be back on track. The natural design (harvester H8, the \emph{divisor
+paradigm}) fixes disjoint factor bases $T_-, T_+$ (side-coprimality), sets
+$\Lambda_-$, $\Lambda_+$ highly composite over them, and harvests pool
+primes $p = 2m+1$ with $m$ a (squarefree) divisor of $\prod T_-$,
+$m \equiv 1 \pmod{40}$, $2m+1$ prime, and $(m+1)/2$ squarefree over $T_+$
+--- exactly the $p - 1 \mid \Lambda_-$, $p+1 \mid \Lambda_+$ structure the
+$\omega$-solver wants, on both sides at once.
+
+\begin{finding}[N1: the divisor paradigm is unharvestable --- measured]
+\label{find:n1}
+Across all feasible scales tested (Table~\ref{tab:n1}), the H8 pool
+contains $0$--$2$ primes. Small $T_-$ (needed for decent density
+$\omega(m)/|T_-|$) yields an empty or near-empty pool; enlarging $T_-$
+collapses the density ($0.178 \to 0.067$--$0.088$) while the pool stays at
+$1$--$2$. The root cause is structural: the double condition ---
+\emph{both} $p - 1 \mid \Lambda_-$ \emph{and} $p + 1 \mid \Lambda_+$ for
+fixed moduli --- is the product of two rare events, far more restrictive
+than the single condition $p - 1 \mid \Lambda$ that AGHS harvests satisfy.
+\end{finding}
+
+\begin{finding}[The identity-density gap --- measured]\label{find:gap}
+Under the double Carmichael + Lucas--Carmichael condition:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+pool & identity density & pool size \\
+\midrule
+AGHS-style ($p-1 \mid \Lambda$, single condition) & $\approx 0.3$--$0.5$ &
+large (their regime) \\
+partition-first H7 (harvestable) & $\approx 0.003$--$0.008$ &
+$\approx 10^5$ (over-provisioned) \\
+divisor-paradigm H8 (AGHS density) & $\approx 0.07$--$0.18$ where nonempty &
+$0$--$2$ (unharvestable) \\
+\bottomrule
+\end{tabular}
+\end{center}
+One can have a harvestable pool \emph{or} AGHS-like identity density ---
+not both. The scalable solver family is therefore not straightforwardly
+applicable, and no other family in the measured frontier
+(Table~\ref{tab:frontier}) reaches the required dimension. That is the
+obstruction.
+\end{finding}
+
+This is the punchline of the paper. The supply half of the pipeline is
+solved and over-provisioned (\S\ref{sec:supply}); the solve half is blocked,
+not by an absence of solvers, but by a quantified mismatch --- roughly two
+orders of magnitude in identity density --- between what the scalable
+solver needs and what the double condition can supply.
+
+\section{Scope, caveats, and the untested escape}\label{sec:scope}
+
+This section bounds the result. It is part of the result.
+
+\begin{enumerate}\itemsep3pt
+\item \textbf{Not a disproof of Agrawal's conjecture.} The conjecture
+remains open and is believed false; nothing here bears on its truth. A
+reviewer's first question --- ``did you prove the conjecture has no
+counterexample?'' --- has answer \emph{no}, emphatically.
+\item \textbf{Not a proof that no counterexample is constructible.} The
+blockage established is of \emph{this pipeline} (twin-smooth harvest
+$\to$ subset-product solve) with the \emph{known solver families}
+(linear-algebraic, annealing, meet-in-the-middle, and $\omega$-guided
+reduction as characterized by its identity-density requirement). Other
+constructions, and other solvers, are unconstrained by our measurements.
+\item \textbf{Finite-scale and squarefree caveats on N1.}
+Finding~\ref{find:n1} tested squarefree divisors at finite scales
+(Table~\ref{tab:n1}). Prime-power moduli $\Lambda_\pm$ are untested,
+though the structural analysis points the same way (high density requires
+$m$ to retain full prime powers, forcing $m$ large); enormous scales are
+untested, and the measured density trend is against them.
+\item \textbf{The one open escape: the full AGHS solver on low-density
+pools.} Whether the complete AGHS algorithm --- two potentials, birthday
+step, non-uniformity exploitation --- tolerates the $\approx 0.003$--$0.008$
+identity density of harvestable H7 pools is \emph{untested}. The
+repository's $\omega$-reducer (\texttt{a8\_omega\_solver.py}) is a first
+strict top-down version that solves only the easy regime ($r \le 20$
+components at high identity density) and is too weak to settle the
+question. This escape is being pursued separately from this write-up; a
+positive outcome there would reopen the pipeline and supersede the negative
+conclusion for route H7\,$\to$\,S6.
+\item \textbf{Other unexhausted avenues.} A solver purpose-built for
+low-density many-prime pools; a different AKS modulus $r$ (the group and
+congruence classes change with $r$, and some $r \neq 5$ may admit denser
+pools or a friendlier group); and the admissible-cell question of
+\cite[Q.~6.2]{WP} --- the boost obstruction
+\cite[Prop.~6.1]{WP} shows the mod-$80$ cell is unreachable by the
+twin-smooth boosting family $2x^n - 1$ \cite{BCCEMNS23,Sterner23}, but
+whether \emph{other} local-condition cells admit the L--P mechanism (and are
+reachable by structurally side-separated families) is open, and a positive
+answer would restructure the harvest entirely.
+\end{enumerate}
+
+\section{Reusable contributions and conclusion}\label{sec:conclusion}
+
+Beyond the negative result, the program leaves behind machinery of
+independent use:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{A validated twin-smooth supply model.} The partition-first
+yield model, validated conservative (geometric mean $0.68\times$,
+never optimistic) against the complete $B = 547$ corpus, plus the
+near-complete C implementation of the CHM closure ($99.2$--$99.98\%$ of the
+exact complete sets, zero false positives) --- including the observation
+that the published $N(200) = 346{,}192$ was itself $0.8\%$ short of the
+true $348{,}840$.
+\item \textbf{The $0.06$ mining invariant} (Finding~\ref{find:invariant}):
+a sharp, reproducible measurement of the global side-partition cost for
+partition-agnostic twin corpora, and its complete bypass by
+partition-first harvesting --- relevant to any application that must
+multiplicatively combine twins under a side constraint.
+\item \textbf{A solver-frontier map} for two-sided $0/1$ subset-product
+problems (Table~\ref{tab:frontier}), with a synthetic-instance regression
+harness (planted solutions, tunable identity density $\rho$) against which
+any new solver --- in particular a full AGHS implementation --- can be
+tested down to the harvestable regime $\rho \approx 0.004$.
+\item \textbf{The identity-density gap as a diagnostic.} For any
+Carmichael-type constructive problem under a \emph{double} side condition,
+the two measurable quantities --- harvest yield of divisor-structured pools,
+and identity density of harvestable pools --- locate the pipeline on the
+harvestable/solvable dichotomy of Finding~\ref{find:gap} before major
+compute is spent.
+\end{itemize}
+
+\emph{Conclusion.} The Lenstra--Pomerance construction reduces cleanly to a
+two-sided subset-product problem whose supply side is, contrary to initial
+expectation, solved: partition-first harvesting over-provisions the pool by
+one to two orders of magnitude. The pipeline is blocked at the solver stage
+by a quantified identity-density gap: harvestable pools are $\approx
+100\times$ below the density the scalable $\omega$-guided solver family
+exploits, and the harvest that would supply that density is empty under the
+double Carmichael + Lucas--Carmichael condition. One escape --- the full
+AGHS algorithm on low-density pools --- remains open and under separate
+investigation. Until it is settled, the honest status of the constructive
+route to refuting Agrawal's conjecture via twin smooths is: \emph{supply
+yes, solver no, and the wall is measured}.
+
+\appendix
+
+\section{Data tables}\label{app:tables}
+
+All tables reproduce measurements from the repository findings log
+\texttt{data/FINDINGS.md}; the generating script and log section are noted
+under each table.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}llrrl@{}}
+\toprule
+$B$ & corpus & pool & optimized survivors & surv/demand-bits \\
+\midrule
+113 & sieve, $X \le 10^8$ & 59 & 8 & 0.061 \\
+113 & sieve, $X \le 10^{10}$ & 73 & 8 & 0.061 \\
+113 & CHM closure (complete-ish) & 78 & 8 & 0.061 \\
+257 & sieve, $X \le 10^9$ & 497 & 21 & 0.061 \\
+547 & sieve, $X \le 10^9$ & 2{,}715 & 51 & 0.068 \\
+200 & CHM closure (near-complete) & 562 & 17 / 16 & 0.060 / 0.061 \\
+547 & complete corpus (82{,}026{,}426 pairs) & 73{,}163 & 82 & 0.083 \\
+\bottomrule
+\end{tabular}
+\caption{The $0.06$ mining invariant (Finding~\ref{find:invariant}).
+``Pool'' = twins with $m \equiv 1 \pmod{40}$ and $2m+1$ prime; survivors
+under the best side-partition found (element-greedy; for $B=200$ also
+direct partition-space local search, second figure). Scripts:
+\texttt{phase1a\_calibration.py}, \texttt{chm\_closure.c},
+\texttt{b547\_pool\_analysis.py}; FINDINGS ``Calibration runs'',
+``Compiled CHM port'', ``Definitive $B=547$ coloring measurement''.}
+\label{tab:invariant}
+\end{table}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$B$ & $B'$ & ratio & pool & demand bits & rel.\ err \\
+\midrule
+1259 & 12590 & 13.8 & $2.5\times 10^5$ & 18{,}117 & $\pm 24\%$ \\
+1259 & 18885 & 41.0 & $1.1\times 10^6$ & 27{,}101 & $\pm 26\%$ \\
+2003 & 20030 & 45.5 & $1.3\times 10^6$ & 28{,}768 & $\pm 24\%$ \\
+2003 & 40060 & 209\phantom{.0} & $1.2\times 10^7$ & 57{,}514 & $\pm 32\%$ \\
+\bottomrule
+\end{tabular}
+\caption{Partition-first (H6) measured pool/demand ratios, reliable $j=4$
+cells (Finding~\ref{find:supply}); the $(1259, 12590)$ row is the frozen
+specification. Script: \texttt{a2\_grid.py} (data
+\texttt{a2\_grid.json}); FINDINGS ``A2: model validated \dots\ G2
+passed''.}
+\label{tab:ratios}
+\end{table}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+solver & method & reaches & caps at \\
+\midrule
+S2 & GF(2) elimination ($2$-part + parity) & 4586 components, 12 s &
+$2$-part only ($\approx 16\%$ of bits) \\
+S3 & annealing in GF(2) solution family & --- & stalls $\ge 19$ odd
+components \\
+S4 & exact meet-in-the-middle & $N{=}40$, $15$ odd comps, 11 s &
+$\approx 40$ odd bits (exp.\ in $N$) \\
+\midrule
+\multicolumn{2}{@{}l}{required (co-designed spec)} &
+\multicolumn{2}{l@{}}{$\approx 24{,}000$ odd bits, thousands of odd
+components} \\
+\bottomrule
+\end{tabular}
+\caption{The generic solver frontier on the odd part
+(Finding~\ref{find:frontier}), on faithful synthetic instances with planted
+solutions. Scripts: \texttt{a4\_solver.py}, \texttt{a6\_oddsolver.py};
+FINDINGS ``A4 solver, G3 phase-1'' and ``A6 small-prime odd-part
+solver''.}
+\label{tab:frontier}
+\end{table}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$t_0$ & $B$ & $B'$ & ratio & max odd $\ell$ & \# distinct odd \\
+\midrule
+50 & 1259 & 40060 & 1.1 & 47 & 14 \\
+100 & 1259 & 40060 & 2.6 & 97 & 24 \\
+\textbf{100} & \textbf{2003} & \textbf{60090} & \textbf{7.7} & \textbf{97}
+& \textbf{24} \\
+200 & 1259 & 40060 & 14.5 & 199 & 45 \\
+50 & 631 & 40060 & 0.0 & 47 & 14 \\
+\bottomrule
+\end{tabular}
+\caption{Co-designed harvest (H7): measured yield with both factor bases
+constrained to odd part of $q - 1$ being $t_0$-smooth (hit counts low,
+$\pm 40\%$). Bold row: the viable window. Scripts:
+\texttt{a5\_codesign.py}, \texttt{a5\_yield.py} (data
+\texttt{a5\_codesign\_yield.json}); FINDINGS ``A5 harvest/solver
+co-design''.}
+\label{tab:codesign}
+\end{table}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$T_-$ bound & $T_+$ range & $|T_-| + |T_+|$ & pool & mean density &
+max density \\
+\midrule
+90 & 97--220 & 45 & 1 & 0.178 & 0.178 \\
+120 & 127--300 & 60 & 1 & 0.067 & 0.067 \\
+150 & 160--360 & 68 & 2 & 0.074 & 0.088 \\
+60 & 67--160 & 34 & 0 & --- & --- \\
+\bottomrule
+\end{tabular}
+\caption{N1: divisor-paradigm harvest (H8) yield and identity density
+under the double condition (Finding~\ref{find:n1}). Script:
+\texttt{a9\_divisor\_harvest.py}; FINDINGS ``N1: divisor-paradigm harvest
+(H8) is unharvestable''.}
+\label{tab:n1}
+\end{table}
+
+\begin{table}[ht]\centering\footnotesize
+\begin{tabular}{@{}lll@{}}
+\toprule
+pool structure & identity density & harvestable under double condition? \\
+\midrule
+AGHS ($p - 1 \mid \Lambda$, highly composite $\Lambda$) &
+$\approx 0.3$--$0.5$ & no (Table~\ref{tab:n1}: pool $0$--$2$) \\
+H7 ($p - 1 = 2m$, $m$ a product of $j \approx 4$ medium primes) &
+$\approx 0.003$--$0.008$ & yes (pool $\approx 10^5$) \\
+\bottomrule
+\end{tabular}
+\caption{The identity-density gap (Finding~\ref{find:gap}): a
+$\approx 100\times$ mismatch between what the scalable $\omega$-solver
+exploits and what the double condition can supply. FINDINGS ``N1'',
+subsection ``The identity-density gap''.}
+\label{tab:gap}
+\end{table}
+
+\section{Reproducibility}\label{app:repro}
+
+The companion repository (\texttt{PRIMES-Conjectures}) contains every
+script and committed data file behind the claims of this paper. The
+findings log \texttt{data/FINDINGS.md} is the single source of truth for
+all quantities; the map below traces each claim to its generator.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}lll@{}}
+\toprule
+claim & script (\texttt{code/}) & data (\texttt{data/generated/} or log) \\
+\midrule
+machinery unit tests (T1--T4) & \texttt{verify\_machinery.py} &
+FINDINGS ``Phase 0'' \\
+$0.06$ invariant, $B \le 257$ & \texttt{phase1a\_calibration.py} &
+FINDINGS ``Calibration runs'' \\
+CHM closure (C), $B \le 200$ anchors & \texttt{chm\_closure.c} &
+\texttt{chm\_B200.log} \\
+complete $B=547$ pool + coloring & \texttt{b547\_pool\_analysis.py} &
+\texttt{b547\_pool\_stats.json} \\
+A1 yield grid (G1) & \texttt{a1\_yield\_prototype.py} &
+\texttt{a1\_yield\_grid.json} \\
+A2 grid (G2) & \texttt{a2\_grid.py} &
+\texttt{a2\_grid.json} \\
+A2 out-of-sample validation & \texttt{a2\_validate\_and\_extend.py} &
+\texttt{a2\_validation.json} \\
+group decomposition, GF(2) solve & \texttt{a4\_solver.py} &
+FINDINGS ``A4 solver'' \\
+co-design characterization/yield & \texttt{a5\_codesign.py},
+\texttt{a5\_yield.py} & \texttt{a5\_codesign\_yield.json} \\
+odd-part solver frontier & \texttt{a6\_oddsolver.py} &
+FINDINGS ``A6'' \\
+$\omega$-reducer (partial S6) & \texttt{a7\_lohniebuhr.py},
+\texttt{a8\_omega\_solver.py} & FINDINGS ``A7/A8'' \\
+N1 divisor harvest & \texttt{a9\_divisor\_harvest.py} &
+FINDINGS ``N1'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All runs are deterministic (fixed seeds). The complete $B=547$ twin corpus
+is private (courtesy of M.~Naehrig) and is \emph{not} in the repository;
+only aggregate statistics derived from it are committed
+(\texttt{b547\_pool\_stats.json}), which suffices to check every number
+quoted here.
+
+\begin{thebibliography}{99}\itemsep1pt\small
+
+\bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, \emph{PRIMES is in P},
+Ann.\ of Math.\ \textbf{160} (2004), 781--793.
+
+\bibitem{BP01} R.~Bhattacharjee, P.~Pandey, \emph{Primality testing}, BTech
+thesis, IIT Kanpur, 2001.
+
+\bibitem{LPremarks} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Remarks on
+Agrawal's conjecture}, AIM workshop notes, 2003.
+\url{https://aimath.org/WWN/primesinp/articles/html/50a/}
+
+\bibitem{Popovych09} R.~Popovych, \emph{A note on Agrawal conjecture},
+Cryptology ePrint 2009/008.
+
+\bibitem{Vana09} T.~V\'a\v{n}a, \emph{Agrawal's conjecture and Carmichael
+numbers}, Comenius University Bratislava, 2009.
+
+\bibitem{HD21} A.~Hegde, P.~Devaraj, \emph{Heuristics for the construction of
+counterexamples to the Agrawal conjecture}, Springer PROMS \textbf{344}, 2021.
+
+\bibitem{LP2019} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Primality testing
+with Gaussian periods}, J.\ Eur.\ Math.\ Soc.\ \textbf{21} (2019), 1229--1269.
+
+\bibitem{Pinch} R.~G.~E.~Pinch, \emph{The Carmichael numbers up to $10^{18}$},
+arXiv:math/0604376.
+
+\bibitem{AGP} W.~R.~Alford, A.~Granville, C.~Pomerance, \emph{There are
+infinitely many Carmichael numbers}, Ann.\ of Math.\ \textbf{139} (1994),
+703--722.
+
+\bibitem{LN} G.~L\"oh, W.~Niebuhr, \emph{A new algorithm for constructing
+large Carmichael numbers}, Math.\ Comp.\ \textbf{65} (1996), 823--836.
+
+\bibitem{AGHS} W.~R.~Alford, J.~Grantham, S.~Hayman, A.~Shallue,
+\emph{Constructing Carmichael numbers through improved subset-product
+algorithms}, Math.\ Comp.\ \textbf{83} (2014), 899--915; arXiv:1203.6664.
+
+\bibitem{PH78} S.~Pohlig, M.~Hellman, \emph{An improved algorithm for
+computing logarithms over $GF(p)$\dots}, IEEE Trans.\ Inf.\ Theory
+\textbf{24} (1978), 106--110.
+
+\bibitem{Wagner} D.~Wagner, \emph{A generalized birthday problem}, CRYPTO
+2002.
+
+\bibitem{BSIDH} C.~Costello, \emph{B-SIDH: supersingular isogeny
+Diffie--Hellman using twisted torsion}, ASIACRYPT 2020.
+
+\bibitem{CMN21} C.~Costello, M.~Meyer, M.~Naehrig, \emph{Sieving for twin
+smooth integers with solutions to the Prouhet--Tarry--Escott problem},
+EUROCRYPT 2021; ePrint 2020/1283.
+
+\bibitem{BCCEMNS23} G.~Bruno, M.~Corte-Real Santos, C.~Costello,
+J.~K.~Eriksen, M.~Meyer, M.~Naehrig, B.~Sterner, \emph{Cryptographic smooth
+neighbors}, ASIACRYPT 2023; ePrint 2022/1439.
+
+\bibitem{CHM13} J.~B.~Conrey, M.~A.~Holmstr\"om, T.~L.~McLaughlin,
+\emph{Smooth neighbors}, Experiment.\ Math.\ \textbf{22} (2013), 195--202.
+
+\bibitem{BHLNV} J.~Buzek, J.~Hasan, J.~Liu, M.~Naehrig, A.~Vigil,
+\emph{Finding twin smooth integers by solving Pell equations},
+arXiv:2211.04315.
+
+\bibitem{Sterner23} B.~Sterner, \emph{Towards optimally small smoothness
+bounds for cryptographic-sized twin smooth integers and their isogeny-based
+applications}, SAC 2024; ePrint 2023/1576.
+
+\bibitem{MSW} E.~Mulder, B.~Sterner, W.~van Woerden, \emph{Large smooth twins
+from short lattice vectors}, ANTS XVII; ePrint 2025/1462.
+
+\bibitem{Stormer} C.~St\o rmer, \emph{Quelques th\'eor\`emes sur l'\'equation
+de Pell $x^2 - Dy^2 = \pm 1$ et leurs applications}, Skr.\ Norske Vid.\
+Akad., 1897.
+
+\bibitem{Lehmer64} D.~H.~Lehmer, \emph{On a problem of St\o rmer}, Illinois
+J.\ Math.\ \textbf{8} (1964), 57--79.
+
+\bibitem{WP} D.~Shumow and Claude, \emph{Toward a counterexample to
+Agrawal's conjecture via twin smooth integers}, working draft v0.1, August
+2026 (companion repository, \texttt{doc/working-paper.tex}).
+
+\end{thebibliography}
+
+\end{document}
