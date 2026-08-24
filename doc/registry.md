@@ -43,7 +43,8 @@ solver tolerates H6/H7's ~100× lower density.
 | **S3 anneal odd** | `a6_oddsolver.py` | 🟡 | GF(2) 2-part + simulated annealing on odd residual (dense kernel moves) | stalls ≥19 odd components — weak; kept as baseline |
 | **S4 exact MITM** | `a6_oddsolver.py` (`mitm_frontier`) | 🟡 | meet-in-the-middle over the whole pool | exact but exponential; caps ~N=40 / ~15 odd comps |
 | **S5 per-prime+MITM** | `a7_lohniebuhr.py` | 🟡 | GF(l) reduction pre-pass then MITM core | scaffold; reduction pre-pass is phase-2 |
-| **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | **the scalable path**; first version solves only r≤20/high-density; full two-potential+birthday algorithm is the multi-turn build. Needs H8-structured pools |
+| **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | scalable in principle but needs high identity-density (ρ≳0.98); a8 stub solves only r≤20/high-ρ |
+| **S7 Wagner-4 birthday** | `a10_wagner_density.py` | ✅🔬 | generalized-birthday 4-sum over CRT components; density-reach measurement | A10: reach r_max ≈ O(log N)/(1−ρ). At H7's ρ≈0.004, r_max≈20 vs thousands needed. **Proves the low-density escape (option a) is closed** |
 
 **Solver selection.** **S6** is the intended production solver (AGHS built
 Carmichael numbers with 10^10 factors this way) but needs completion **and** an
@@ -70,9 +71,11 @@ applies to the deprecated mining route.
 - **Former production target (now blocked):** H8 → S6. N1 showed H8 is
   unharvestable under the double condition, so this route is closed as conceived.
 - **Current best measured:** H7 (co-designed, ratio 7.7, max-odd-prime 97) →
-  *solver open*. The open question is whether the FULL AGHS ω-solver (S6, not yet
-  built) tolerates H7's low identity-density (~0.004 vs AGHS ~0.5). This is the
-  one untested escape; needs the real S6, not the a8 stub.
+  *no viable solver*. A10 (S7) settled the open question: the AGHS-class birthday
+  solver needs identity-density ρ≳0.98 to reach thousand-component groups; H7
+  gives ρ≈0.004 and pool growth only helps ~log(N). The low-density escape
+  (option a) is CLOSED. Remaining open paths: a different solver paradigm (b) or
+  a different construction / r (c).
 - **Validation / calibration:** H1 or H3 (complete-ish corpus) → S1 (coloring)
   reproduces the 0.06 mining wall and V3's model checks. Historical baseline.
 - **Regression harness for new solvers:** synthetic instances from
