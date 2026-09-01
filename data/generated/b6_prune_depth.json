@@ -1,0 +1,76 @@
+[
+ {
+  "D": 20,
+  "rho": 0.004,
+  "regime": "ratio10",
+  "N": 1008,
+  "demand_bits": 100.9,
+  "n_max_per_prime": 2,
+  "trials": 200,
+  "R1_first_fire_u_median": 1,
+  "R1_first_fire_u_dist": {
+   "1": 158,
+   "2": 38,
+   "3": 3,
+   "4": 1
+  },
+  "R3_fires_at_u": 101,
+  "R2_fires_at_u": 0,
+  "note": "u = unassigned vars at first sound prune; R1 exact for u<=n_max+24, else feasible whp"
+ },
+ {
+  "D": 20,
+  "rho": 0.004,
+  "regime": "a10",
+  "N": 20000,
+  "demand_bits": 100.9,
+  "n_max_per_prime": 2,
+  "trials": 200,
+  "R1_first_fire_u_median": 1,
+  "R1_first_fire_u_dist": {
+   "1": 153,
+   "2": 42,
+   "3": 5
+  },
+  "R3_fires_at_u": 101,
+  "R2_fires_at_u": 0,
+  "note": "u = unassigned vars at first sound prune; R1 exact for u<=n_max+24, else feasible whp"
+ },
+ {
+  "D": 50,
+  "rho": 0.004,
+  "regime": "ratio10",
+  "N": 2546,
+  "demand_bits": 254.6,
+  "n_max_per_prime": 4,
+  "trials": 200,
+  "R1_first_fire_u_median": 3,
+  "R1_first_fire_u_dist": {
+   "3": 182,
+   "4": 17,
+   "5": 1
+  },
+  "R3_fires_at_u": 255,
+  "R2_fires_at_u": 0,
+  "note": "u = unassigned vars at first sound prune; R1 exact for u<=n_max+24, else feasible whp"
+ },
+ {
+  "D": 50,
+  "rho": 0.004,
+  "regime": "a10",
+  "N": 20000,
+  "demand_bits": 254.6,
+  "n_max_per_prime": 4,
+  "trials": 200,
+  "R1_first_fire_u_median": 3,
+  "R1_first_fire_u_dist": {
+   "3": 184,
+   "4": 13,
+   "5": 2,
+   "6": 1
+  },
+  "R3_fires_at_u": 255,
+  "R2_fires_at_u": 0,
+  "note": "u = unassigned vars at first sound prune; R1 exact for u<=n_max+24, else feasible whp"
+ }
+]
