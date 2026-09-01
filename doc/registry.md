@@ -45,6 +45,7 @@ would give, and H8 is unharvestable — so H6/H7 have no viable scalable solver.
 | **S5 per-prime+MITM** | `a7_lohniebuhr.py` | 🟡 | GF(l) reduction pre-pass then MITM core | scaffold; reduction pre-pass is phase-2 |
 | **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | scalable in principle but needs high identity-density (ρ≳0.98); a8 stub solves only r≤20/high-ρ |
 | **S7 Wagner-4 birthday** | `a10_wagner_density.py` | ✅🔬 | generalized-birthday 4-sum over CRT components; density-reach measurement | A10: reach r_max ≈ O(log N)/(1−ρ). At H7's ρ≈0.004, r_max≈20 vs thousands needed. **Proves the low-density escape (option a) is closed** |
+| **S8 adaptive cultivation** | `a12_adaptive_cultivation.py` | ❌🔬 | merge harvest+solve: greedy descent picking next move from the partial-solution deficit (column generation) | A12: at ρ≈0.004 no descent gradient (dense moves), stalls ~20 like S3/S7; control at ρ≥0.9 solves — isolates density, not architecture, as the cause |
 
 **Solver selection.** **S6** (AGHS ω-guided) was the intended production solver
 but A10 (S7) showed it needs ρ≳0.98, available only from the unharvestable H8 —

@@ -207,3 +207,13 @@ where no efficient general algorithm is known, and directions 3–4 likely confi
 that. The realistic hope rests on direction 1 (our vectors are structured, not
 random) and on direction 2 turning out to have a small hard core. Treat a
 rigorous no-go as a success, not a failure — it completes the negative result.
+
+
+**Already tested — do not redo (2026-08-24, FINDINGS A12):** the "merge
+harvest+solve / adaptive cultivation / column-generation" idea (select the next
+pair from the partial-solution deficit) was tested in its most optimistic form
+(`code/a12_adaptive_cultivation.py`, unlimited fresh moves). It stalls at ρ≈0.004
+exactly like the fixed-pool methods (~20 components); a control at ρ≥0.9 solves,
+isolating **low density** (not the two-phase architecture) as the cause. Any new
+proposal here must explain how it obtains a descent gradient from *dense* moves,
+or how it harvests *sparse* moves cheaply (the N1 wall).

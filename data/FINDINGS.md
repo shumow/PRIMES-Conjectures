@@ -448,6 +448,41 @@ primes, p^d−1 factored); the full general-r construction (exact power n ≡ mo
 ρ, precise validity) is not re-derived (B1 territory), but the harvest-degree
 conclusion depends only on ρ(p)'s cyclotomic levels, which is what was measured.
 
+## A12: merging harvest+solve (adaptive "cultivation") hits the same wall — density, not architecture (2026-08-24)
+
+`code/a12_adaptive_cultivation.py`. Tests the proposal to fuse harvesting and
+solving: select the next smooth pair from the *characteristics of the current
+partial solution* (column generation / branch-and-price with a number-theoretic
+pricing oracle). Tested in the form most *optimistic* for the idea — assume any
+density-ρ vector is harvestable on demand (ignores the real N1 cost of low
+identity-support) — via adaptive greedy descent with unlimited fresh candidate
+moves per step, planted nonzero target.
+
+**Result (ρ = 0.004, our harvestable density):** solves only D ≤ ~20 (birthday
+over small |G|), then **stalls at floor ≈ (2/3)D for D ≥ 25** — the identical
+frontier to a6 fixed-pool (~19) and a10 Wagner (~20). Merging the phases does
+not help.
+
+**Control (same code, higher density):** ρ=0.7 descends hard (D=70: 46→19);
+**ρ=0.9 solves D=50**. So the method is sound — it *works* when moves are
+sparse — which **isolates the cause to density, not the two-phase architecture.**
+
+**Mechanism (now crisp).** At low identity-density every move — fixed-pool or
+harvested-on-demand — is a near-uniform *dense random* vector; adding one resets
+the deficit to ~(2/3)D regardless of the current partial solution, so there is
+**no descent gradient** for adaptivity to exploit. A gradient needs *sparse*
+moves (high ρ), which is exactly N1's unharvestable regime. The harvest control
+is one-sided: you can prescribe where a move is *zero* (which primes divide m,
+at the N1 cost) but never its *value* where nonzero — so you cannot construct
+deficit-aligned moves, only filter random ones, and random dense moves carry no
+structure to filter on.
+
+**Consequence.** The wall is not an artifact of separating harvest and solve —
+a fully *merged* adaptive cultivation hits it identically, and the control
+pinpoints low density (⇐ N1 double condition ⇐ A11 every-r) as the sole cause.
+This strengthens the negative result: the obstruction survives the most natural
+architectural fix.
+
 ## Caveats
 - Coloring optimizer is greedy + random restarts; true optimum may be higher
   (annealing/ILP not yet tried). The 0.06 invariant is a *lower bound* on
