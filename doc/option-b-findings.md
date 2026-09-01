@@ -10,7 +10,22 @@ Branch note: work is on the session branch `claude/nice-dijkstra-pukzrv`
 
 ## Summary verdict
 
-**PENDING — grid in flight; this section is finalized at the end of the run.**
+**Direction 6 is dead: gate G-b6-1 (milestone m1 — solve D = 50 at ρ = 0.004)
+FAILED, by a wide, mechanistically explained margin.** The best off-the-shelf
+algebraic-CDCL engine (CP-SAT) has its ρ = 0.004 frontier at **D = 6
+components (~30 demand bits)** — *below* the exact-MITM frontier (~15, A6)
+and the Wagner-4 reach (~20, A10). Time-to-solve tracks ~2^(demand bits), so
+longer caps buy ~1 component per 30× compute; no cap reaches D = 50 (255
+bits), let alone the real D ≈ 10³–10⁴. The P3b measurement explains why and
+extends the verdict to the proposed bespoke build: sound Davis–Putnam-style
+pruning (including the GF(ℓ) theory-propagator rule such a build would rely
+on) first fires when 1–6 variables remain unassigned out of 1,000–20,000 —
+the search tree is unpruned until the search is over. Branch-and-prune is now
+the third independent algorithm family (after exact search and birthday/list
+methods) measured to fail on this instance class, each for the same
+density-driven reason. Remaining within-direction residual: a RoundingSat
+(native cutting-planes) run, assessed as a completeness item, not a live
+hope (see "What remains untried").
 
 ## P0/P2: tooling and correctness gate — PASSED
 
@@ -38,16 +53,47 @@ Branch note: work is on the session branch `claude/nice-dijkstra-pukzrv`
    with folklore that PB/CP engines beat SMT-LIA on this shape. Engine
    diversity is instead covered by the (conditional) RoundingSat build.
 
-## P3: off-the-shelf CP-SAT falsification grid
+## P3: off-the-shelf CP-SAT falsification grid — COMPLETE (64 runs)
 
-**[TO BE FILLED FROM `b6_cdcl_grid.jsonl` WHEN THE RUN COMPLETES —
-D ∈ {6,8,10,12,15,20,30,50} × ρ ∈ {0.004, 0.5} × regimes
-{ratio10, a10 (N=20k)} × 2 seeds, cap 120 s.]**
+Grid: D ∈ {6,8,10,12,15,20,30,50} × ρ ∈ {0.004, 0.5} × pool regimes
+{ratio10: N ≈ 10× demand bits; a10: N = 20,000} × 2 seeds; cap 120 s,
+8 workers; planting `half` (support ≈ N/2, statistically invisible). Every
+"solved" is verified (residues + parity). Solved-per-2-seeds:
 
-Interim signal (foreground probes, recorded before the grid): at ρ = 0.004
-with realistic moduli, CP-SAT fails at D = 6–12 (N = 36); at ρ = 0.5 it
-solves D ≤ 12 in ≤ 2.4 s. The density-driven separation that A10 measured
-for Wagner-4 reappears at micro scale in a CDCL engine.
+| D | demand bits | ρ=0.004 ratio10 | ρ=0.004 a10 | ρ=0.5 ratio10 | ρ=0.5 a10 |
+|---|---|---|---|---|---|
+| 6 | 30.0 | **2/2** (114 s / 18 s; 262k / 70k conf) | **1/2** (31 s) | 2/2 (0.05 s) | 2/2 (~6 s) |
+| 8 | 40.4 | 0/2 | 0/2 | 2/2 (0.1 s) | 2/2 (~10 s) |
+| 10 | 51.6 | 0/2 | 0/2 | 2/2 (~0.5 s) | 2/2 (~12 s) |
+| 12 | 62.0 | 0/2 | 0/2 | 2/2 (5–14 s; 12k–31k conf) | 2/2 (~16 s) |
+| 15 | 76.6 | 0/2 | 0/2 | 0/2 | 2/2 (23–51 s) |
+| 20 | 100.9 | 0/2 | 0/2 | 0/2 | 0/2 |
+| 30 | 152.5 | 0/2 | 0/2 | 0/2 | 0/2 |
+| 50 | 254.6 | 0/2 | 0/2 | 0/2 | 0/2 |
+
+Readings:
+
+1. **ρ = 0.004 frontier: D = 6, i.e. ~30 demand bits.** For calibration,
+   exact MITM handles ~15 components (A6) and Wagner-4 ~20 (A10): the modern
+   branch-and-prune engine is the *weakest* method measured on this problem,
+   not the strongest. Milestone m1 (D = 50) is missed by ~44 components /
+   ~225 bits.
+2. **The scaling is ~2^(demand bits), as predicted by zero pruning.** The
+   solved D = 6 cells burn 10⁵–10⁶ conflicts on a 30-bit demand in
+   10²–10⁴ ms; each added component adds ~5 bits ≈ 30× time. That is why no
+   escalation runs were performed (a deviation from the plan's 1 h cap,
+   justified): 1 h caps would move the frontier by roughly *one* component;
+   D = 50 needs ~2^225× more than the cap. There is no ambiguity for longer
+   caps to resolve.
+3. **Density, not size, is the driver.** ρ = 0.5 reaches D ≈ 12–15
+   (~62–77 bits) with visibly exponential conflict growth, then dies. The
+   ρ separation matches A10's Wagner law at micro scale, in a completely
+   different algorithm family.
+4. **Pool abundance helps only at the margin.** ratio10 vs a10 changes
+   which small-D cells scrape under the cap (more solutions vs more model
+   overhead at N = 20k — note the a10 D = 6 seed-0 miss with conf = 1:
+   the 120 s cap went almost entirely to presolve at that size), but no
+   regime moves the frontier past D ≈ 6–7 at ρ = 0.004.
 
 ## P3b: Davis–Putnam prune-fire depth — measured, and it is decisive
 
