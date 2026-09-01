@@ -132,6 +132,34 @@ is the honest close of the last live direction.
    Note: heavy relaxation edges toward changing the construction — keep it
    honest about what still yields a valid Agrawal counterexample (cf.
    working-paper §2, Prop 3.1).
+6. **Algebraic / pseudo-Boolean CDCL (DPLL-style search + linear reasoning).**
+   The instance is a system of ~D linear congruences (mod small prime powers)
+   in N Boolean variables — a pseudo-Boolean / SMT-over-finite-fields problem,
+   NOT clausal SAT (a CNF encoding of a mod-ℓ equation destroys the structure).
+   The right tools are CDCL with native linear reasoning: SAT-with-Gaussian-
+   elimination (CryptoMiniSat, XOR handling — covers the 2-part natively),
+   pseudo-Boolean / cutting-planes solvers (RoundingSat), or SMT (Z3) with
+   modular arithmetic; the concrete idea is CDCL branching + conflict learning
+   *on top of* per-prime GF(ℓ) Gaussian elimination as theory propagators — the
+   search handling the 0/1 constraint that pure algebra cannot. **Prognosis
+   (honest):** the odd part is a *dense random-like linear system mod small
+   primes* — the class where CDCL degenerates because propagation does not fire
+   until nearly all variables are fixed (the mod-ℓ analog of random k-XOR-SAT
+   above threshold, solved by Gaussian elimination not by search), and valid
+   solutions have large support (~1300 ones) so the tree is deep. Empirically
+   our instances already look random-like (annealing found no gradient; the A10
+   Wagner reach matched the uniform-random prediction), which is evidence
+   *against* this helping. It has NOT been tried with a real algebraic-CDCL
+   solver, so it is unsettled, and it is the natural embodiment of "algebra +
+   search" (subsumes dirs 2–4). The upside, if any, comes from the same place
+   as dir 1 (instance structure the solver's conflict-learning might exploit)
+   and from solution abundance (~2^{N−log|G|} solutions — you need only stumble
+   on one). **Falsify fast:** feed a *reduced* synthetic instance
+   (`make_structured`, D=50, ρ=0.004) to an off-the-shelf solver — RoundingSat
+   or CryptoMiniSat(+XOR) or Z3 — and see if it beats the Wagner reach (Wagner
+   caps ~20 there). If a tuned modern solver cannot clear D=50 at ρ=0.004 in
+   reasonable time, this direction is dead without a bespoke build; if it does,
+   scale toward D=1000 (milestone m3).
 
 Directions 3–4 most likely bottom out in the same hardness; 1 and 2 are where to
 spend real effort. Report a go/no-go on each with the measured hard-core
