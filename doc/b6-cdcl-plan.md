@@ -129,6 +129,74 @@ steady progress"), which determines whether P5 has any basis.
 immediate sanity + context), then D = 50 at ρ = 0.004 (the decision cell),
 then the rest of the curve only as needed to fit the scaling shape.
 
+## P3b. Davis–Putnam-style pruning, made explicit and measured
+
+Direction 6 originated as a question about **Davis–Putnam-like search-space
+pruning, generalized beyond clausal SAT**. "Davis–Putnam" names three distinct
+algorithmic ideas; this plan must treat each on its own terms rather than
+letting "CDCL" stand in for all of them:
+
+1. **DP-1960: variable *elimination*** (resolve a variable away; clauses →
+   resolvents). Its non-clausal generalizations are Fourier–Motzkin for
+   linear arithmetic, Gaussian elimination for fields, and **bucket
+   elimination / adaptive consistency** (Dechter) for general constraint
+   networks, whose cost is exponential in the constraint graph's induced
+   width (treewidth). **Assessment — closed by density, no experiment
+   needed:** our vectors are nonzero on ~99.6% of components (ρ ≈ 0.004), so
+   every constraint touches essentially every variable; the constraint
+   hypergraph is effectively complete and its induced width is ~N. Bucket
+   elimination degenerates to full enumeration; there is no elimination
+   ordering to exploit. (Per-prime Gaussian elimination — the field face of
+   DP elimination — is already in the plan; it is exactly what leaves the
+   0/1 coupling as the residual hard part, FINDINGS A4.)
+2. **DPLL-1962: branch + propagate + prune.** This is what P3's engines
+   embody: CP-SAT and Z3 are industrial descendants (branching, bounds/
+   arc-consistency propagation, conflict learning = learned pruning). The
+   *pure-literal rule* has no analogue here (modular equalities have no
+   satisfying direction/monotonicity), and LP-relaxation bounding — the
+   branch-and-bound face of pruning — is vacuous for modular equalities
+   (the slack-variable LP relaxation is feasible almost everywhere). So the
+   only pruning with any possible teeth is:
+3. **DPLL(T): branch + *theory-level* pruning** — the modern name for
+   "Davis–Putnam generalized." For this instance the sound theory-pruning
+   rules are:
+   - **R1 (per-prime rank feasibility):** after a partial assignment, check
+     each residual GF(ℓ) linear system *with the 0/1 restriction dropped*;
+     if any is infeasible even as a linear system, prune. Cheap
+     (incremental elimination), sound, and exactly the propagator direction
+     6 proposes.
+   - **R2 (residual 2-part solvability):** the GF(2)+parity system must
+     remain solvable over the unassigned variables (S2 machinery, sound).
+   - **R3 (counting heuristic, unsound but informative):** prune when the
+     expected completion count 2^(#unassigned) / |residual group| falls
+     below ~1 (the equidistribution heuristic; Knuth-style tree estimation).
+
+   **The quantitative worry — and the measurement that settles it:** sound
+   rules R1/R2 only fire once the residual system becomes *overdetermined*,
+   i.e. at assignment depth ≈ N − O(demand); with solutions super-abundant,
+   almost every shallow partial assignment is extendable, so the tree is
+   effectively unpruned to enormous depth. That is the DP-framed restatement
+   of the brief's "propagation fires late" prognosis — currently an
+   argument, not a number.
+
+**Experiment (new, `code/b_dp_prune_depth.py`, ~half a day):** a minimal
+hand-rolled DPLL over `make_structured` instances (D = 20–50, both ρ, both N
+regimes) instrumented to measure the **prune-fire depth profile**: for each
+rule R1/R2/R3, at what assignment depth does it first refute a random branch,
+and what fraction of branches does it cut at each depth. Deliverables: the
+depth profile curves alongside the P3 grid. Interpretation:
+- fire-depth ≈ N − O(demand-bits) and negligible shallow cuts → DP-style
+  pruning is *measured* dead in this regime (and mechanistically explains
+  any CP-SAT/Z3 stall in P3);
+- material shallow pruning (would be a surprise — the one plausible source
+  is instance structure à la brief direction 1) → feeds directly into the
+  P5 bespoke DPLL(GF(ℓ)) propagator design, with R1's increment cost known.
+
+This experiment is worth running even if P3's off-the-shelf runs stall
+early, because it answers the *why* at the level direction 6 was actually
+posed: not "did solver X time out," but "does generalized DP pruning have
+any leverage on this instance class."
+
 ## P4. Decision gates
 
 - **G-b6-1 (= milestone m1 of the brief):** some solver solves D = 50 at
@@ -137,9 +205,10 @@ then the rest of the curve only as needed to fit the scaling shape.
   - **Fail →** direction 6 is dead without a bespoke build. Write the
     go/no-go into `doc/option-b-findings.md` (create it, per the brief §6):
     the measured stall frontier vs the Wagner reach, the stall
-    characterization, both N regimes, both planting policies, and the
-    explicit statement that RoundingSat/cutting-planes remains the one
-    untried off-the-shelf engine (with the build cost). Recommend whether
+    characterization, the P3b prune-fire depth profiles (the mechanistic
+    "why"), both N regimes, both planting policies, and the explicit
+    statement that RoundingSat/cutting-planes remains the one untried
+    off-the-shelf engine (with the build cost). Recommend whether
     that residual is worth a build (expected: no, unless CP-SAT showed
     partial progress that cutting planes plausibly completes).
 - **G-b6-2 (= m2):** D = 200 at ρ = 0.004 within caps, N scaled accordingly.
@@ -164,7 +233,7 @@ then the rest of the curve only as needed to fit the scaling shape.
 ## Cost, risks, and honesty notes
 
 - **Cost:** P1+P2 ≈ half a day; P3 ≈ overnight (worst case ~72 solver-hours
-  across the grid, embarrassingly parallel across cells). All trivially
+  across the grid, embarrassingly parallel across cells); P3b ≈ half a day. All trivially
   cheap next to a production harvest.
 - **Prior (stated before running, so the result can be scored against it):**
   the brief's own prognosis, the A6 annealing null, and the A10
