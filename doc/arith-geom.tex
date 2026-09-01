@@ -1,0 +1,444 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Gm}{\mathbb{G}_m}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\Res}{Res}
+\DeclareMathOperator{\Gal}{Gal}
+
+\title{Arithmetic-Geometric Structure of Agrawal's Conjecture\\
+and the Torus Dimension Count Behind the Double Condition\\
+\large (AG track working document --- v0.1, item AG2)}
+\author{Dan Shumow \and Claude (Anthropic Fable~5)}
+\date{September 1, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We reframe Agrawal's conjecture and the Lenstra--Pomerance counterexample
+mechanism in the language of one-dimensional algebraic groups. The main new
+result (item AG2 of \texttt{doc/arith-geom-plan.md}) upgrades the empirical
+finding A11 of this project (\texttt{data/FINDINGS.md}) to a structural
+statement: for \emph{every} AKS modulus $r$, the constructive
+(Lenstra--Pomerance-style) route forces smoothness control on the $\F_p$-point
+orders of a product of cyclotomic tori of total dimension at least $2$, and
+the minimum $2$ is attained exactly by the split and nonsplit one-dimensional
+tori --- orders $p-1$ and $p+1$ --- i.e.\ by the Carmichael + Lucas--Carmichael
+double condition (equivalently, twin-smoothness). The key identity is an
+inversion collapse: when $d=\ord_r(p)$ is even, the unique involution of
+$(\Z/r)^\times$ is $-1$, forcing $(X-1)^{p^{d/2}-1}\equiv -X^{-1} \pmod{p,\,
+\Phi_r(X)}$ and collapsing the order of $X-1$ into the cyclotomic levels
+$e \mid d/2$. Since $\sum_{e \mid m}\varphi(e) = m$, the burden is $d/2$ for
+even $d$ and $d$ for odd $d$; validity of a counterexample forces $d \ge 3$,
+so the burden is minimized at $d = 4$ (possible iff $4 \mid r-1$), value $2$,
+never $1$. All identities and the resulting burden table are verified
+numerically (\texttt{code/ag2\_torus\_check.py}), reproducing A11's measured
+table for all eleven moduli tested there.
+\end{abstract}
+
+\section{The Frobenius-lift dictionary}\label{sec:dictionary}
+
+This section fixes the geometric reading used throughout; full exposition is
+item AG1 and will accrete here. Write $T(-1,n,r)$ for the AKS congruence
+\begin{equation}\label{eq:aks}
+(X-1)^n \equiv X^n - 1 \pmod{n,\, X^r-1},
+\end{equation}
+$r$ an odd prime not dividing $n$.
+
+\begin{proposition}[primality as a Frobenius lift]\label{prop:lift}
+Let $A_n = (\Z/n)[X]/(X^r-1)$, the mod-$n$ group algebra of $\mu_r$, and let
+$\sigma_n : X \mapsto X^n$ be the $n$-th Adams operation (well defined since
+$X^r = 1$). If $n$ is prime, then the $n$-power map on $A_n$ coincides with
+$\sigma_n$; that is, $f(X)^n \equiv f(X^n) \pmod{n,\,X^r-1}$ for
+\emph{every} $f$. The congruence \eqref{eq:aks} is this coincidence tested on
+the single element $f = X-1$.
+\end{proposition}
+
+\begin{proof}
+For $n$ prime the $n$-power map is a ring endomorphism (freshman's dream) and
+fixes $\Z/n$ (Fermat), so $f(X)^n \equiv f^{(n)}(X^n) \equiv f(X^n)$, where
+$f^{(n)}$ raises coefficients to the $n$-th power.
+\end{proof}
+
+In $\lambda$-ring language: $\Z[X]/(X^r-1)=\Z[\Z/r]$ carries the Adams
+operations $\psi^k(X) = X^k$, and ``$n$ is prime'' is exactly ``$\psi^n$ is a
+Frobenius lift at $n$'' (Wilkerson's criterion direction); \eqref{eq:aks} is
+the lift condition at one section of $\mu_r$. \todo{AG1: cite Wilkerson,
+Borger, and the pseudofield formalism of Lenstra--Pomerance.}
+
+\begin{lemma}[the exceptional clause]\label{lem:clause}
+$n^2 \equiv 1 \pmod r$ iff $\sigma_n$, viewed as the element
+$n \bmod r$ of $(\Z/r)^\times \cong \Gal(\Q(\zeta_r)/\Q)$, lies in
+$\Gal(\Q(\zeta_r)/\Q(\zeta_r)^+) = \{1, \text{complex conjugation}\}$.
+\end{lemma}
+
+\begin{proof}
+$(\Z/r)^\times$ is cyclic of even order $r-1$; its unique element of order
+$2$ is $-1$, which acts on $\mu_r$ as inversion, i.e.\ as complex
+conjugation, the generator of $\Gal(\Q(\zeta_r)/\Q(\zeta_r)^+)$.
+\end{proof}
+
+Agrawal's conjecture thus asserts: \emph{a composite Frobenius impostor on
+the single section $X-1$ must act trivially on the maximal real subfield}. A
+\emph{valid counterexample} is a composite $n$ with $T(-1,n,r)$ and
+$t := \ord_r(n) > 2$.
+
+\section{Setup: cyclotomic tori and the mechanism}\label{sec:setup}
+
+\subsection{Cyclotomic tori}
+
+For $e \ge 1$ let $\Phi_e$ denote the $e$-th cyclotomic polynomial, so that
+\begin{equation}\label{eq:levels}
+p^d - 1 \;=\; \prod_{e \mid d} \Phi_e(p).
+\end{equation}
+Over $\F_p$, the Weil restriction $\Res_{\F_{p^d}/\F_p}\Gm$ decomposes up to
+isogeny as $\prod_{e \mid d} T_e$, where $T_e$ is the cyclotomic torus of
+dimension $\varphi(e)$ split by $\F_{p^e}$, with
+$\#T_e(\F_p) = \Phi_e(p)$ \cite{Vosk,RS}. The two \emph{one-dimensional}
+tori are $T_1 = \Gm$ ($\#T_1(\F_p) = p-1$, the split torus) and $T_2$ the
+norm-one torus of $\F_{p^2}/\F_p$ ($\#T_2(\F_p) = p+1$, the nonsplit twist);
+$\varphi(e) = 1$ iff $e \in \{1,2\}$. We refer to the index $e$ in
+\eqref{eq:levels} as the \emph{level}.
+
+\subsection{The order of $X-1$}
+
+Fix primes $p \ne r$, $p \nmid n$, and let $d = d_p := \ord_r(p)$. Then
+\[
+\F_p[X]/(X^r-1) \;\cong\; \F_p \times \F_p[X]/(\Phi_r(X)), \qquad
+\F_p[X]/(\Phi_r(X)) \;\cong\; \prod_{i=1}^{(r-1)/d} \F_{p^{d}},
+\]
+the factors indexed by the orbits of $\langle p \rangle$ on
+$(\Z/r)^\times$; in the $i$-th factor $X$ maps to a primitive $r$-th root of
+unity $\zeta_i$. The element $X - 1$ vanishes in the $\F_p$ factor (where
+\eqref{eq:aks} holds trivially: both sides are $0$) and is a unit in
+$\F_p[X]/\Phi_r$ since $\Phi_r(1) = r \ne 0$ in $\F_p$.
+
+\begin{definition}\label{def:rho}
+$\rho_r(p)$ is the multiplicative order of the image of $X-1$ in
+$\bigl(\F_p[X]/\Phi_r(X)\bigr)^\times$, i.e.\
+$\rho_r(p) = \lcm_i \ord(\zeta_i - 1)$.
+\end{definition}
+
+For $r = 5$ this is the quantity $\rho(p)$ of V\'a\v{n}a \cite{Vana}, with
+$\rho(p) \mid 10(p^2-1)$; Corollary~\ref{cor:vana} below recovers this.
+
+\subsection{The Lenstra--Pomerance mechanism}
+
+\begin{definition}[L--P mechanism]\label{def:mech}
+A squarefree composite $n = p_1 \cdots p_k$ coprime to $r$ is produced by the
+\emph{L--P mechanism} if for every $i$ there is $j_i \ge 0$ with
+\begin{equation}\label{eq:mech}
+n \;\equiv\; p_i^{\,j_i} \pmod{\lcm\bigl(r,\ \rho_r(p_i)\bigr)},
+\end{equation}
+and $\ord_r(n) > 2$ (validity).
+\end{definition}
+
+The original $r=5$ construction \cite{LP,Popovych09} is the instance
+$j_i = 1$: the conditions $p \equiv 3 \pmod{80}$, $p-1 \mid n-1$,
+$p+1 \mid n+1$ give $n \equiv p \pmod{\lcm(5,\rho_5(p))}$ once
+$\rho_5(p) \mid 10(p^2-1)$ is known. Our entire Track~A pipeline
+(\texttt{PLAN.md}) is a search inside Definition~\ref{def:mech}.
+
+\begin{remark}[scope]\label{rem:scope}
+The mechanism is sufficient, not necessary, for \eqref{eq:aks}: the component
+equation $(\zeta-1)^n = \zeta^n - 1$ could conceivably hold ``accidentally''
+for some $p$, outside the Frobenius-matching family \eqref{eq:mech}. No such
+solutions are known, and no way to construct them is known; every published
+counterexample construction \cite{LP,Popovych09,HegdeDevaraj} is an instance
+of Definition~\ref{def:mech}. All results below quantify \emph{this
+mechanism}, in line with the scope discipline of the negative-result paper
+(\texttt{doc/negative-result-plan.md}).
+\end{remark}
+
+\section{The torus dimension count}\label{sec:dimcount}
+
+\subsection{Frobenius matching and the inversion collapse}
+
+\begin{lemma}[Frobenius matching]\label{lem:frob}
+With notation as above:
+\begin{enumerate}
+\item[(i)] $(X-1)^{p^k} \equiv X^{p^k} - 1 \pmod{p,\, X^r - 1}$ for all
+$k \ge 0$.
+\item[(ii)] If $n \equiv p^{j} \pmod{\lcm(r, \rho_r(p))}$ then
+$T(-1,n,r)$ holds modulo $p$.
+\item[(iii)] Conversely, \eqref{eq:mech} forces $n \equiv p^{j}
+\pmod r$, hence $\ord_r(n) \mid d_p$. In particular a valid counterexample
+($\ord_r(n) > 2$) forces $d_p \ge 3$ for every $p \mid n$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) is the iterated Frobenius endomorphism of $\F_p$-algebras. (ii): write
+$n = p^j + c\cdot\lcm(r,\rho_r(p))$. In the $\F_p$ factor both sides of
+\eqref{eq:aks} vanish. In $\F_p[X]/\Phi_r$:
+$(X-1)^n = (X-1)^{p^j}\bigl((X-1)^{\rho_r(p)}\bigr)^{c'} = (X-1)^{p^j}
+\equiv X^{p^j} - 1$ by (i), and $X^{p^j} = X^{n \bmod r} = X^n$ since
+$X^r \equiv 1 \bmod \Phi_r$ (as $X^r - 1 = (X-1)\Phi_r(X)$ for $r$ prime).
+(iii): reduce \eqref{eq:mech} modulo $r$; then $n \in \langle p \rangle
+\subseteq (\Z/r)^\times$, so $\ord_r(n)$ divides
+$\#\langle p\rangle = d_p$, and $\ord_r(n) \ge 3$ gives $d_p \ge 3$.
+\end{proof}
+
+\begin{lemma}[inversion collapse]\label{lem:collapse}
+Suppose $d = \ord_r(p)$ is even. Then, in $\F_p[X]/\Phi_r(X)$,
+\[
+(X-1)^{p^{d/2}-1} \;=\; -X^{-1},
+\]
+and consequently
+\begin{equation}\label{eq:collapse}
+\rho_r(p) \;\Bigm|\; 2r\,(p^{d/2}-1) \;=\; 2r \prod_{e \mid d/2} \Phi_e(p).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+$(\Z/r)^\times$ is cyclic, so its unique element of order $2$ is $-1$; since
+$\ord_r(p) = d$, the element $p^{d/2}$ has order $2$, whence
+$p^{d/2} \equiv -1 \pmod r$. In each field component, with $X \mapsto
+\zeta$ a primitive $r$-th root of unity, iterated Frobenius gives
+\[
+(\zeta - 1)^{p^{d/2}} = \zeta^{p^{d/2}} - 1 = \zeta^{-1} - 1
+= -\zeta^{-1}(\zeta - 1),
+\]
+and dividing by $\zeta - 1 \ne 0$ yields $(\zeta-1)^{p^{d/2}-1} =
+-\zeta^{-1}$. This holds in every component, hence in the product ring.
+Finally $(-X^{-1})^{2r} = X^{-2r} = 1$, so
+$(X-1)^{2r(p^{d/2}-1)} = 1$, giving \eqref{eq:collapse}; the product form is
+\eqref{eq:levels} applied to $p^{d/2}-1$.
+\end{proof}
+
+\begin{corollary}[V\'a\v{n}a's bound]\label{cor:vana}
+For $r = 5$ and $p \equiv \pm 2 \pmod 5$ (so $d = 4$),
+$\rho_5(p) \mid 10(p^2 - 1)$.
+\end{corollary}
+
+\begin{definition}[support level]\label{def:support}
+Set
+\[
+d' \;=\; d'(p) \;:=\;
+\begin{cases}
+d/2, & d \text{ even},\\
+d, & d \text{ odd}.
+\end{cases}
+\]
+\end{definition}
+
+For odd $d$ the trivial bound $\rho_r(p) \mid p^d - 1 = \prod_{e\mid d}
+\Phi_e(p)$ applies (orders in a product of copies of $\F_{p^d}^\times$), so
+in both cases
+\begin{equation}\label{eq:support}
+\rho_r(p) \;\Bigm|\; 2r \prod_{e \mid d'} \Phi_e(p):
+\end{equation}
+\emph{the $p$-dependent part of $\rho_r(p)$ is supported on the cyclotomic
+levels $e \mid d'$.}
+
+\subsection{Generic sharpness}
+
+The bound \eqref{eq:support} is an upper bound on support; the mechanism's
+cost analysis also needs it to be generically \emph{attained} --- otherwise a
+harvest could fish for primes $p$ where $\rho_r(p)$ collapses further.
+
+\begin{proposition}[generic sharpness; heuristic + empirical]
+\label{prop:sharp}
+Let $\ell > 2rd$ be a prime with $\ell \mid \Phi_e(p)$ for some
+$e \mid d'$. Then $\ell \mid \rho_r(p)$ unless in every component the image
+of $X - 1$ is an $\ell$-th power in $\F_{p^d}^\times$. Modelling the
+components as independent uniform elements, the exceptional probability is
+$\ell^{-(r-1)/d}\le 1/\ell$. Consequently, for all $p$ outside a set of
+(heuristic) density $O(\sum_\ell 1/\ell)$, the large-prime part of
+$\prod_{e \mid d'}\Phi_e(p)$ divides $\rho_r(p)$, and requiring
+``$\rho_r(p)$ is $B$-smooth'' is equivalent to requiring
+``$\Phi_e(p)$ is $B$-smooth for every $e \mid d'$''.
+\end{proposition}
+
+\begin{proof}[Evidence]
+$\ell \nmid \rho_r(p)$ iff the image of $X-1$ has trivial $\ell$-part in
+each cyclic component group $\F_{p^d}^\times$, i.e.\ is an $\ell$-th power
+in every component whose order $\ell$ divides; the $\ell$-th powers have index $\ell$ in each
+component containing $\ell$-torsion. Rigorously controlling the image of
+$\zeta - 1$ is an open Artin-type problem; empirically
+(\texttt{code/ag2\_torus\_check.py}, 67 sample primes across
+$r \in \{5,7,11,13,19,23,41\}$, $d \in \{3,4,5,6,11\}$): all $37$ tested
+large primes $\ell$ divided $\rho_r(p)$ ($0$ exceptions; $\approx 0.19$
+expected under the $1/\ell$ model), and in all $67$ cases removing the top
+level $e = d'$ from the bound \eqref{eq:support} broke it (the top level is
+genuinely present in $\rho_r(p)$).
+\end{proof}
+
+\subsection{The dimension-count theorem}
+
+\begin{theorem}[torus dimension count]\label{thm:dimcount}
+Let $r$ be an odd prime and let $n$ be produced by the L--P mechanism
+(Definition~\ref{def:mech}) with $\ord_r(n) > 2$. For each $p \mid n$ put
+$d_p = \ord_r(p)$ and $d_p'$ as in Definition~\ref{def:support}. Assume
+generic sharpness (Proposition~\ref{prop:sharp}) at $p$. Then, for the CRT
+system \eqref{eq:mech} to admit assembly over many primes with a common
+$B$-smooth modulus (the setting of the Track-A pipeline), each $p \mid n$
+must satisfy:
+\[
+\Phi_e(p) \ \text{is $B$-smooth for every } e \mid d_p'
+\quad\Longleftrightarrow\quad
+\#\Bigl(\textstyle\prod_{e \mid d_p'} T_e\Bigr)(\F_p) \ \text{is $B$-smooth},
+\]
+a smoothness condition on the $\F_p$-points of a torus of dimension
+\[
+\dim \prod_{e \mid d_p'} T_e \;=\; \sum_{e \mid d_p'} \varphi(e) \;=\; d_p'
+\;=\;
+\begin{cases}
+d_p/2, & d_p \text{ even},\\
+d_p, & d_p \text{ odd}.
+\end{cases}
+\]
+Moreover:
+\begin{enumerate}
+\item[(a)] $d_p' \ge 2$ for every $p \mid n$: the burden is never a single
+one-dimensional torus. (Indeed $d_p' = 1$ would force $d_p \in \{1,2\}$,
+contradicting $d_p \ge 3$ from Lemma~\ref{lem:frob}(iii).)
+\item[(b)] $d_p' = 2$ iff $d_p = 4$, in which case the level set is
+$\{1,2\}$ and the condition is: $p - 1 = \#T_1(\F_p)$ and
+$p + 1 = \#T_2(\F_p)$ both $B$-smooth --- the Carmichael +
+Lucas--Carmichael \emph{double condition}, i.e.\ twin-smoothness of
+$\bigl(\tfrac{p-1}{2}, \tfrac{p+1}{2}\bigr)$.
+\item[(c)] $d_p = 4$ is realizable iff $4 \mid r - 1$; hence for
+$r \equiv 1 \pmod 4$ the minimal burden is $2$, identical in structure to
+the $r = 5$ case, while for $r \equiv 3 \pmod 4$ every admissible $d_p$
+gives burden $\ge 3$.
+\item[(d)] The minimal burden as a function of $r$ is
+\[
+\mathrm{burden}(r) \;=\; \min_{\substack{d \mid r-1\\ d \ge 3}}
+\begin{cases} d/2, & d \text{ even}\\ d, & d \text{ odd}\end{cases}
+\]
+which reproduces the measured A11 table for all eleven moduli tested there
+(Section~\ref{sec:numerics}).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+The support statement is \eqref{eq:support} plus
+Proposition~\ref{prop:sharp}; the dimension computation is
+$\sum_{e \mid m}\varphi(e) = m$ with $m = d_p'$, together with
+$\dim T_e = \varphi(e)$ and $\#T_e(\F_p) = \Phi_e(p)$
+(Section~\ref{sec:setup}). (a): $d_p \ge 3$ by
+Lemma~\ref{lem:frob}(iii); $d_p' = 1$ requires $d_p \le 2$. (b):
+$d_p' = 2$ with $d_p$ even means $d_p = 4$ and levels $\{e : e \mid 2\} =
+\{1,2\}$; $d_p' = 2$ with $d_p$ odd is impossible ($d_p = 2$ is even). With
+$p$ odd, $B$-smoothness of $p \mp 1 = 2m, 2(m+1)$ is twin-smoothness of the
+pair $(m, m+1)$ up to the factor $2$. (c): $d_p = 4$ requires
+$4 \mid \#(\Z/r)^\times = r-1$; conversely if $4 \mid r-1$ the cyclic group
+$(\Z/r)^\times$ has elements of order $4$, and primes $p$ in those residue
+classes exist (Dirichlet), with $\ord_r(n) = 4 \mid d_p$ satisfiable.
+For $r \equiv 3 \pmod 4$: even $d \mid r-1$ satisfy
+$d \equiv 2 \pmod 4$, so even $d \ge 3$ means $d \ge 6$, burden
+$d/2 \ge 3$; odd $d \ge 3$ gives burden $d \ge 3$. (d) is the minimization
+of $d_p'$ over admissible $d_p$.
+\end{proof}
+
+\begin{corollary}[structural closure of option (c)]\label{cor:optc}
+For every AKS modulus $r$, the L--P mechanism requires each pool prime to
+satisfy a smoothness condition on the point-orders of a torus of dimension
+at least $2$; no modulus reduces the requirement to a single
+one-dimensional torus (a single condition of the shape ``$p \pm 1$
+smooth''). The minimum, dimension exactly $2$, is achieved precisely by the
+split/nonsplit pair $\{T_1, T_2\}$ --- the twin-smooth double condition ---
+and only for $r \equiv 1 \pmod 4$. The double condition measured
+empirically in A11 is therefore intrinsic: it is the unique minimizer of a
+dimension count, not an artifact of $r = 5$.
+\end{corollary}
+
+\begin{remark}[cost interpretation]\label{rem:cost}
+Under the standard Dickman heuristic, $B$-smoothness of $\Phi_e(p)$, a
+quantity of size $p^{\varphi(e)}$, has cost governed by
+$u = \varphi(e)\log p / \log B$; total burden across the level set is
+governed by $\sum_{e \mid d'}\varphi(e) = d'$. Burden $2$ is the
+twin-smooth regime this project has harvested at scale; burden $\ge 3$
+requires smooth values of $\Phi_e(p) \sim p^{\varphi(e)}$ with
+$\varphi(e) \ge 2$, the same quantities whose \emph{non}-smoothness
+underpins torus-based cryptography \cite{RS}. This is the structural
+content of A11's ``every other $r$ is strictly worse''.
+\end{remark}
+
+\begin{remark}[what remains conditional]\label{rem:conditional}
+Lemmas~\ref{lem:frob} and \ref{lem:collapse}, the support bound
+\eqref{eq:support}, and parts (a)--(d) of Theorem~\ref{thm:dimcount} as
+statements about the support of $\rho_r(p)$ are unconditional. The
+conditional ingredient is generic sharpness
+(Proposition~\ref{prop:sharp}): a harvest could in principle target the
+thin set of primes where $\rho_r(p)$ collapses below \eqref{eq:support}.
+Such primes have heuristic density $O(1/\ell)$ per large prime $\ell$
+avoided --- i.e.\ the ``collapsed'' pool is far thinner than the twin-smooth
+pool itself --- so this escape is uneconomical, but it is recorded here as
+the localized gap per gate AG-G1 (\texttt{doc/arith-geom-plan.md}).
+\end{remark}
+
+\section{Numerical validation}\label{sec:numerics}
+
+\texttt{code/ag2\_torus\_check.py} (deterministic; output in
+\texttt{data/generated/ag2\_torus\_check.json}) verifies, over $67$ sample
+primes spanning $(r,d) \in \{(5,4), (13,4), (41,4), (7,3), (7,6), (19,3),
+(11,5), (23,11)\}$:
+
+\begin{center}
+\begin{tabular}{llr}
+\hline
+check & statement & result \\
+\hline
+V1 & Frobenius matching (Lemma~\ref{lem:frob}(i)) & $67/67$ \\
+V2 & collapse identity $(X-1)^{p^{d/2}-1} = -X^{-1}$
+     (Lemma~\ref{lem:collapse}) & $36/36$ \\
+V3 & exact $\rho_r(p)$ computed within bound \eqref{eq:support} & $67/67$ \\
+V4 & large primes of levels $e \mid d'$ divide $\rho_r(p)$
+     (Prop.~\ref{prop:sharp}) & $37/37$ \\
+V5 & top level $e = d'$ genuinely needed in $\rho_r(p)$ & $67/67$ \\
+V6 & burden formula (Thm.~\ref{thm:dimcount}(d)) vs.\ A11 table & $11/11$ \\
+\hline
+\end{tabular}
+\end{center}
+
+V4's $0$ exceptions are consistent with the $1/\ell$ model
+($\approx 0.19$ misses expected over this sample). V6 reproduces, for
+$r \in \{5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41\}$, both the burden value
+and the minimizing $d$ of the A11 measurement
+(\texttt{data/FINDINGS.md}, 2026-08-24).
+
+\begin{thebibliography}{99}
+\bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, PRIMES is in P,
+\emph{Ann.\ of Math.} 160 (2004), 781--793.
+\bibitem{LP} H.~W.~Lenstra Jr., C.~Pomerance, Remarks on Agrawal's
+conjecture, AIM workshop notes, 2003.
+\bibitem{LPGauss} H.~W.~Lenstra Jr., C.~Pomerance, Primality testing with
+Gaussian periods, \emph{J.\ Eur.\ Math.\ Soc.} 21 (2019), 1229--1269.
+\bibitem{Popovych09} R.~Popovych, A note on Agrawal conjecture, Cryptology
+ePrint 2009/008.
+\bibitem{HegdeDevaraj} A.~Hegde, P.~Devaraj, Heuristics for the construction
+of counterexamples to the Agrawal conjecture, Springer PROMS, 2021.
+\bibitem{Vana} T.~V\'a\v{n}a, Agrawal's conjecture and Carmichael numbers,
+Comenius Univ.\ Bratislava, 2009.
+\bibitem{Vosk} B.~Kunyavskii et al., Algebraic tori --- thirty years after,
+arXiv:0712.4061.
+\bibitem{RS} K.~Rubin, A.~Silverberg, Torus-based cryptography, CRYPTO 2003.
+\bibitem{GK12} A.~Gurevich, B.~Kunyavskii, Deterministic primality tests
+based on tori and elliptic curves, \emph{Finite Fields Appl.} 18 (2012),
+222--236.
+\bibitem{Borger} J.~Borger, $\Lambda$-rings and the field with one element,
+arXiv:0906.3146.
+\end{thebibliography}
+
+\end{document}

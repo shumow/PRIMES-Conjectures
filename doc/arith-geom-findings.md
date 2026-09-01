@@ -164,6 +164,75 @@ count) would be the first published evidence *for* Popovych's conjecture.
 3. **A Popovych-positive heuristic (§6) is a cheap, publishable spin-off** of
    machinery we already have (the L–P density count + the N1 measurement).
 
+## AG2 result: the torus dimension-count theorem (2026-09-01)
+
+*Deliverables: `doc/arith-geom.tex` §2–4 (+ compiled PDF),
+`code/ag2_torus_check.py`, `data/generated/ag2_torus_check.json`.*
+
+**The theorem is proved, with the conditional part localized exactly where
+the plan predicted (gate AG-G1: substantially passed).**
+
+**Unconditional core.**
+1. *Frobenius matching* (Lemma 3.1): (X−1)^{p^k} ≡ X^{p^k}−1 (mod p, X^r−1);
+   the L–P mechanism n ≡ p^j (mod lcm(r, ρ_r(p))) suffices per component,
+   and it forces ord_r(n) | d_p = ord_r(p), so validity (ord_r(n) > 2)
+   forces **d_p ≥ 3** for every pool prime.
+2. *Inversion collapse* (Lemma 3.2, the key identity): for d even, the
+   unique involution of (Z/r)× is −1, so p^{d/2} ≡ −1 (mod r) and
+   **(X−1)^{p^{d/2}−1} = −X^{−1}** in F_p[X]/Φ_r; hence
+   ρ_r(p) | 2r(p^{d/2}−1) = 2r·∏_{e | d/2} Φ_e(p). For r=5, d=4 this *is*
+   Váňa's ρ(p) | 10(p²−1).
+3. *Support bound*: with d' := d/2 (d even) or d (d odd),
+   ρ_r(p) | 2r·∏_{e|d'} Φ_e(p) — the p-dependent part of ρ_r(p) lives on
+   cyclotomic levels e | d'.
+4. *Dimension count* (Theorem 3.6): the smoothness burden is the F_p-point
+   order of the torus ∏_{e|d'} T_e of dimension Σ_{e|d'} φ(e) = **d'**;
+   burden ≥ 2 always (d' = 1 would need d ≤ 2, excluded); burden = 2 ⟺
+   d = 4 ⟺ level set {1,2} = the split/nonsplit pair (p−1, p+1 smooth =
+   the double condition = twin-smoothness); d = 4 realizable ⟺ 4 | r−1;
+   r ≡ 3 (mod 4) ⟹ burden ≥ 3. So
+   **burden(r) = min{d/2 if d even else d : d | r−1, d ≥ 3}**, never 1.
+
+**Conditional ingredient (the localized AG-G1 gap).** *Generic sharpness*
+(Prop 3.5): that the support bound is attained — large primes ℓ | Φ_e(p),
+e | d', actually divide ρ_r(p) — is an Artin-type statement, heuristic
+failure probability ~1/ℓ per component. A harvest could in principle target
+the collapsed thin set; that set is far thinner than the twin-smooth pool
+itself (density ~1/ℓ per avoided prime), so the escape is uneconomical, but
+it is not unconditionally excluded. Recorded as such in Remark 3.9.
+
+**Numerical verification** (`code/ag2_torus_check.py`, deterministic, 67
+sample primes across (r,d) ∈ {(5,4),(13,4),(41,4),(7,3),(7,6),(19,3),
+(11,5),(23,11)}):
+
+| check | statement | result |
+|---|---|---|
+| V1 | Frobenius matching | 67/67 |
+| V2 | collapse identity (X−1)^{p^{d/2}−1} = −X^{−1} | 36/36 (all even-d) |
+| V3 | exact ρ_r(p) computed inside the support bound | 67/67 |
+| V4 | large primes of levels e \| d' divide ρ_r(p) | 37/37 (0 exceptions; ~0.19 expected under 1/ℓ) |
+| V5 | top level e = d' genuinely needed in ρ_r(p) | 67/67 |
+| V6 | burden formula vs the A11 measured table | 11/11 moduli match (value AND minimizing d) |
+
+**Consequences.**
+- A11 is upgraded from an empirical table to a corollary of a dimension
+  count: *the double condition is the unique minimizer; the twin-smooth
+  condition is intrinsic to every AKS modulus; no r admits a single
+  1-dimensional-torus (p±1-only) route.* The structural reason "every other
+  r is worse" is that burden ≥ 3 forces smooth values of Φ_e(p) ~ p^{φ(e)},
+  φ(e) ≥ 2 — the same quantities whose non-smoothness underpins
+  Rubin–Silverberg torus cryptography.
+- The negative-result paper's option-(c) section can now cite a theorem
+  (mechanism-scoped, sharpness-generic) instead of a measurement; patch
+  note for `doc/negative-result-plan.md` owners: use arith-geom.tex
+  §3 (Theorem 3.6, Corollary 3.7) with the two caveats of Remark 2.3
+  (mechanism scope) and Remark 3.9 (generic sharpness).
+
+**Scope caveat (unchanged from A11):** everything quantifies the L–P
+*mechanism* (Frobenius-matching constructions, Def. 2.2); "accidental"
+component solutions outside it are not excluded — same discipline as the
+negative-result paper.
+
 ## References (verified links)
 
 - Agrawal–Kayal–Saxena, *PRIMES is in P*:
