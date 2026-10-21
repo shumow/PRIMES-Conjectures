@@ -233,6 +233,81 @@ sample primes across (r,d) ∈ {(5,4),(13,4),(41,4),(7,3),(7,6),(19,3),
 component solutions outside it are not excluded — same discipline as the
 negative-result paper.
 
+## AG5 result: the Popovych burden jump — first quantified evidence (2026-10-21)
+
+*Deliverables: `doc/arith-geom.tex` §5 (+ recompiled PDF),
+`code/ag5_popovych_check.py`, `data/generated/ag5_popovych_check.json`.
+Subsumes old plan item B4.*
+
+**Headline.** The second Popovych section X+2 **destroys the inversion
+collapse** that made the Agrawal attack supply-feasible. The L–P mechanism
+against the pair pays burden = d (full depth) at *every* parity of d, so
+
+> **burden_Pop(r) = min{d : d | r−1, d ≥ 3} ≥ 3 for every modulus r** —
+> global optimum 3 (iff 3 | r−1) vs Agrawal's 2; at Popovych's own r = 5
+> the burden is **4**: p−1, p+1 AND p²+1 simultaneously smooth. The
+> twin-smooth (burden-2) regime does not exist for the pair at any r.
+
+**Why (the structural lemmas, Theorem 5.5 in the tex).**
+1. *Trivial stabilizer* (Lemma 5.3, unconditional and global): for every
+   γ ≠ 1 in (Z/r)×, the ratio (ζ^γ+2)/(ζ+2) is not even a unit of Z[ζ_r]
+   (a prime q | (ζ+2) has ζ ≡ −2 of order r mod q; q | (ζ^γ+2) would force
+   ζ^{γ−1} ≡ 1, i.e. γ = 1). Contrast X−1: its zero {1} is Galois-stable
+   ((ζ−1) is the totally ramified prime above r), which is exactly what
+   furnished σ₋₁(ζ−1)/(ζ−1) = −ζ^{−1} ∈ μ_2r — the AG2 collapse. The zero
+   −2 of X+2 has trivial stabilizer, so no collapse at any depth.
+2. *Global independence* (Lemma 5.2): N(ζ−1) = r, N(ζ+2) = (2^r+1)/3,
+   coprime supports (gcd(r, 2^r+1) = gcd(r,3) = 1) — no multiplicative
+   identity ties ord(ζ+2) to ord(ζ−1); rank 2 mod torsion.
+3. *Level-1 component* (Lemma 5.1): the X=1 component of the second
+   congruence is 3^n ≡ 3 (mod n) (base-3 Fermat) — free for Carmichael n
+   but, unlike the first section's 0 = 0, already nontrivial at level one.
+4. Hence ρ'_r(p) = ord(X+2) generically spans ALL levels e | d including
+   the top level Φ_d(p) (dim φ(d)); lcm(ρ, ρ') spans all of p^d−1; burden
+   Σ_{e|d} φ(e) = d. Char-3 degeneracy noted: mod p=3 the sections coincide.
+
+**Burden comparison table** (deltas over Agrawal): +2 at r ∈ {5, 17, 29,
+41}; +1 at r ∈ {13, 37}; 0 at the r ≡ 3 (mod 4) moduli (where Agrawal was
+already ≥ 3 and both share full depth). Minima: 2 (Agrawal, any r ≡ 1 mod
+4) vs 3 (Popovych, needs 3 | r−1).
+
+**Cost at measured scale** (Prop 5.6; Dickman grid validated to <2% against
+reference values): at the frozen spec (p ≈ 51 bits, measured burden-2 ratio
+13.8, pool 2.5e5), the extra ~102-bit quadratic level is a pure Dickman tax
+— ρ(9.9) ≈ 3.9e-11 over the Q₊ base, ρ(7.5) ≈ 1.8e-7 even over the generous
+B′ base — so ratio → 5e-10 … 2.5e-6 and pool → 1e-5 … 0.05 elements:
+**the pair-mechanism harvest is empty at any feasible scale.** Φ₄(p) is
+pinned once p is, so the partition-first trick that pays for p∓1 cannot
+remove this tax. Solver side: the group gains the level-4 components, so
+identity-density drops below H7's 0.004 — the N1/A10 obstruction for the
+pair strictly contains Agrawal's.
+
+**Numerical verification** (`code/ag5_popovych_check.py`, 56 sample primes,
+same (r,d) grid as AG2):
+
+| check | statement | result |
+|---|---|---|
+| P1 | Frobenius matching for X+2 | 56/56 |
+| P2 | X−1 collapse bound does NOT absorb X+2 (even d) | 35/36 |
+| P3 | top level e = d present in ρ'_r(p) | 55/56 |
+| P4 | large primes of all levels e \| d divide ρ' | 47/47 (~0.28 misses expected) |
+| P5 | burden_Pop vs burden_Agr over the 11 A11 moduli | as stated above |
+| P6 | gcd(r, 2^r+1) = 1 (independence) | 11/11 |
+
+The single P2/P3 exception is r=13, p=5, where Φ₄(5) = 26 = 2·13 has no
+prime outside 2r at all — the top level is vacuous for that tiny prime, a
+small-prime degeneracy predicted by the generic model, not a collapse.
+
+**Interpretation & scope.** First quantified evidence in either direction
+on Popovych beyond search ranges (README §4 lists none): every known
+counterexample mechanism is strictly more blocked against the pair —
+≥ 1 extra torus dimension globally, 2 extra at r = 5 — and the only
+supply-feasible regime this project ever measured does not exist for it.
+Caveats unchanged: mechanism-scope (Remark 2.3) and generic sharpness
+(Remark 3.9), now applied to both sections; this quantifies the failure of
+the only known engine, not the truth of the conjecture. Candidate for a
+standalone short note per the plan.
+
 ## References (verified links)
 
 - Agrawal–Kayal–Saxena, *PRIMES is in P*:
