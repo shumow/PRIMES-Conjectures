@@ -85,6 +85,17 @@ survey. **Effort:** days (mostly search + writing). **Risk:** low.
 
 ## AG4. Elliptic Agrawal: formulate, then decide (the uncovered axis)
 
+**STATUS 2026-10-21: (a)+(b) DONE — gate AG-G2 NOT passed; (c) cancelled.**
+`doc/arith-geom.tex` §7: the canonical test exists only for CM curves
+(Borger–Gurney: Λ-structure ⟺ CM); the stabilizer-index theorem (burden =
+[⟨λ⟩ : ⟨λ⟩ ∩ U] ≥ 2 for valid λ ∉ U = unit image) subsumes AG2/AG5 and
+gives the same floor 2; the would-be burden-1 cells (λ ∈ U) are exactly
+the exception clause (elliptic rigid analogue); burden-2 cells demand
+twin-smoothness with sign-split targets — the N1/A10 obstruction transfers
+verbatim. The negative result extends to the CM-elliptic axis. Verified in
+`code/ag4_elliptic_check.py` (measured valid-cell floors: r=13 → 3,
+r=17 → 2, matching the index formula). Original item follows.
+
 **Goal.** The one place the geometric view might re-open a constructive
 route. Three stages, each gated:
 

@@ -383,6 +383,85 @@ nearest success of the AGP machine to our cell; the one-sided vs sign-split
 contrast is the structural explanation of why it succeeded where H8/N1
 collapsed. README §4a now carries the reference block.
 
+## AG4 result: the elliptic axis is closed — the stabilizer-index floor (2026-10-21)
+
+*Deliverables: `doc/arith-geom.tex` §7 (+ recompiled PDF, now 14 pp),
+`code/ag4_elliptic_check.py`, `data/generated/ag4_elliptic_check.json`,
+status annotation in `doc/arith-geom-plan.md`. **Gate AG-G2: NOT passed;
+AG4(c) cancelled** — the write-up extends the negative result instead.*
+
+**Formulation (AG4a).** A canonical elliptic Agrawal congruence exists
+only for CM curves: an elliptic curve carries a canonical Frobenius-lift
+family (Λ-structure) iff it has CM (Borger–Gurney, arXiv:1710.08674); for
+non-CM E there is no analogue of X ↦ Xⁿ, and trying all traces is
+exponential. CM form (Def 7.1): E with CM by O_K (units U of order w = 4
+at j=1728, 6 at j=0), eigenline kernel polynomial g of E[r], section
+f = x; test ∃τ ∈ (Z/r)×: fⁿ ≡ f∘[τ] (mod n, g) — poly(r) candidates;
+prime n passes with τ = λ_n (the Frobenius scalar on the eigenline). The
+exception clause must be **τ ∈ U**: U-cells are the elliptic analogue of
+rigid Carmichael numbers (one-sided, AGP-constructible per §6), exactly as
+n² ≡ 1 (mod r) is σ_n ∈ {±1} — **the clause is the stabilizer** (the
+§1/§6 principle, now uniform).
+
+**The master theorem (Thm 7.4, stabilizer-index floor).** For a section f
+with scalar Frobenius λ in cyclic Γ and unit-stabilizer U (the subgroup
+acting on f by root-of-unity cofactors):
+
+> **burden = k' = [⟨λ⟩ : ⟨λ⟩ ∩ U]** (levels e | k'; exact collapse
+> identities give the upper bound, generic sharpness the attainment), and
+> **validity (λ ∉ U) forces k' ≥ 2.**
+
+One theorem now subsumes everything: (μ_r, X−1): U = {±1} → AG2's d/2-d;
+(μ_r, X+2): U = {1} → AG5's full depth; (E_{j=1728}, x): U = μ₄ →
+burden m/gcd(m,4); (E_{j=0}, x): U = μ₆-image → m/gcd(m,6). The collapse
+identities are exact as before: x([i]S) = −x(S) on y² = x³ − x gives
+x(T)^{p^e} = −x(T) when λ^e ≡ ±i.
+
+**Why the elliptic world looked better and isn't.** Cells with λ ≡ ±i
+collapse the section order to level 1 (x(T)^{p−1} = ±1: burden 1 — the
+thing AG2 proved impossible on every torus route!) — but all order-4
+elements of the cyclic (Z/r)× ARE ±i, i.e. these cells lie inside U =
+the exception clause, mirroring rigid Carmichaels inside n ≡ ±1 (mod r).
+For valid λ the floor returns to 2 (order-8 λ at j=1728: x^{p²} = −x,
+ord | 2(p²−1)), and burden-2 cells demand **p−1 and p+1 smooth — the same
+twin-smooth condition** — with a ray-class slice (λ_p of order 2w mod r)
+replacing the mod-80 cell and unit-twisted mixed targets reproducing the
+sign-split structure of §6. So the N1/A10 harvest+solver obstruction
+transfers verbatim. Supersingular cells (a_p = 0, φ² = [−p]) collapse via
+⟨p⟩ mod r exactly as in the torus case — no separate escape.
+
+**Burden comparison over the A11 moduli (j=1728 vs torus):** elliptic ≥
+torus at every r — equal at r ∈ {7, 11, 17, 19, 23, 31, 41}, strictly
+worse at {13: 3v2, 29: 7v2, 37: 3v2}, degenerate at r=5 (every λ-order
+divides 4: all cells exceptional — the elliptic test can't even be run
+non-trivially at Popovych's modulus). Floor 2 attained iff 8 | r−1
+(j=1728) or 12 | r−1 (j=0).
+
+**Numerical verification** (`code/ag4_elliptic_check.py`, division
+polynomials built from the recursion and checked, E: y² = x³ − x,
+r ∈ {13, 17}, 10 ordinary split primes each): E1 ψ_r degrees and factor
+degrees all consistent; E2 Frobenius closure all factors; E3 all 45
+exceptional (λ ∈ μ₄) cells have k ≤ 2 as predicted, sharpness 112/112;
+**E4 measured valid-cell floor: r=13 → 3, r=17 → 2, exactly the index
+formula** (r=17 data shows the whole ladder: deg-4 factors with
+x^{p²} = −x at burden 2, deg-8 with k'=4 at levels {1,2,4}, deg-16
+mixed); E5 elliptic ≥ torus at all 11 moduli.
+
+**Caveats.** Standing ones (mechanism scope, generic sharpness) plus:
+the formulation is CM-bound (non-CM not well-posed); eigenline data is
+certificate-style for general n (explicit only for special sequences à la
+Gurevich–Kunyavskii / elliptic periods); the elliptic no-further-collapse
+uses the disjoint-support argument for division values (elliptic-unit
+independence), same epistemic status as Lemma 5.3's cyclotomic version
+with empirical backing.
+
+**Consequence for the AG track.** All four planned mathematical items
+(AG2, AG3, AG5, AG4) are done; the negative result now covers: every AKS
+modulus r (A11/AG2), the Popovych pair (AG5), and the CM-elliptic axis
+(AG4), unified by the stabilizer-index theorem. Remaining: AG1's
+exposition polish (§1 todos) and the optional AG6 function-field appendix;
+then the material is ready to fold into the negative-result paper.
+
 ## References (verified links)
 
 - Agrawal–Kayal–Saxena, *PRIMES is in P*:

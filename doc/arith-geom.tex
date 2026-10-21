@@ -26,7 +26,7 @@
 
 \title{Arithmetic-Geometric Structure of Agrawal's Conjecture\\
 and the Torus Dimension Count Behind the Double Condition\\
-\large (AG track working document --- v0.3, items AG2, AG5 and AG3)}
+\large (AG track working document --- v0.4, items AG2, AG5, AG3 and AG4)}
 \author{Dan Shumow \and Claude (Anthropic Fable~5)}
 \date{October 21, 2026}
 
@@ -70,7 +70,17 @@ respectively, and the striking asymmetry of the record --- rigid depth-$2$
 impersonators exist at $4.4\times10^{14}$ (Howe) while the Williams cell is
 empty to $2^{64}$ --- shows that \emph{sign splitting}, not depth, is the
 constructible/blocked boundary, in exact agreement with this project's
-N1/A10 measurements.
+N1/A10 measurements. Section~\ref{sec:elliptic} (item AG4) settles the
+elliptic axis: a canonical elliptic Agrawal congruence exists only for CM
+curves, and there a single \emph{stabilizer-index theorem} --- burden $=
+[\langle\lambda\rangle : \langle\lambda\rangle \cap U]$, where $U$ is the
+unit-stabilizer of the test section --- subsumes
+Theorems~\ref{thm:dimcount} and \ref{thm:popburden} and gives the same
+floor of $2$: the would-be burden-$1$ cells lie inside the exception
+clause (they are the elliptic analogue of rigid Carmichael numbers), the
+burden-$2$ cells demand twin-smoothness again with sign-split targets, and
+gate AG-G2 is not passed --- the negative result extends to the
+CM-elliptic axis.
 \end{abstract}
 
 \section{The Frobenius-lift dictionary}\label{sec:dictionary}
@@ -813,6 +823,183 @@ Remark~\ref{rem:signs}'s last point: even within the exception clause,
 rigid impersonation alone does not pass the AKS congruence --- the
 $\mu_{2r}$ torsion must be arranged separately.
 
+\section{The elliptic axis: formulation and the stabilizer-index floor}
+\label{sec:elliptic}
+
+Everything measured in this project (A1--A11, N1) lives on $\Gm$ and its
+tori. Item AG4 asks whether replacing $\mu_r \subset \Gm$ by elliptic
+torsion opens a route the torus negative results do not cover. The answer,
+reached here through stages (a) and (b) of the plan, is no: the burden
+floor of $2$ is a structural invariant, and gate AG-G2 is not passed.
+
+\subsection{Formulation (AG4a): the test needs CM}
+
+The AKS congruence rests on the \emph{canonical} substitution
+$\sigma_n : X \mapsto X^n$ --- the Adams operation of the $\Lambda$-ring
+$\Z[\mu_r]$ (Section~\ref{sec:dictionary}). An elliptic curve over $\Z$
+carries such a canonical commuting family of Frobenius lifts if and only
+if it has complex multiplication \cite{BorgerGurney}; for a non-CM curve
+there is no analogue of $\sigma_n$ at all, and testing against all
+candidate traces $a \in [-2\sqrt n, 2\sqrt n]$ is exponential. So the
+well-posed analogue is CM:
+
+\begin{definition}[elliptic AKS test, CM form]\label{def:elltest}
+Let $E/\Q$ have CM by $O_K$, $K$ imaginary quadratic with unit group
+$O_K^\times$ of order $w$ ($w = 4$: $j = 1728$, $E : y^2 = x^3 - x$,
+$[i](x,y) = (-x, iy)$; $w = 6$: $j = 0$). Fix an odd prime $r$ of good
+reduction split in $K$, a kernel polynomial $g$ of an $r$-eigenline
+(certificate-style, or explicit for special sequences as in
+\cite{GK12}), and a section $f$ (we take $f = x$). The test: for
+composite-candidate $n$ coprime to $2r\,\Delta_E$,
+\[
+\exists\, \tau \in (\Z/r)^\times : \qquad
+f^{\,n} \;\equiv\; f \circ [\tau] \pmod{n,\ g(x)},
+\]
+$[\tau]$ acting through division polynomials ($r - 1$ candidates, so
+poly$(r)$ trials). For $n$ prime, ordinary and split, the $n$-power
+Frobenius acts on the eigenline by a scalar $\lambda_n$ and the test
+passes with $\tau = \lambda_n$.
+\end{definition}
+
+\begin{remark}[the exception clause]\label{rem:ellclause}
+Let $U \le (\Z/r)^\times$ be the image of $O_K^\times$ (for $j = 1728$:
+$U = \mu_4 = \{\pm1, \pm i\}$, present iff $4 \mid r-1$). Cells with
+$\lambda_p \in U$ at every $p \mid n$ are the elliptic analogue of the
+rigid cells of Section~\ref{sec:hierarchy}: their assembly is a one-sided
+AGP-type problem (heuristically constructible, as Howe's example
+demonstrates for the rigid torus cell), so a credible elliptic Agrawal
+conjecture must read: \emph{the congruence forces $n$ prime or
+$\tau \in U$} --- the clause is the stabilizer, exactly as
+$n^2 \equiv 1 \pmod r$ is $\sigma_n \in \{\pm 1\}$
+(Lemma~\ref{lem:clause}). Validity of a counterexample therefore means
+$\lambda$-data escaping $U$.
+\end{remark}
+
+\subsection{The stabilizer-index theorem (AG4b)}
+
+The collapse identities are exact, as in Lemma~\ref{lem:collapse}: for an
+eigenline point $T$ with Frobenius scalar $\lambda$,
+$x(T)^{p^e} = x([\lambda^e]T)$, and on $E : y^2 = x^3 - x$ the
+automorphism gives $x([i]S) = -x(S)$ for \emph{all} $S$. Hence
+$\lambda^e \equiv \pm 1$ gives $x(T)^{p^e} = x(T)$ and
+$\lambda^e \equiv \pm i$ gives $x(T)^{p^e} = -x(T)$; with
+\[
+k' \;:=\; \min\{\, e \ge 1 : \lambda^e \in U \,\}
+\;=\; [\langle\lambda\rangle : \langle\lambda\rangle \cap U],
+\]
+the order of $x(T)$ divides $2(p^{k'} - 1)$: support on the levels
+$e \mid k'$, burden $k'$. The same computation in each earlier setting
+yields one statement:
+
+\begin{theorem}[stabilizer-index floor]\label{thm:stabindex}
+Let a test section $f$ on a torsion scheme carry a scalar Frobenius
+action $\lambda$ in a cyclic group $\Gamma$, and let $U \le \Gamma$ be
+the subgroup whose action fixes $f$ up to root-of-unity cofactors (the
+stabilizer of $\operatorname{div} f$ up to torsion units). Then the
+$p$-dependent support of the control order is the levels
+$e \mid k'$ with $k' = [\langle\lambda\rangle : \langle\lambda\rangle
+\cap U]$ --- an unconditional upper bound via the exact cofactor
+identities, attained generically in the sense of
+Proposition~\ref{prop:sharp}. A valid counterexample requires
+$\lambda \notin U$ (Remark~\ref{rem:ellclause} and its torus analogues),
+hence $\langle\lambda\rangle \cap U \lneq \langle\lambda\rangle$ and
+\[
+\text{burden} \;=\; k' \;\ge\; 2 .
+\]
+Instances: $(\mu_r,\, X-1)$: $U = \{\pm1\}$, burden $d/\gcd(d,2)$
+adjusted to $d'$ --- Theorem~\ref{thm:dimcount}; $(\mu_r,\, X+2)$:
+$U = \{1\}$, burden $d$ --- Theorem~\ref{thm:popburden};
+$(E_{j=1728},\, x)$: $U = \mu_4$, burden $m/\gcd(m, 4)$ for
+$\ord(\lambda) = m$; $(E_{j=0},\, x)$: $U = \mu_6$-image, burden
+$m/\gcd(m, 6)$.
+\end{theorem}
+
+\begin{proof}
+Collapse: with $e = k'$ minimal, $\lambda^{k'} \in U$ gives
+$f(T)^{p^{k'}} = \zeta f(T)$ with $\zeta$ a root of unity of small order
+(the cofactor of the unit action on $f$: $-\zeta^{-1}$ for $X - 1$ under
+inversion, $-1$ for $x$ under $[i]$, $\zeta_3^{\pm1}$ for $x$ under
+$[\zeta_3]$), so $\ord f(T)$ divides $(\text{small}) \cdot (p^{k'}-1)$.
+No smaller $e$ works: for $e < k'$, $\lambda^e \notin U$ and the cofactor
+$f \circ [\lambda^e] / f$ is a non-torsion unit (cyclotomic for $\mu_r$,
+Lemma~\ref{lem:nocollapse}; elliptic for $E$, where the division values
+are supported above $r$ and distinct points give distinct prime support
+--- the same disjoint-support argument), so no identity collapses the
+order; generic sharpness then puts the full levels $e \mid k'$ in the
+order. The index formula is cyclicity of $\langle\lambda\rangle$.
+Validity excludes $\lambda \in U$, so the index is at least $2$.
+\end{proof}
+
+\begin{remark}[supersingular cells]
+For $p$ inert in $K$ (e.g.\ $p \equiv 3 \bmod 4$ on $y^2 = x^3 - x$),
+$a_p = 0$ and $\varphi^2 = [-p]$, so the collapse of $x$-values is
+governed by $\langle p \rangle \subseteq (\Z/r)^\times$ exactly as in the
+torus case --- supersingular cells offer no separate escape.
+\end{remark}
+
+\subsection{Gate AG-G2: not passed}
+
+\begin{corollary}[the elliptic axis is closed]\label{cor:ellclosed}
+On the $j = 1728$ curve the per-modulus burden is
+$\mathrm{burden}_{\mathrm{ell}}(r) = \min\{\, m/\gcd(m,4) \ge 2 : m \mid
+r - 1 \,\}$, degenerate (no valid cell) when $r - 1 \mid 4\cdot 2^\infty$
+fails to provide one, e.g.\ $r = 5$; on $j = 0$ replace $4$ by $6$. In
+every tested case (Section~\ref{sec:ellnumerics})
+$\mathrm{burden}_{\mathrm{ell}}(r) \ge \mathrm{burden}_{\mathrm{Agr}}(r)$,
+and the floor $2$ --- attained iff $8 \mid r-1$ ($j = 1728$) or
+$12 \mid r-1$ ($j = 0$) --- lands on the levels $\{1, 2\}$: \emph{$p - 1$
+and $p + 1$ smooth, the same twin-smooth demand as the torus route}, now
+with a ray-class slice ($\lambda_p$ of order $2w$ mod $r$, a positive-%
+density Chebotarev condition) in place of the mod-$80$ cell, and with
+unit-twisted mixed targets ($x(T)^{p^{k'}} = -x(T)$), i.e.\ the
+sign-split structure of Remark~\ref{rem:signs} --- so the N1/A10
+harvest-and-solver obstruction transfers verbatim. The apparent
+burden-$1$ cells ($\lambda \in U$) are exactly the exception clause.
+Gate AG-G2 of the plan is therefore \textbf{not passed}: the elliptic
+axis offers no single-rare-event escape, and stage AG4(c) is cancelled;
+this section extends the negative result to the CM-elliptic axis.
+\end{corollary}
+
+Caveats, beyond the standing ones (mechanism scope, Remark~\ref{rem:scope};
+generic sharpness, Remark~\ref{rem:conditional}): the formulation itself is
+CM-bound --- the non-CM "elliptic Agrawal" is not well-posed for lack of a
+canonical Frobenius lift \cite{BorgerGurney} --- and the eigenline kernel
+polynomial is certificate-style data for general $n$ (explicit only for
+special sequences, as in \cite{GK12,CouveignesLercier}).
+
+\subsection{Numerical validation}\label{sec:ellnumerics}
+
+\texttt{code/ag4\_elliptic\_check.py} (deterministic; output in
+\texttt{data/generated/ag4\_elliptic\_check.json}), on $E : y^2 = x^3 - x$
+with $r \in \{13, 17\}$ and ten ordinary primes $p \equiv 1 \pmod 4$ each:
+
+\begin{center}
+\begin{tabular}{llr}
+\hline
+check & statement & result \\
+\hline
+E1 & $\deg \psi_r = (r^2-1)/2$; factor degrees multiply back & all \\
+E2 & Frobenius closure $t^{p^k} = t$ per factor field & all \\
+E3 & exceptional cells ($k' = 1$, $\lambda \in \mu_4$) have $k \le 2$ &
+$45/45$ \\
+E3 & sharpness: large primes of levels $e \mid k'$ divide $\ord(t)$ &
+$112/112$ \\
+E4 & measured valid-cell floor: $r = 13 \to 3$, $r = 17 \to 2$ &
+matches index formula \\
+E5 & $\mathrm{burden}_{\mathrm{ell}}(r) \ge
+     \mathrm{burden}_{\mathrm{Agr}}(r)$ over the A11 moduli & $11/11$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The $r = 17$ data shows the floor concretely: degree-$4$ factors with
+$t^{p^2} = -t$ (order-$8$ $\lambda$: burden $2$, $\Phi_4(p)$ absent from
+$\ord t$) alongside degree-$8$ factors with $k' = 4$ (order-$16$
+$\lambda$: levels $\{1,2,4\}$) and degree-$16$ mixed cells; at $r = 13$
+no valid cell beats burden $3$, as $12/\gcd(12,4) = 3$ predicts. $r = 5$
+is degenerate on this curve: every $\lambda$-order divides $4$, so all
+cells are exceptional.
+
 \begin{thebibliography}{99}
 \bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, PRIMES is in P,
 \emph{Ann.\ of Math.} 160 (2004), 781--793.
@@ -860,6 +1047,11 @@ elliptic Carmichael numbers, \emph{J.\ Aust.\ Math.\ Soc.} 92 (2012),
 45--60.
 \bibitem{Grantham} J.~Grantham, Frobenius pseudoprimes, \emph{Math.\ Comp.}
 70 (2001), 873--891.
+\bibitem{BorgerGurney} J.~Borger, L.~Gurney, Canonical lifts and
+$\Lambda$-structures (elliptic curves with complex multiplication),
+arXiv:1710.08674.
+\bibitem{CouveignesLercier} J.-M.~Couveignes, R.~Lercier, Elliptic periods
+and primality proving, arXiv:0810.2853.
 \end{thebibliography}
 
 \end{document}
