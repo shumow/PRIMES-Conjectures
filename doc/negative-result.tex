@@ -1,0 +1,809 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\cP}{\mathcal{P}}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\ord}{ord}
+
+\title{On the Infeasibility of Constructing Lenstra--Pomerance
+Counterexamples\\ to Agrawal's Conjecture via Twin-Smooth Subset Products}
+\author{Dan Shumow \and Claude (Anthropic Fable~5)}
+\date{October 21, 2026 --- v1.0}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Agrawal's conjecture asserts that for a prime $r \nmid n$, the congruence
+$(X-1)^n \equiv X^n - 1 \pmod{n,\,X^r-1}$ forces $n$ prime or
+$n^2 \equiv 1 \pmod r$; if true it yields a deterministic
+$\tilde O(\log^3 n)$ primality test. The only known route to a
+counterexample is the Lenstra--Pomerance construction: a squarefree $n$
+whose prime factors $p$ satisfy $p - 1 \mid n - 1$ and $p + 1 \mid n + 1$
+with auxiliary local conditions. We report on a sustained attempt to
+\emph{construct} such an $n$ of unrestricted size, as a two-stage pipeline:
+harvest a pool of primes $p = 2m+1$ with $(m, m+1)$ twin-smooth over
+partitioned factor bases, then solve a two-sided $0/1$ subset-product in
+$(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$. The supply stage is
+solved: a partition-first harvester achieves measured supply/demand ratios
+of $13.8$--$209$ against a yield model validated (conservatively) on the
+complete $B = 547$ twin-smooth corpus. The solve stage is blocked, by a
+\emph{measured, two-part obstruction}: pools dense enough for the only
+scalable subset-product solver family (the Alford--Granville--Pomerance /
+L\"oh--Niebuhr / AGHS methods, which need identity-density
+$\rho \gtrsim 0.98$ by a measured generalized-birthday reach law
+$r_{\max} \sim \log N / (1 - \rho)$) are unharvestable under the double
+condition, while harvestable pools have $\rho \approx 0.004$. We then show
+the obstruction is structural rather than parametric: a torus
+dimension-count theorem proves the double (twin-smooth) condition is the
+unique minimum-burden cell for \emph{every} AKS modulus $r$; Popovych's
+two-section variant is strictly harder (burden $\ge 3$ everywhere, $4$ at
+$r = 5$); and a stabilizer-index theorem extends the same floor to the
+CM-elliptic analogue. This is not a disproof of the conjecture, nor a proof
+that no counterexample can be constructed; it is a quantified closure of
+the known constructive route, with the residual open directions stated
+precisely.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+For coprime integers $n, r$ write $T(-1,n,r)$ for the congruence
+\begin{equation}\label{eq:aks}
+(X-1)^n \equiv X^n - 1 \pmod{n,\, X^r-1}.
+\end{equation}
+
+\begin{conjecture}[Agrawal; Bhattacharjee--Pandey \cite{BP01}]\label{conj:agrawal}
+If $r$ is a prime not dividing $n$ and $T(-1,n,r)$ holds, then $n$ is prime
+or $n^2 \equiv 1 \pmod r$.
+\end{conjecture}
+
+If true, a single evaluation of \eqref{eq:aks} at one $r = O(\log n)$ would
+certify primality deterministically in $\tilde O(\log^3 n)$ time, against
+$\tilde O(\log^6 n)$ for the best proven algorithm \cite{LP2019}. The
+conjecture's status is peculiar: Lenstra and Pomerance \cite{LPremarks}
+gave a heuristic argument for $\gg x^{1-\varepsilon}$ counterexamples below
+$x$, later extended by Popovych \cite{Popovych09} and Hegde--Devaraj
+\cite{HD21}, yet no counterexample is known, exhaustive search is clean to
+$10^{17}$ (Primaboinca, 2010--2020), and folklore places the least
+counterexample at hundreds of digits.
+
+Searching is therefore hopeless, but \emph{constructing} is not obviously
+so: the Lenstra--Pomerance (L--P) mechanism is deterministic --- when its
+arithmetic side conditions hold, \eqref{eq:aks} follows with no further
+luck --- and its heuristic density \emph{improves} with size. This paper
+reports the outcome of carrying that program through, with every stage
+instrumented and measured. Our contributions:
+
+\begin{enumerate}\itemsep2pt
+\item[(i)] \textbf{Supply is solved.} A \emph{partition-first} harvester
+for the required pool primes achieves measured supply/demand ratios of
+$13.8$--$209$ (gate threshold $2.5$), with a per-candidate yield model
+validated against the complete $B = 547$ twin-smooth corpus
+(predicted/actual $0.41$--$1.04$, geometric mean $0.68$: conservative).
+Along the way we quantify why the naive approach fails: mining any fixed
+twin-smooth corpus hits a measured \emph{$0.06$ invariant} ($\approx 0.06$
+usable elements per demand bit, a factor $16$--$25$ below feasibility),
+stable across corpora from $78$ to $73{,}163$ pool elements
+(\S\ref{sec:supply}).
+\item[(ii)] \textbf{The solver stage is blocked by a measured density
+gap.} The group's $2$-part is $\mathrm{GF}(2)$-linear and solved at full
+scale, but carries only ${\sim}16\%$ of the constraint bits. For the odd
+part, generic solvers cap $2$--$3$ orders of magnitude below the required
+dimension; the only scalable family (AGP/L\"oh--Niebuhr/AGHS
+subset-product methods \cite{AGP,LN,AGHS}) requires pool identity-density
+$\rho \gtrsim 0.98$ by a measured generalized-birthday reach law, while
+pools harvestable under the double Carmichael + Lucas--Carmichael
+condition have $\rho \approx 0.004$, and pools with AGHS-grade density are
+measurably unharvestable ($0$--$2$ elements at every feasible scale). One
+can have a harvestable pool or a solvable one, not both
+(\S\ref{sec:solver}).
+\item[(iii)] \textbf{The obstruction is structural, not parametric.} A
+torus dimension-count theorem shows that for \emph{every} AKS modulus $r$
+the mechanism forces smoothness control on cyclotomic tori of total
+dimension $\ge 2$, with the minimum $2$ attained exactly by the
+split/nonsplit pair --- the twin-smooth double condition --- so no choice
+of $r$ escapes (i); Popovych's variant is strictly harder (burden $\ge 3$
+everywhere, $4$ at his own $r = 5$); and a stabilizer-index theorem
+extends the same floor to the CM-elliptic analogue of the test
+(\S\ref{sec:structural}).
+\item[(iv)] \textbf{Reusable machinery and vocabulary.} A validated
+near-complete twin-smooth generator, the yield model, the density-reach
+diagnostic for Carmichael-type constructions, and the identification of
+the target objects with the \emph{Williams numbers} of the generalized-%
+Carmichael literature \cite{Williams77,Echi07,McIntoshMitra}
+(\S\ref{sec:conclusion}).
+\end{enumerate}
+
+\paragraph{What is not claimed.} This paper does not disprove
+Conjecture~\ref{conj:agrawal}, which remains open and widely believed
+false. It does not prove that no counterexample can ever be constructed.
+Its negative results quantify the failure of the \emph{known mechanism}
+(Frobenius-matching constructions in the L--P family) when driven by the
+\emph{known solver families}; \S\ref{sec:scope} states the boundary of the
+claim and the open directions precisely. The empirical statements are
+measurements, reproducible from the committed code and data
+(Appendix~\ref{app:repro}); the structural theorems of
+\S\ref{sec:structural} are proved, with one generic-sharpness ingredient
+whose status (heuristic, empirically supported, Artin-type) is flagged
+wherever used.
+
+\section{The construction and its reduction}\label{sec:reduction}
+
+\begin{theorem}[Lenstra--Pomerance \cite{LPremarks}; the $k \equiv 3 \bmod
+4$ case in V\'a\v{n}a \cite{Vana09}]\label{thm:lp}
+Let $n = p_1 \cdots p_k$ with $p_1, \dots, p_k$ distinct primes such that
+\emph{(a)} $k$ is odd; \emph{(b)} $p_i \equiv 3 \pmod{80}$;
+\emph{(c)} $p_i - 1 \mid n - 1$ for all $i$ ($n$ is Carmichael);
+\emph{(d)} $p_i + 1 \mid n + 1$ for all $i$ ($n$ is Lucas--Carmichael).
+Then $T(-1,n,5)$ holds and $n^2 \not\equiv 1 \pmod 5$; such an $n$ with
+$k \ge 3$ is a counterexample to Conjecture~\ref{conj:agrawal}.
+\end{theorem}
+
+The mechanism behind Theorem~\ref{thm:lp} is \emph{Frobenius matching}:
+modulo each $p \mid n$, the ring $\F_p[X]/(X^5-1)$ splits as $\F_p \times
+\F_{p^4}$, the Frobenius gives $(\zeta - 1)^{p^j} = \zeta^{p^j} - 1$
+exactly, and conditions (b)--(d) force $n \equiv p \pmod{\lcm(5,
+\rho_5(p))}$, where $\rho_5(p)$, the multiplicative order of $X - 1$ in
+$(\F_p[X]/\Phi_5)^\times$, divides $10(p^2 - 1)$ \cite{Vana09}. Composite
+$n$ built this way \emph{impersonate the Frobenius} of each prime divisor
+on both one-dimensional algebraic tori over $\F_p$: the split torus
+($\#\mathbb{G}_m(\F_p) = p - 1$, condition (c)) and the nonsplit norm-one
+torus ($\#T_2(\F_p) = p + 1$, condition (d)). In the vocabulary of the
+generalized-Carmichael literature, candidates satisfying (c)+(d) are
+exactly the \emph{Williams numbers} \cite{Williams77,Echi07}: no example
+is known, none exists below $2^{64}$ \cite{McIntoshMitra} (nor below the
+Carmichael tables to $10^{18}$ \cite{Pinch}), and
+nonemptiness of the class is open --- facts consistent with, and explained
+by, the measurements below.
+
+Two elementary lemmas shape everything downstream.
+
+\begin{lemma}[side-coprimality]\label{lem:sides}
+If $n$ satisfies (c) and (d) then $\gcd(p_i - 1, p_j + 1) \mid 2$ for all
+$i, j$; the odd primes dividing $\prod_i(p_i - 1)$ and those dividing
+$\prod_i(p_i + 1)$ form disjoint sets.
+\end{lemma}
+\begin{proof}
+An odd prime $q$ dividing $p_i - 1$ and $p_j + 1$ divides both $n - 1$ and
+$n + 1$, hence $2$.
+\end{proof}
+
+\begin{lemma}[twin-smooth dictionary]\label{lem:dict}
+Let $p = 2m + 1$. Conditions (b) and the smoothness structure of
+$p \mp 1$ hold iff $m \equiv 1 \pmod{40}$, $(m, m+1)$ is a pair of
+consecutive smooth numbers (a \emph{twin-smooth} pair) with the odd part
+of $m$ supported on one side $Q_-$ and the odd part of $m + 1$ on the
+other side $Q_+$, and $p$ is prime.
+\end{lemma}
+
+Twin-smooth pairs with $2m+1$ prime are precisely the parameters sought by
+the isogeny-based schemes B-SIDH and SQIsign, so their generation is an
+industrial literature \cite{CMN21,BCCEMNS23,BHLNV,MSW} whose datasets we
+use throughout. Fixing finite disjoint odd prime sets $Q_-, Q_+$ (with
+$5 \notin Q_- \cup Q_+$), the pool is
+\[
+\cP = \bigl\{\, p = 2m+1 \ \text{prime} : m \equiv 1 \!\!\!\pmod{40},\
+m \ \text{odd-}Q_-\text{-smooth},\ \tfrac{m+1}{2}\
+\text{odd-}Q_+\text{-smooth} \bigr\},
+\]
+and with $\Lambda_- = 2\lcm\{p - 1\}$, $\Lambda_+ = 4\lcm\{p + 1\}$ over
+$\cP$:
+
+\begin{proposition}[reduction to a two-sided subset product]
+\label{prop:reduction}
+If $S \subseteq \cP$ with $|S|$ odd, $|S| \ge 3$, and
+$n = \prod_{p \in S} p$ satisfies
+\begin{equation}\label{eq:target}
+n \equiv 1 \pmod{\Lambda_-}, \qquad n \equiv -1 \pmod{\Lambda_+},
+\end{equation}
+then $n$ is a counterexample to Conjecture~\ref{conj:agrawal}. The targets
+in \eqref{eq:target} are consistent because
+$\gcd(\Lambda_-, \Lambda_+) = 2$ (Lemma~\ref{lem:sides}).
+\end{proposition}
+
+Taking discrete logarithms in each cyclic component (Pohlig--Hellman is
+cheap: all component orders are smooth by design), \eqref{eq:target} is a
+$0/1$ subset-sum over $G = (\Z/\Lambda_-)^\times \times
+(\Z/\Lambda_+)^\times \cong \bigoplus_i \Z/m_i$, plus one $\Z/2$ parity
+coordinate. Pigeonhole solvability needs $|\cP| \gtrsim \log_2|G|$ with
+slack for the solver. The pipeline is therefore \textbf{harvest} ($\cP$,
+with $|\cP| / \log_2|G|$ comfortably $> 1$) then \textbf{solve} (find
+$S$). The next two sections treat the stages in turn; all quantitative
+claims are measurements, traceable per Appendix~\ref{app:repro}.
+
+\section{Supply is solved}\label{sec:supply}
+
+\subsection{Mining fixed corpora fails: the $0.06$ invariant}
+
+The obvious approach is to mine existing twin-smooth datasets: filter by
+Lemma~\ref{lem:dict}, then choose the side partition $Q_- \sqcup Q_+$ that
+retains the most elements (an element survives iff its $m$-support and
+$(m+1)$-support land on opposite sides). Measured across every scale
+available to us --- including the \emph{complete} $B = 547$ corpus of
+$82{,}026{,}426$ pairs (courtesy of M.~Naehrig), which yields $73{,}163$
+pool candidates after the congruence and primality filters --- the best
+partition found by element-greedy search and by direct partition-space
+local search keeps
+\[
+\textbf{$0.060$--$0.083$ elements per demand bit}
+\]
+(Table~\ref{tab:invariant}), where demand is $\log_2$ of the group order
+the survivors generate. Feasibility needs ratio $\gtrsim 1$--$3$: the
+shortfall is a factor $16$--$25$, stable across two orders of magnitude in
+$B$-range and three in pool size, and insensitive to corpus completeness
+and to the optimizer used. Mechanism: a partition-agnostic twin pays
+$\approx 2$ fresh primes $\times$ $7$--$7.5$ bits of new demand per kept
+element. Dataset mining is dead as the primary route.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+corpus & source & pool & best survivors & surv./demand-bit \\
+\midrule
+$B=113$, $X \le 10^8$ & sieve & $59$ & $8$ & $0.061$ \\
+$B=113$, $X \le 10^{10}$ & sieve & $73$ & $8$ & $0.061$ \\
+$B=113$, St\o rmer closure & CHM & $78$ & $8$ & $0.061$ \\
+$B=257$, $X \le 10^9$ & sieve & $497$ & $21$ & $0.061$ \\
+$B=547$, $X \le 10^9$ & sieve & $2{,}715$ & $51$ & $0.068$ \\
+$B=200$, near-complete & CHM (ours) & $562$ & $17$ / $16$ & $0.060$ / $0.061$ \\
+$B=547$, complete corpus & \cite{BCCEMNS23} & $73{,}163$ & $82$ & $0.083$ \\
+\bottomrule
+\end{tabular}
+\caption{The mining invariant. $B=200$ lists element-greedy /
+partition-space search; the $B=547$ row is the full published corpus
+(random-partition expectation there: $25.6$ survivors).}
+\label{tab:invariant}
+\end{table}
+
+As calibration infrastructure we implemented the
+Conrey--Holmstr\"om--McLaughlin closure \cite{CHM13,BCCEMNS23} in C; it
+reproduces the exact complete twin-smooth sets to $99.2$--$99.7\%$ with
+zero false positives and exactly matching largest elements ($B = 100$:
+$13{,}333$ of $13{,}374$; $B = 200$: $346{,}110$ against the true
+$348{,}840$ --- the originally published count $346{,}192$ was itself
+$0.8\%$ short), anchoring the supply curve at $N(B) \sim B^{\alpha}$ with
+fitted $\alpha \approx 4.7$--$5.4$.
+
+\subsection{Partition-first harvesting: gates G1 and G2 passed}
+
+The invariant is a global combinatorial tax, and it is bypassed by fixing
+the partition \emph{first}: choose $Q_-, Q_+$, enumerate candidates $m$ as
+products of $j$ primes of $Q_-$ (no smoothness luck needed on that side),
+and test only $(m+1)/2$ for $Q_+$-smoothness and $2m+1$ for primality.
+Every hit is partition-compatible by construction; the cost moves into
+per-candidate yield, a local Dickman-type probability. Measured ratios of
+projected pool to demand bits, at $8$--$20$M samples per cell
+(Appendix~\ref{app:tables}, Table~\ref{tab:a2}): $13.8$ at the frozen
+production spec ($Q_+ =$ odd primes $\le 1259$ except $5$, $Q_- \subset
+(1259, 12590]$, $j = 4$; pool $\approx 2.5 \times 10^5$ of mean $50$-bit
+elements against $\approx 18{,}000$ demand bits) up to $209$ at the widest
+measured cell --- a factor $200$--$700$ above the mining invariant, and
+$5.5$--$84\times$ the go/no-go gate of $2.5$. The underlying yield model
+was validated out-of-sample against the complete $B = 547$ corpus on four
+asymmetric splits: predicted/actual $0.71, 0.70, 0.41, 1.04$ (geometric
+mean $0.68$) --- \emph{conservative, never optimistic}. A solver-aware
+co-design variant (both factor bases restricted to primes $q$ with
+$(q-1)$'s odd part $100$-smooth) keeps ratio $7.7$ while shrinking the
+solver group's odd-prime support from $\{336$ primes $\le 6269\}$ to
+$\{24$ primes $\le 97\}$.
+
+Supply, in short, is abundant and over-provisioned. The production harvest
+was intentionally never launched, because the binding constraint turned
+out to be downstream.
+
+\section{The solver obstruction}\label{sec:solver}
+
+\subsection{The easy part and the generic frontier}
+
+$G$ decomposes into cyclic prime-power components. Its $2$-part is
+$\mathrm{GF}(2)$-linear (including the parity coordinate) and solves by
+exact Gaussian elimination at full scale: $4{,}586$ components in $12$
+seconds at the frozen spec. But the $2$-part carries only ${\sim}16\%$ of
+the demand bits; the remaining ${\sim}84\%$ ($\approx 15{,}000$ bits at
+the frozen spec) lies in odd-prime components with primes up to $6269$
+(up to $97$ after co-design). On that odd part, generic methods hit a hard
+frontier, measured on faithful synthetic instances with planted solutions:
+simulated annealing inside the $\mathrm{GF}(2)$ solution family stalls at
+${\ge}19$ odd components; exact meet-in-the-middle solves $N = 24$,
+$D = 11$ instantly and $N = 40$, $D = 15$ in $11$ seconds but is
+exponential in $N$, capping near $40$ pool elements and ${\sim}15$ odd
+components --- $2$--$3$ orders of magnitude below the thousands of
+components and ${\sim}24{,}000$ odd bits required.
+
+\subsection{The scalable family and what it needs}
+
+Subset products of exactly this shape are solved at astonishing scale in
+the Carmichael-construction literature: L\"oh--Niebuhr \cite{LN} and
+especially Alford--Grantham--Hayman--Shallue \cite{AGHS}, who built a
+Carmichael number with $10{,}333{,}229{,}505$ prime factors via a
+subexponential $\omega$-guided subset-product reduction over
+$(\Z/\Lambda)^\times$ --- including the full odd part, with no
+small-odd-part requirement. The method's engine is structural: it needs
+pool elements that are the identity on \emph{many} CRT components ---
+the ``$p - 1 \mid \Lambda$'' divisor structure, identity-density
+$\rho \approx 0.3$--$0.5$ in AGHS pools.
+
+Our harvestable pools do not have this structure. A partition-first pool
+prime $p = 2m + 1$ with $m$ a product of $j \approx 4$ medium primes is
+the identity on only ${\sim}j$ of the components:
+$\rho \approx 0.003$--$0.008$, two orders of magnitude below AGHS.
+
+\subsection{The two-part density gap}
+
+Both halves of the remaining question were measured.
+
+\emph{High density is unharvestable (N1).} The divisor-paradigm harvest
+that would supply AGHS-grade density --- fix highly composite
+$\Lambda_-, \Lambda_+$ and demand $p - 1 \mid \Lambda_-$,
+$p + 1 \mid \Lambda_+$ --- collapses under the double condition: across
+all feasible scales the pool is $0$--$2$ primes
+(Table~\ref{tab:n1}). The root cause is Lemma~\ref{lem:sides} made
+quantitative: the double condition is the conjunction of two rare events
+on \emph{disjoint} fixed moduli, where AGHS needs only the single
+one-sided event $p - 1 \mid \Lambda$.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+$T_-$ bound & $T_+$ range & $|T_-| + |T_+|$ & pool & identity-density \\
+\midrule
+$90$ & $97$--$220$ & $45$ & $1$ & $0.178$ \\
+$120$ & $127$--$300$ & $60$ & $1$ & $0.067$ \\
+$150$ & $160$--$360$ & $68$ & $2$ & $0.074$ (max $0.088$) \\
+$60$ & $67$--$160$ & $34$ & $0$ & --- \\
+\bottomrule
+\end{tabular}
+\caption{N1: the divisor-paradigm (AGHS-density) harvest under the double
+condition. Small bases give empty pools; larger bases collapse the density
+and the pool stays ${\sim}$empty.}
+\label{tab:n1}
+\end{table}
+
+\emph{Low density is unsolvable (A10).} To close the remaining escape ---
+perhaps the scalable solvers tolerate low density --- we implemented a
+correct Wagner-$4$ generalized-birthday solver \cite{Wagner} and measured
+its \emph{reach}: the largest component count $r_{\max}$ it solves, as a
+function of identity-density $\rho$ and pool size $N$
+(Table~\ref{tab:a10}). The measured law is
+\[
+(1 - \rho)\, r_{\max} \approx \text{const}, \qquad
+r_{\max} \sim \log N :
+\]
+at the harvestable density $\rho \approx 0.004$ the solver reaches
+${\sim}20$ components against the thousands required; reaching $1000$
+components needs $\rho \gtrsim 0.98$ (optimistic higher-$k$ Wagner
+variants lower this only to ${\approx}0.85$--$0.95$); and pool growth
+helps only logarithmically ($5\times$ the pool bought $+4$ components)
+while the group grows with the harvest, so the ratio never improves.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}rrrr@{}}
+\toprule
+$\rho$ & $N$ & $r_{\max}$ & $(1-\rho)\,r_{\max}$ \\
+\midrule
+$0.004$ (harvestable) & $20{,}000$ & $20$ & $19.9$ \\
+$0.004$ (harvestable) & $100{,}000$ & $24$ & $23.9$ \\
+$0.5$ & $20{,}000$ & $28$ & $14.0$ \\
+$0.9$ & $20{,}000$ & $128$ & $12.8$ \\
+\bottomrule
+\end{tabular}
+\caption{A10: measured Wagner-$4$ reach vs.\ identity-density.}
+\label{tab:a10}
+\end{table}
+
+\emph{Conclusion of the measurement campaign.} Under the double
+Carmichael + Lucas--Carmichael condition one can have a harvestable pool
+\emph{or} AGHS-grade identity density, \textbf{not both}: high-density
+pools are unharvestable (N1) and low-density pools are unsolvable by the
+known scalable family (A10). That two-part, quantified gap is the core
+negative result of this paper.
+
+\section{The obstruction is structural}\label{sec:structural}
+
+The measurements of \S\ref{sec:solver} concern $r = 5$ and the specific
+section $X - 1$. This section shows none of those choices can be varied
+away, by results proved in the companion arithmetic-geometry document of
+this repository (\texttt{doc/arith-geom.tex}, v1.0), whose statements we
+summarize with proofs sketched; each carries the caveat structure of
+\S\ref{sec:scope} (the \emph{mechanism} scope, and one generic-sharpness
+ingredient, Artin-type, empirically supported).
+
+\subsection{Every AKS modulus forces the double condition}
+
+For $d = \ord_r(p)$, the control order $\rho_r(p)$ of $X - 1$ in
+$(\F_p[X]/\Phi_r)^\times$ obeys an exact \emph{inversion collapse}: for
+even $d$, the unique involution of $(\Z/r)^\times$ is $-1$, so
+$p^{d/2} \equiv -1 \pmod r$ and $(X-1)^{p^{d/2}-1} = -X^{-1}$ in
+$\F_p[X]/\Phi_r$, whence $\rho_r(p) \mid 2r(p^{d/2} - 1) =
+2r\prod_{e \mid d/2}\Phi_e(p)$ --- V\'a\v{n}a's $\rho_5(p) \mid
+10(p^2-1)$ is the case $d = 4$. Since $\Phi_e(p)$ is the order of the
+$e$-th cyclotomic torus over $\F_p$, of dimension $\varphi(e)$, and
+$\sum_{e \mid m}\varphi(e) = m$:
+
+\begin{theorem}[torus dimension count; \emph{proved}, sharpness generic]
+\label{thm:dimcount}
+For every odd prime $r$ and every valid L--P-mechanism counterexample
+($\ord_r(n) > 2$, which forces $d_p = \ord_r(p) \ge 3$ at every
+$p \mid n$), each pool prime must make the $\F_p$-point orders of a
+product of cyclotomic tori of total dimension
+\[
+d_p' = \begin{cases} d_p/2, & d_p \text{ even}\\ d_p, & d_p \text{ odd}
+\end{cases} \;\ge\; 2
+\]
+simultaneously smooth. The minimum $2$ is attained exactly at $d_p = 4$,
+where the level set is $\{1, 2\}$: $p - 1$ and $p + 1$ smooth --- the
+double condition --- and $d_p = 4$ is realizable iff $4 \mid r - 1$. For
+$r \equiv 3 \pmod 4$ the burden is $\ge 3$ (smooth values of
+$\Phi_e(p) \sim p^{\varphi(e)}$, $\varphi(e) \ge 2$ --- the quantities
+whose non-smoothness underpins torus-based cryptography \cite{RS}).
+\end{theorem}
+
+The resulting burden formula, $\min_{d \mid r-1,\, d \ge 3}
+(d/2 \text{ if even else } d)$, reproduces an independent empirical scan
+over eleven moduli $r \le 41$ exactly (value and minimizing $d$), and the
+collapse identity, the exact order $\rho_r(p)$, and the generic-sharpness
+behaviour were verified on $67$ sample primes
+(Appendix~\ref{app:repro}). \textbf{Consequence: option ``choose a
+friendlier $r$'' is closed structurally} --- every $r \equiv 1 \pmod 4$
+reproduces the $r = 5$ economics identically, and every other $r$ is
+strictly worse.
+
+\subsection{The sign split, not the depth, is the wall}
+
+The generalized-Carmichael record sharpens the diagnosis. In the cell
+language of the companion document: Carmichael numbers occupy the cell
+(level $\{1\}$, Frobenius power $0$) and are infinite \cite{AGP};
+Lucas--Carmichael numbers occupy $(\{2\}, 1)$ and are infinite
+\cite{Wright18} (via the elliptic Korselt criteria of \cite{Silverman12}); the L--P targets occupy $(\{1,2\}, (0,1))$ --- Williams
+numbers --- empty to $2^{64}$ \cite{McIntoshMitra}; yet Howe's
+\emph{rigid order-$2$ Carmichael number}
+$443{,}372{,}888{,}629{,}441 = 17\cdot31\cdot41\cdot43\cdot89\cdot97
+\cdot167\cdot331$ \cite{Howe00} occupies the \emph{same level set} with
+all-even powers ($p^2 - 1 \mid n - 1$; re-verified by us) and exists at
+$4.4\times10^{14}$. Depth-$2$ impersonation is constructible; what is not
+is the \emph{sign split}: the Williams powers $(0, 1)$ force target $+1$
+on the $p-1$ side and $-1$ on the $p+1$ side, which conflict on any
+shared prime power and so force the coprime side split of
+Lemma~\ref{lem:sides} --- exactly the structure whose harvest collapse is
+Table~\ref{tab:n1} and whose solver gap is Table~\ref{tab:a10}. Rigid
+cells, by contrast, are one-sided AGP-type problems (single target $1$,
+no coprimality demands), which is why the AGP machine reaches them.
+Validity ($n \not\equiv \pm1 \bmod r$) pins the Agrawal construction to
+the sign-split cell: a rigid-cell $n$ can pass \eqref{eq:aks} only with
+$n \equiv 1 \pmod r$, inside the exception clause --- and indeed Howe's
+$n \equiv 1 \pmod 5$ does not even pass $T(-1, n, 5)$, rigidity
+controlling $p^2 - 1$ but not the residual $\mu_{2r}$-torsion that the
+mod-$80$ conditions exist to fix.
+
+\subsection{Popovych's variant is strictly harder}
+
+Popovych \cite{Popovych09} conjectured that adding
+$(X+2)^n \equiv X^n + 2$ repairs the conjecture. The inversion collapse
+that gives the double condition its minimal burden is a property of the
+section $X - 1$, whose zero $\{1\}$ is Galois-stable; the zero $-2$ of
+$X + 2$ has trivial stabilizer ($(\zeta^\gamma + 2)/(\zeta + 2)$ is not
+even a unit of $\Z[\zeta_r]$ for $\gamma \ne 1$; \emph{proved} via
+disjoint ideal supports, $N(\zeta - 1) = r$ versus
+$N(\zeta + 2) = (2^r + 1)/3$). Hence no collapse exists for the second
+section at any depth, and the pair mechanism pays full depth:
+\[
+\mathrm{burden}_{\mathrm{Pop}}(r) = \min\{d : d \mid r - 1,\ d \ge 3\}
+\;\ge\; 3 \quad \text{for every } r, \qquad = 4 \text{ at } r = 5,
+\]
+i.e.\ at Popovych's own modulus the pool primes would need $p - 1$,
+$p + 1$ \emph{and} $p^2 + 1$ simultaneously smooth. At the frozen spec
+the extra ${\approx}102$-bit quadratic level is a pure Dickman tax of
+$1.8\times10^{-7}$--$3.9\times10^{-11}$, emptying the measured
+$2.5\times10^5$ pool to below one element; the solver-side group only
+grows. To our knowledge this is the first quantified evidence in either
+direction on Popovych's conjecture beyond exhaustive search: every known
+counterexample mechanism is strictly more blocked against the pair than
+against the single section.
+
+\subsection{The elliptic axis is closed: the stabilizer-index floor}
+
+Finally, the one axis outside everything above: replace $\mu_r$ by
+elliptic torsion. A canonical elliptic analogue of the substitution
+$X \mapsto X^n$ exists only for CM curves (a canonical Frobenius-lift
+family on an elliptic curve is a $\Lambda$-structure, which exists iff CM
+\cite{BorgerGurney}); there, Frobenius acts on an $r$-eigenline by a
+scalar $\lambda$, and the exact curve-automorphism identities (e.g.\
+$x([i]S) = -x(S)$ on $y^2 = x^3 - x$) play the role of the inversion
+collapse. The unifying statement:
+
+\begin{theorem}[stabilizer-index floor; \emph{proved}, sharpness generic]
+\label{thm:stabindex}
+For a one-section Frobenius test on a one-dimensional group with scalar
+Frobenius $\lambda$ and unit-stabilizer $U$ (the subgroup acting on the
+section by root-of-unity cofactors), the smoothness burden is
+$[\langle\lambda\rangle : \langle\lambda\rangle \cap U]$, and every
+credible exception clause equals $U$ (its cells are AGP-constructible),
+so a valid counterexample forces burden $\ge 2$. Instances:
+$(\mu_r, X{-}1)$: $U = \{\pm1\}$, Theorem~\ref{thm:dimcount};
+$(\mu_r, X{+}2)$: $U = \{1\}$, the Popovych jump; CM elliptic with
+section $x$: $U = $ the CM-unit image ($\mu_4$ or $\mu_6$).
+\end{theorem}
+
+On the CM curves the apparent burden-$1$ cells ($\lambda$ equal to a unit,
+e.g.\ $\lambda \equiv \pm i$, where the section order collapses to the
+split torus alone) lie exactly inside the exception clause --- the
+elliptic mirror of rigid Carmichael numbers --- and the valid floor
+returns to $2$, attained on levels $\{1, 2\}$: \emph{$p - 1$ and $p + 1$
+smooth, the same twin-smooth demand}, with unit-twisted mixed targets
+reproducing the sign split. Measured on $y^2 = x^3 - x$: the valid-cell
+floor is $3$ at $r = 13$ and $2$ at $r = 17$, matching the index formula,
+with the elliptic burden $\ge$ the torus burden at all eleven moduli
+tested. The N1/A10 obstruction therefore transfers verbatim; the elliptic
+axis offers no single-rare-event escape.
+
+\section{Scope, caveats, and what remains open}\label{sec:scope}
+
+This section is the boundary of the result, not throat-clearing.
+
+\begin{enumerate}\itemsep2pt
+\item \textbf{Not a disproof.} Conjecture~\ref{conj:agrawal} remains open
+and believed false; nothing here bears on its truth. Likewise
+\S\ref{sec:structural}.3 is evidence about the known \emph{mechanism}
+against Popovych's variant, not evidence that the variant is true.
+\item \textbf{Mechanism scope.} All structural results quantify
+Frobenius-matching constructions ($n \equiv p^{j} \bmod
+\lcm(r, \rho_r(p))$ per prime). Every published counterexample approach
+\cite{LPremarks,Popovych09,HD21} is an instance; ``accidental''
+solutions of the component equations outside this family are not
+excluded, and no way to construct them is known.
+\item \textbf{Generic sharpness.} The dimension-count and
+stabilizer-index theorems bound the support of the control orders
+unconditionally (exact collapse identities) but their \emph{attainment}
+is an Artin-type genericity statement: a harvest could in principle fish
+in the thin set of primes whose section order collapses further
+(heuristic density ${\sim}1/\ell$ per avoided large prime; empirically
+$0$ exceptions across $196$ sampled large primes in the three
+verification campaigns). That set is far
+thinner than the twin-smooth pool itself, so the escape is uneconomical,
+but it is not unconditionally excluded.
+\item \textbf{Finite-scale caveats on N1/A10.} The density-gap
+measurements used squarefree divisor harvests and uniform small-prime
+component models at finite scale; prime-power moduli and enormous scales
+are untested, though the density trend and the two-rare-events argument
+point the same way, and the A10 reach law's logarithmic pool-dependence
+makes ``outgrow it'' quantitatively hopeless.
+\item \textbf{What remains genuinely open.} (i)~A fundamentally new
+solver paradigm for $0/1$ subset-products in ${\sim}24{,}000$-bit
+smooth-exponent groups with dense vectors and only linear pool/dimension
+ratio --- posed precisely, with a regression harness, in the repository's
+option-(b) brief; any breakthrough there would unblock the torus route
+only, the Popovych and elliptic variants remaining strictly harder.
+(ii)~The admissible-local-cells question (which residue cells mod $2^k$
+and mod $r$ support the mechanism --- the boost polynomials $2x^n - 1$
+are excluded by a mod-$16$ obstruction, but other side-separating
+families are not ruled out). (iii)~The existence of Williams numbers at
+all, open independently of this program \cite{McIntoshMitra}.
+(iv)~Unconditional versions of the sharpness statements --- which, we
+note, are theorems in the function-field mirror by Weil's RH for curves,
+locating the residual difficulty over $\Z$ in the
+unconditional-equidistribution gap.
+\end{enumerate}
+
+\section{Reusable contributions and conclusion}\label{sec:conclusion}
+
+Beyond the negative result, the campaign leaves usable artifacts: a
+validated C implementation of the CHM closure reproducing complete
+twin-smooth sets to $99.2$--$99.7\%$ with exact extremes; a calibrated,
+conservative yield model for partition-first smooth-pair harvesting; an
+exact $\mathrm{GF}(2)$ solver for the $2$-part of Carmichael-type subset
+products; the Wagner density-reach methodology as a \emph{diagnostic} ---
+given any proposed Carmichael-type construction, measure its pool's
+identity-density and read off the reach --- and the impersonation-cell
+vocabulary tying this problem to the Williams/Howe literature, with the
+sign-split criterion predicting which cells the AGP machine can reach.
+All code and data are committed alongside this paper
+(Appendix~\ref{app:repro}).
+
+The conclusion in one paragraph: the Lenstra--Pomerance route to an
+Agrawal counterexample is a two-stage pipeline whose supply stage we
+solved and whose solver stage is blocked by a measured identity-density
+gap --- high-density pools are unharvestable under the double condition,
+low-density pools are unsolvable by every known scalable family --- and
+the blockage is structural: the double condition is the unique
+minimum-burden cell for every AKS modulus, the sign split that defines it
+is precisely what separates the empty Williams cell from the constructible
+rigid cells, Popovych's variant only raises the burden, and the
+CM-elliptic analogue obeys the same stabilizer-index floor. A
+counterexample to Agrawal's conjecture, if one is ever exhibited, will
+require either a genuinely new subset-product solver for the low-density
+regime or a mechanism outside the Frobenius-matching family.
+
+\appendix
+
+\section{Data tables}\label{app:tables}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$B$ & $B'$ & $j$ & ratio & proj.\ pool & demand bits \\
+\midrule
+$1259$ & $12590$ & $4$ & $13.8 \pm 24\%$ & $2.5\times10^5$ & $18{,}117$ \\
+$1259$ & $18885$ & $4$ & $41.0 \pm 26\%$ & $1.1\times10^6$ & $27{,}101$ \\
+$2003$ & $20030$ & $4$ & $45.5 \pm 24\%$ & $1.3\times10^6$ & $28{,}768$ \\
+$2003$ & $40060$ & $4$ & $209 \pm 32\%$ & $1.2\times10^7$ & $57{,}514$ \\
+\bottomrule
+\end{tabular}
+\caption{Partition-first supply/demand ratios, trustworthy ($\ge 8$-hit)
+$j = 4$ cells of the A2 grid, $8$M samples per cell. The first row is the
+frozen spec. Gate G2 threshold: $2.5$.}
+\label{tab:a2}
+\end{table}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}rrl@{}}
+\toprule
+$r$ & burden & minimizing structure \\
+\midrule
+$5, 13, 17, 29, 37, 41$ & $2$ & $d = 4$, levels $\{1,2\}$: the double condition \\
+$7, 19, 31$ & $3$ & $d = 3$, levels $\{1,3\}$: $\Phi_3(p) = p^2{+}p{+}1$ smooth \\
+$11$ & $5$ & $d = 5$, levels $\{1,5\}$ \\
+$23$ & $11$ & $d = 11$, levels $\{1,11\}$ \\
+\bottomrule
+\end{tabular}
+\caption{The burden $\min_{d \mid r-1,\,d\ge3}(d/2$ if even else $d)$ of
+Theorem~\ref{thm:dimcount} over the empirically scanned moduli; the
+formula reproduces the scan exactly ($11/11$, value and minimizing $d$).
+Popovych burdens (full depth): $4, 3, 5, 3, 4, 3, 11, 4, 3, 3, 4$ for
+$r = 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41$.}
+\label{tab:burden}
+\end{table}
+
+Solver frontier (odd part, synthetic instances with planted solutions):
+exact meet-in-the-middle $N = 24 / D = 11$ instant, $N = 40 / D = 15$ in
+$11$\,s, exponential beyond; annealing within the $\mathrm{GF}(2)$ family
+stalls at $\ge 19$ odd components; requirement at the co-designed spec:
+thousands of components, ${\sim}24{,}000$ odd bits. Hierarchy census below
+$10^7$: $105$ Carmichael, $135$ Lucas--Carmichael, $0$ Williams, $0$
+order-$2$.
+
+\section{Reproducibility}\label{app:repro}
+
+Every quantitative claim traces to a dated section of
+\texttt{data/FINDINGS.md} or \texttt{doc/arith-geom-findings.md} and to a
+deterministic script in \texttt{code/} with committed JSON output in
+\texttt{data/generated/}:
+
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+claim & script & record \\
+\midrule
+machinery unit tests & \texttt{verify\_machinery.py} & Phase 0 \\
+$0.06$ invariant & \texttt{phase1a\_calibration.py},
+\texttt{b547\_pool\_analysis.py} & Phase 1a, B547 \\
+CHM closure validation & \texttt{chm\_closure.c} / \texttt{.py} & B=100/113/200 \\
+yield grid, G1 & \texttt{a1\_yield\_prototype.py} &
+\texttt{a1\_yield\_grid.json} \\
+ratio grid + validation, G2 & \texttt{a2\_grid.py},
+\texttt{a2\_validate\_and\_extend.py} & A2 \\
+$2$-part / decomposition & \texttt{a4\_solver.py} & A4 \\
+co-design window & \texttt{a5\_codesign.py}, \texttt{a5\_yield.py} & A5 \\
+generic-solver frontier & \texttt{a6\_oddsolver.py} & A6 \\
+$\omega$-solver scaffold & \texttt{a7\_lohniebuhr.py},
+\texttt{a8\_omega\_solver.py} & A7/A8 \\
+N1 divisor harvest & \texttt{a9\_divisor\_harvest.py} & N1 \\
+A10 Wagner reach law & \texttt{a10\_wagner\_density.py} & A10 \\
+general-$r$ scan & \texttt{a11\_general\_r.py} & A11 \\
+dimension count checks & \texttt{ag2\_torus\_check.py} &
+\texttt{ag2\_torus\_check.json} \\
+hierarchy / Howe / census & \texttt{ag3\_hierarchy\_check.py} &
+\texttt{ag3\_hierarchy\_check.json} \\
+elliptic cells / floors & \texttt{ag4\_elliptic\_check.py} &
+\texttt{ag4\_elliptic\_check.json} \\
+Popovych burden jump & \texttt{ag5\_popovych\_check.py} &
+\texttt{ag5\_popovych\_check.json} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{thebibliography}{99}\itemsep1pt\small
+
+\bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, \emph{PRIMES is in P},
+Ann.\ of Math.\ \textbf{160} (2004), 781--793.
+
+\bibitem{BP01} R.~Bhattacharjee, P.~Pandey, \emph{Primality testing},
+BTech thesis, IIT Kanpur, 2001.
+
+\bibitem{LPremarks} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Remarks on
+Agrawal's conjecture}, AIM workshop notes, 2003.
+
+\bibitem{LP2019} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Primality testing
+with Gaussian periods}, J.\ Eur.\ Math.\ Soc.\ \textbf{21} (2019),
+1229--1269.
+
+\bibitem{Popovych09} R.~Popovych, \emph{A note on Agrawal conjecture},
+Cryptology ePrint 2009/008.
+
+\bibitem{Vana09} T.~V\'a\v{n}a, \emph{Agrawal's conjecture and Carmichael
+numbers}, Comenius University Bratislava, 2009.
+
+\bibitem{HD21} A.~Hegde, P.~Devaraj, \emph{Heuristics for the construction
+of counterexamples to the Agrawal conjecture}, Springer PROMS
+\textbf{344}, 2021.
+
+\bibitem{AGP} W.~R.~Alford, A.~Granville, C.~Pomerance, \emph{There are
+infinitely many Carmichael numbers}, Ann.\ of Math.\ \textbf{139} (1994),
+703--722.
+
+\bibitem{LN} G.~L\"oh, W.~Niebuhr, \emph{A new algorithm for constructing
+large Carmichael numbers}, Math.\ Comp.\ \textbf{65} (1996), 823--836.
+
+\bibitem{AGHS} W.~R.~Alford, J.~Grantham, S.~Hayman, A.~Shallue,
+\emph{Constructing Carmichael numbers through improved subset-product
+algorithms}, Math.\ Comp.\ \textbf{83} (2014), 899--915; arXiv:1203.6664.
+
+\bibitem{Wagner} D.~Wagner, \emph{A generalized birthday problem},
+CRYPTO 2002.
+
+\bibitem{CMN21} C.~Costello, M.~Meyer, M.~Naehrig, \emph{Sieving for twin
+smooth integers with solutions to the Prouhet--Tarry--Escott problem},
+EUROCRYPT 2021.
+
+\bibitem{BCCEMNS23} G.~Bruno, M.~Corte-Real Santos, C.~Costello,
+J.~K.~Eriksen, M.~Meyer, M.~Naehrig, B.~Sterner, \emph{Cryptographic
+smooth neighbors}, ASIACRYPT 2023.
+
+\bibitem{CHM13} J.~B.~Conrey, M.~A.~Holmstr\"om, T.~L.~McLaughlin,
+\emph{Smooth neighbors}, Experiment.\ Math.\ \textbf{22} (2013), 195--202.
+
+\bibitem{BHLNV} J.~Buzek, J.~Hasan, J.~Liu, M.~Naehrig, A.~Vigil,
+\emph{Finding twin smooth integers by solving Pell equations},
+arXiv:2211.04315.
+
+\bibitem{MSW} E.~Mulder, B.~Sterner, W.~van Woerden, \emph{Large smooth
+twins from short lattice vectors}, ANTS XVII.
+
+\bibitem{Williams77} H.~C.~Williams, \emph{On numbers analogous to the
+Carmichael numbers}, Canad.\ Math.\ Bull.\ \textbf{20} (1977), 133--143.
+
+\bibitem{Echi07} O.~Echi, \emph{Williams numbers}, C.~R.\ Math.\ Acad.\
+Sci.\ Soc.\ R.\ Can.\ \textbf{29} (2007), 41--47.
+
+\bibitem{McIntoshMitra} R.~J.~McIntosh, D.~Mitra, \emph{Carmichael numbers
+with $p+1 \mid n+1$}, J.\ Number Theory \textbf{147} (2015), 81--91.
+
+\bibitem{Howe00} E.~W.~Howe, \emph{Higher-order Carmichael numbers},
+Math.\ Comp.\ \textbf{69} (2000), 1711--1719.
+
+\bibitem{Wright18} T.~Wright, \emph{There are infinitely many elliptic
+Carmichael numbers}, Bull.\ Lond.\ Math.\ Soc.\ \textbf{50} (2018),
+791--800.
+
+\bibitem{Silverman12} J.~H.~Silverman, \emph{Elliptic Carmichael numbers
+and elliptic Korselt criteria}, Acta Arith.\ \textbf{155} (2012),
+233--246.
+
+\bibitem{BorgerGurney} J.~Borger, L.~Gurney, \emph{Canonical lifts and
+$\Lambda$-structures}, arXiv:1710.08674.
+
+\bibitem{RS} K.~Rubin, A.~Silverberg, \emph{Torus-based cryptography},
+CRYPTO 2003.
+
+\bibitem{Pinch} R.~G.~E.~Pinch, \emph{The Carmichael numbers up to
+$10^{18}$}, arXiv:math/0604376.
+
+\end{thebibliography}
+
+\end{document}
