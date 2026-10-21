@@ -308,6 +308,81 @@ Caveats unchanged: mechanism-scope (Remark 2.3) and generic sharpness
 the only known engine, not the truth of the conjecture. Candidate for a
 standalone short note per the plan.
 
+## AG3 result: the impersonation hierarchy — definitions, prior art, census (2026-10-21)
+
+*Deliverables: `doc/arith-geom.tex` §6 (+ recompiled PDF, now 12 pp),
+`code/ag3_hierarchy_check.py`, `data/generated/ag3_hierarchy_check.json`,
+README §4a (literature additions). Gate: low-risk item, complete.*
+
+**Definitions (Def 6.1).** An *impersonation cell* is a level set S with
+Frobenius powers (i_e): Φ_e(p) | n − p^{i_e} for e ∈ S, at every p | n ⟺
+x^n = x^{p^{i_e}} on the T_e(F_p) points. Normalizations: at level 1 all
+powers coincide; at level 2, p^i ≡ (−1)^i (mod p+1), so **only the parity
+of i₂ matters, and the parity is a sign** (even ↔ target +1, odd ↔ −1).
+
+**Dictionary (Prop 6.2).** Carmichael = ({1}, 0); Lucas–Carmichael =
+({2}, 1); **Williams numbers** (H. C. Williams 1977; Echi's "1-Williams")
+= ({1,2}, (0,1)) = uniform depth-2 power 1, n ≡ p (mod (p²−1)/2) — i.e.
+exactly the L–P/A329223 objects, which turn out to have an established name
+and a 1977 pedigree; Howe's order-m Carmichael numbers = depth r ≤ m with
+any powers (his Theorem 1), "rigid" = all powers 0; AG2's theorem = the AKS
+mechanism forces level set {e | d'} (minimum = the Williams cell); AG5 =
+Popovych forces full depth {e | d}. Grantham's Frobenius pseudoprimes =
+same idea against one quadratic section.
+
+**Status of the cells (Thm 6.3, survey; prior-art check of the plan).**
+- ({1}, 0): infinite (AGP 1994). 105 below 10⁷ (census matches known count
+  — validates the census code).
+- ({2}, 1): infinite — **Wright 2018** (by-product of elliptic Carmichael
+  infinitude; arXiv:1609.00231). 135 below 10⁷.
+- Williams ({1,2}, (0,1)): **open even for nonemptiness**; ≥ 4 prime
+  factors (Williams 1977); **none below 2^64** (McIntosh–Mitra, JNT 147
+  (2015) 81–91), finiteness with all-but-three factors fixed. The Agrawal
+  cell refines this, a fortiori empty.
+- Depth-2 any parity (Howe order 2): **NONEMPTY** — Howe's explicit rigid
+  example n = 443372888629441 = 17·31·41·43·89·97·167·331, **re-verified
+  here** (p²−1 | n−1 for all 8 primes; level-2 matching powers {0,2,4},
+  all even = rigid parity; not Williams). Order-m needs ≥ m+2 prime factors
+  (Eterevsky–Vsemirnov, Fib. Quart. 42 (2004)); no order-3 known; Howe's
+  heuristic predicts infinitude at every order.
+- Elliptic rungs (AG4's raw material): Silverman's elliptic Korselt
+  criteria (Acta Arith. 155 (2012)); Ekstrom–Pomerance–Thakur conditional
+  infinitude (J. Aust. Math. Soc. 92 (2012)); Wright unconditional.
+
+**The structural punchline (Remark 6.4): sign splitting, not depth, is the
+wall.** Rigid depth-2 impersonators exist at 4.4·10¹⁴ while the same-level
+Williams cell is empty to 2⁶⁴. The rigid cell is one-sided (n ≡ 1 mod
+lcm(p²−1): single AGP-style target 1, no coprimality needed between p−1 and
+p+1 parts) — the AGP machine built it at modest size. The Williams parities
+(0,1) force targets (+1, −1), which conflict on shared prime powers, forcing
+the coprime side-split — exactly the side-coprimality whose harvest collapse
+is N1 and whose two-sided solver obstruction is A10. The project's negative
+results are precisely about the sign-split cells; Howe's example shows the
+unsplit cells are reachable. Validity (n ≢ ±1 mod r) pins the AKS
+construction to a sign-split cell: a rigid n passes the component equation
+only with j = 0, i.e. n ≡ 1 (mod r) — inside the exception clause (Váňa's
+observation about Carmichael numbers passing T(−1,n,r)).
+
+**A sharp concrete datum (H4).** Howe's rigid n has n ≡ 1 (mod 5) but
+**does not pass T(−1, n, 5)**: rigidity controls the p²−1 part of ρ₅(p)
+but not the extra μ_2r-torsion (the factor 2r in the AG2 collapse bound) —
+precisely the 2-adic bookkeeping the L–P mod-80 conditions exist to fix.
+Even the exception-clause pass needs arranged torsion, not just depth.
+
+**Numerical verification** (`code/ag3_hierarchy_check.py`): H1 Howe example
+confirmed (order 2, rigid, not Williams); H2 dictionary on T₂ 60/60 random
+(p, n, i); H3 census below 10⁷: 105 / 135 / 0 / 0 (Carmichael /
+Lucas–Carmichael / Williams / Howe order-2; smallest 561 / 399 / — / —);
+H4 as above.
+
+**Imports for the negative-result paper.** (1) Vocabulary: the target
+objects are *Williams numbers in prescribed congruence cells*. (2) Search
+floor: McIntosh–Mitra's 2^64 supersedes/complements the Pinch-table
+emptiness already cited. (3) Calibration: Howe's construction is the
+nearest success of the AGP machine to our cell; the one-sided vs sign-split
+contrast is the structural explanation of why it succeeded where H8/N1
+collapsed. README §4a now carries the reference block.
+
 ## References (verified links)
 
 - Agrawal–Kayal–Saxena, *PRIMES is in P*:
