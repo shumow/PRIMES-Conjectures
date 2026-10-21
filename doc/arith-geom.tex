@@ -26,7 +26,7 @@
 
 \title{Arithmetic-Geometric Structure of Agrawal's Conjecture\\
 and the Torus Dimension Count Behind the Double Condition\\
-\large (AG track working document --- v0.4, items AG2, AG5, AG3 and AG4)}
+\large (AG track working document --- v1.0: items AG1--AG6 complete)}
 \author{Dan Shumow \and Claude (Anthropic Fable~5)}
 \date{October 21, 2026}
 
@@ -80,13 +80,17 @@ floor of $2$: the would-be burden-$1$ cells lie inside the exception
 clause (they are the elliptic analogue of rigid Carmichael numbers), the
 burden-$2$ cells demand twin-smoothness again with sign-split targets, and
 gate AG-G2 is not passed --- the negative result extends to the
-CM-elliptic axis.
+CM-elliptic axis. Appendix~\ref{app:ff} (item AG6) sketches the
+function-field mirror, where both heuristic ingredients of the analysis
+are theorems by Weil's RH for curves while the problem itself carries no
+complexity content --- locating the residual difficulty over $\Z$
+precisely in the unconditional-equidistribution gap.
 \end{abstract}
 
 \section{The Frobenius-lift dictionary}\label{sec:dictionary}
 
-This section fixes the geometric reading used throughout; full exposition is
-item AG1 and will accrete here. Write $T(-1,n,r)$ for the AKS congruence
+This section fixes the geometric reading used throughout (item AG1). Write
+$T(-1,n,r)$ for the AKS congruence
 \begin{equation}\label{eq:aks}
 (X-1)^n \equiv X^n - 1 \pmod{n,\, X^r-1},
 \end{equation}
@@ -107,11 +111,39 @@ fixes $\Z/n$ (Fermat), so $f(X)^n \equiv f^{(n)}(X^n) \equiv f(X^n)$, where
 $f^{(n)}$ raises coefficients to the $n$-th power.
 \end{proof}
 
-In $\lambda$-ring language: $\Z[X]/(X^r-1)=\Z[\Z/r]$ carries the Adams
-operations $\psi^k(X) = X^k$, and ``$n$ is prime'' is exactly ``$\psi^n$ is a
-Frobenius lift at $n$'' (Wilkerson's criterion direction); \eqref{eq:aks} is
-the lift condition at one section of $\mu_r$. \todo{AG1: cite Wilkerson,
-Borger, and the pseudofield formalism of Lenstra--Pomerance.}
+Before truncation, the coincidence characterizes primality:
+
+\begin{proposition}[the untruncated test {\cite[Lemma 2.1]{AKS}}]
+\label{prop:untrunc}
+Let $a$ be coprime to $n \ge 2$. Then $n$ is prime if and only if
+$(X + a)^n \equiv X^n + a \pmod n$ in $(\Z/n)[X]$. (If $q^k \,\|\, n$ for a
+prime $q < n$, the coefficient of $X^q$ is $\binom{n}{q} a^{n-q}
+\not\equiv 0 \bmod n$.) The AKS test, and Agrawal's conjecture, concern how
+much of this characterization survives the truncation from the affine line
+to the finite subscheme $\mu_r$.
+\end{proposition}
+
+In $\lambda$-ring language the statement is canonical rather than ad hoc.
+$\Z[X]/(X^r - 1) = \Z[\Z/r]$ carries the Adams operations
+$\psi^k : X \mapsto X^k$, which pairwise commute, and each $\psi^p$ is a
+\emph{Frobenius lift}: $\psi^p(f) \equiv f^p \pmod p$ for every $f$ (the
+calculation of Proposition~\ref{prop:lift}). By Wilkerson's criterion
+\cite{Wilkerson}, a torsion-free ring with such a commuting family of
+Frobenius lifts carries a unique $\lambda$-ring structure; in Borger's
+absolute geometry a $\Lambda$-structure \emph{is} descent data to $\F_1$
+\cite{Borger}. In this language:
+\[
+\text{$n$ is prime} \iff \text{$\psi^n$ is a Frobenius lift at $n$},
+\]
+and the AKS congruence \eqref{eq:aks} is the lift condition tested on the
+single section $X - 1$ of $\mu_r$. Agrawal's conjecture is therefore a
+\emph{quantitative descent statement}: one well-chosen section certifies
+the lift condition globally, up to the $\sigma_n^2 = \mathrm{id}$
+exception. The \emph{pseudofields} of Lenstra--Pomerance \cite{LPGauss}
+are the operational form of the same object --- finite rings equipped with
+a certified Frobenius datum, which their $\tilde O(\log^6 n)$ algorithm
+constructs unconditionally; an Agrawal-type conjecture asserts the datum
+can be certified from a single section, at $\tilde O(\log^3 n)$.
 
 \begin{lemma}[the exceptional clause]\label{lem:clause}
 $n^2 \equiv 1 \pmod r$ iff $\sigma_n$, viewed as the element
@@ -1000,6 +1032,53 @@ no valid cell beats burden $3$, as $12/\gcd(12,4) = 3$ predicts. $r = 5$
 is degenerate on this curve: every $\lambda$-order divides $4$, so all
 cells are exceptional.
 
+\appendix
+
+\section{The function-field mirror (item AG6, sketch)}\label{app:ff}
+
+Over $A = \F_q[t]$ every object of this document has a classical mirror,
+and the comparison isolates what our two heuristic caveats --- generic
+sharpness (Proposition~\ref{prop:sharp}) and the L--P-style density counts
+--- are standing in for over $\Z$.
+
+The mirror of $\Gm$ with its Adams operations is the \emph{Carlitz module}
+$C : A \to \mathrm{End}(\mathbb G_a)$, $C_t(x) = tx + x^q$: the maps
+$C_a$ commute, and for a monic irreducible $P$ of degree $d$ one has the
+Frobenius-lift congruence $C_P(x) \equiv x^{q^d} \pmod P$ --- here a
+\emph{theorem} of the module rather than a test. The mirror of
+$\Z[\mu_r]$ is the Carlitz cyclotomic ring $A[x]/(C_R(x))$ for an
+auxiliary irreducible $R$, whose torsion values generate the cyclotomic
+function fields (Carlitz--Hayes theory). The mechanism analysis of
+Sections~\ref{sec:setup}--\ref{sec:dimcount} transposes: residue fields
+of torsion values are constant-field extensions $\F_{q^{de}}$, their unit
+orders factor through the same cyclotomic levels, and the stabilizer-index
+principle of Theorem~\ref{thm:stabindex} applies with $U$ the image of
+the constants $\F_q^\times$, which act on the identity section with
+monomial cofactors ($C_c(x) = cx$).
+
+Two ingredients change epistemic status. (i) The sharpness questions ---
+which large primes divide the order of the reduction of a fixed torsion
+value as $P$ varies --- become effective: Frobenius equidistribution in
+the relevant cyclotomic-function-field extensions holds with square-root
+error by Weil's RH for curves (function-field Chebotarev), which is
+exactly the Artin-type input that keeps Proposition~\ref{prop:sharp}
+heuristic over $\Z$. (ii) The existence side (primes $P$ in prescribed
+cells with smooth order data) becomes quantitative for the same reason.
+Yet the mirror carries no complexity content: irreducibility testing in
+$\F_q[t]$ is unconditionally deterministic polynomial time (Frobenius
+linear algebra: $x^{q^n} \equiv x$ and gcd conditions), so no
+Agrawal-type conjecture is needed there. The conclusion of the comparison
+is a placement, not a plan: \emph{the mechanism analysis of this document
+is complete in itself, and the part of the Agrawal problem that resists
+it over $\Z$ is exactly the unconditional-equidistribution gap that Weil
+closes over $\F_q[t]$} --- a GRH-grade input, consistent with the fact
+that the best unconditional test \cite{LPGauss} works by constructing its
+Frobenius datum rather than certifying it from one section. We make no
+claims here about Carlitz analogues of the Carmichael hierarchy of
+Section~\ref{sec:hierarchy}; that literature is not needed for the
+placement above.
+
+
 \begin{thebibliography}{99}
 \bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, PRIMES is in P,
 \emph{Ann.\ of Math.} 160 (2004), 781--793.
@@ -1024,6 +1103,9 @@ based on tori and elliptic curves, \emph{Finite Fields Appl.} 18 (2012),
 222--236.
 \bibitem{Borger} J.~Borger, $\Lambda$-rings and the field with one element,
 arXiv:0906.3146.
+\bibitem{Wilkerson} C.~Wilkerson, Lambda-rings, binomial domains, and
+vector bundles over $\mathbb{CP}(\infty)$, \emph{Comm.\ Algebra} 10
+(1982), 311--328.
 \bibitem{AGP} W.~R.~Alford, A.~Granville, C.~Pomerance, There are
 infinitely many Carmichael numbers, \emph{Ann.\ of Math.} 139 (1994),
 703--722.

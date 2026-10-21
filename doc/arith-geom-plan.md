@@ -19,7 +19,21 @@ evidence for Popovych's conjecture. Items are ordered by
 
 ---
 
+**TRACK STATUS 2026-10-21: COMPLETE.** All items done (AG2, AG5, AG3, AG4,
+AG1, AG6). Gates: AG-G1 substantially passed (conditional part localized to
+generic sharpness, Prop 3.5); AG-G2 NOT passed (elliptic axis closed, AG4(c)
+cancelled). Unifying output: the stabilizer-index theorem
+(`doc/arith-geom.tex` v1.0, Thm 7.3). Results log: `doc/arith-geom-findings.md`
+(one dated section per item, wrap-up at the end). Handoffs: fold §§3, 6, 7 and
+Appendix A into the negative-result paper; AG5 is a standalone-note candidate;
+option (b) remains the only live constructive direction.
+
+---
+
 ## AG1. Precise Frobenius-lift statement of the conjecture (formalization)
+
+**STATUS 2026-10-21: DONE** (tex §1: Prop 1.2, Wilkerson/Borger/pseudofield
+citations; no TODOs remain).
 
 **Goal.** State and prove the dictionary of findings §1–§2 at full precision,
 as a section usable by both papers:
@@ -41,6 +55,10 @@ is exposition-grade; the only care point is stating (a) for composite n
 without accidentally assuming ψⁿ multiplicative.
 
 ## AG2. Theorem: the torus dimension count behind A11 (the A11 upgrade)
+
+**STATUS 2026-10-21: DONE; gate AG-G1 substantially passed** (tex §§2-4;
+the conditional part is localized to generic sharpness, Prop 3.5/Rem 3.9;
+verified by code/ag2_torus_check.py, A11 reproduced 11/11).
 
 **Goal.** Replace A11's empirical table with a proof. Target statement:
 
@@ -70,6 +88,10 @@ empirically by A11 and mark the section conditional. **Effort:** 1–2 weeks.
 **Risk:** medium — step (ii) is the same territory old-B1 found nontrivial.
 
 ## AG3. The impersonation hierarchy (definitions + literature anchoring)
+
+**STATUS 2026-10-21: DONE** (tex §6; Williams-number prior art found —
+none < 2^64, McIntosh-Mitra; Howe rigid order-2 example re-verified; the
+sign-split insight; README §4a; code/ag3_hierarchy_check.py).
 
 **Goal.** Define "Korselt at depth d" / Frobenius impersonation on
 Res_{F_{p^d}/F_p} G_m cleanly (n ≡ p on the torus factors T_e, e | d), and
@@ -130,6 +152,10 @@ answer is a usable result.
 
 ## AG5. A heuristic *for* Popovych (cheap spin-off)
 
+**STATUS 2026-10-21: DONE** (tex §5: burden_Pop(r) = min{d | r-1, d >= 3}
+>= 3, = 4 at r = 5; Dickman tax 1.8e-7..3.9e-11 at the frozen spec;
+code/ag5_popovych_check.py; standalone-note candidate; subsumes old B4).
+
 **Goal.** Findings §6: make precise — in the same style as L–P's heuristic
 count *against* Agrawal — why the counterexample machinery cannot control
 the pair {ζ−1, ζ+2}. Sketch: impersonation fixes n on the subgroup generated
@@ -147,6 +173,10 @@ beyond search ranges — see README §4). Old-B4 is subsumed by this item.
 about independence assumptions).
 
 ## AG6. Function-field sanity check (optional, timeboxed)
+
+**STATUS 2026-10-21: DONE within the timebox** (tex Appendix A: Carlitz
+mirror; both heuristic ingredients are Weil-provable there; the residual
+difficulty over Z is the unconditional-equidistribution gap).
 
 **Goal.** One-page appendix: in F_q[t] (Carlitz-module Fermat), the analogue
 of "one section detects Frobenius" is provable because Weil bounds control

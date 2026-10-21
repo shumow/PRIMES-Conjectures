@@ -403,7 +403,7 @@ rigid Carmichael numbers (one-sided, AGP-constructible per §6), exactly as
 n² ≡ 1 (mod r) is σ_n ∈ {±1} — **the clause is the stabilizer** (the
 §1/§6 principle, now uniform).
 
-**The master theorem (Thm 7.4, stabilizer-index floor).** For a section f
+**The master theorem (Thm 7.3, stabilizer-index floor).** For a section f
 with scalar Frobenius λ in cyclic Γ and unit-stabilizer U (the subgroup
 acting on f by root-of-unity cofactors):
 
@@ -461,6 +461,66 @@ modulus r (A11/AG2), the Popovych pair (AG5), and the CM-elliptic axis
 (AG4), unified by the stabilizer-index theorem. Remaining: AG1's
 exposition polish (§1 todos) and the optional AG6 function-field appendix;
 then the material is ready to fold into the negative-result paper.
+
+## AG track wrap-up: COMPLETE (2026-10-21)
+
+*Final deliverables: `doc/arith-geom.tex` v1.0 (15 pp, compiled; AG1
+exposition finished — Prop 1.2 untruncated test, Wilkerson/Borger/pseudofield
+citations in place, no TODOs remain; Appendix A = AG6), this findings file,
+the annotated plan, four verification scripts (`code/ag{2,3,4,5}_*.py`) with
+JSON outputs, and README §4a.*
+
+**AG1 (done).** §1 now states the full dictionary: the untruncated Fermat
+identity characterizes primality (AKS Lemma 2.1); Z[Z/r] is a Λ-ring whose
+ψ^p are Frobenius lifts (Wilkerson's criterion), so *n prime ⟺ ψ^n is a
+Frobenius lift at n*, with the AKS congruence as the one-section test;
+Borger's F₁-descent reading and L–P pseudofields cited as the conceptual
+and operational forms. The conjecture = a quantitative descent statement;
+the exception clause = the real-subfield decomposition group.
+
+**AG6 (done, timeboxed as planned).** Appendix A: the Carlitz-module
+mirror over F_q[t]. The mechanism analysis transposes (constant-field
+tori, stabilizer-index with U = image of F_q^×); both heuristic
+ingredients — generic sharpness and the density counts — become theorems
+via Weil's RH for curves (function-field Chebotarev); and the problem
+carries no complexity content there since irreducibility testing is
+unconditionally deterministic polynomial time. Placement conclusion: the
+part of the Agrawal problem resisting the mechanism analysis over Z is
+exactly the unconditional-equidistribution (GRH-grade) gap. No claims made
+about Carlitz–Carmichael literature (not needed).
+
+**Track outcome summary.**
+
+| item | result | status |
+|---|---|---|
+| AG2 | torus dimension-count theorem: burden = d' ≥ 2, min at {1,2} (twin-smooth), for every AKS r; A11 upgraded to a corollary | done; gate AG-G1 substantially passed (sharpness localized to Prop 3.5) |
+| AG5 | Popovych burden ≥ 3 everywhere, 4 at r=5; first quantified evidence beyond search ranges; standalone-note candidate | done |
+| AG3 | impersonation hierarchy; L–P targets = Williams numbers (open, none < 2^64); sign-splitting, not depth, is the wall (Howe contrast) | done |
+| AG4 | elliptic axis closed: stabilizer-index theorem (burden = [⟨λ⟩:⟨λ⟩∩U] ≥ 2) subsumes AG2/AG5/CM curves | done; gate AG-G2 NOT passed, AG4(c) cancelled |
+| AG1 | Frobenius-lift dictionary, full exposition | done |
+| AG6 | function-field mirror appendix | done |
+
+**Unifying result of the track:** the stabilizer-index theorem (Thm 7.3).
+Every one-section Frobenius test on a one-dimensional group — μ_r with
+X−1 or X+2, CM elliptic curves with x — has burden [⟨λ⟩ : ⟨λ⟩ ∩ U], U the
+unit-stabilizer of the section, and every credible exception clause equals
+U; validity therefore forces burden ≥ 2, attained exactly at the
+twin-smooth (sign-split) cells whose harvest/solver economics this
+project's N1/A10 measurements closed.
+
+**Handoffs.**
+1. *Negative-result paper* (`doc/negative-result-plan.md`, separate
+   branch): fold in §3 (Thm 3.6 + Cor 3.7 for the option-(c) section,
+   caveats Rem 2.3/3.9), §6 (related-work vocabulary: Williams numbers,
+   the 2^64 floor, the Howe sign-split contrast), §7 (the elliptic
+   extension + Thm 7.3 as the structural spine), Appendix A (the
+   discussion of what a proof would need).
+2. *AG5 standalone note* on Popovych: §5 is self-contained; candidate for
+   a short arXiv note after the main paper.
+3. *Option (b)* (`doc/option-b-problem.md`) is unaffected: it remains the
+   only live constructive direction, now with the added knowledge that
+   any solver breakthrough would unblock the torus route only — the
+   elliptic and Popovych variants stay strictly harder.
 
 ## References (verified links)
 
