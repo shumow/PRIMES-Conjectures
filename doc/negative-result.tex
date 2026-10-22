@@ -553,10 +553,14 @@ note \texttt{doc/popovych-note.tex}. The constant $2$ is immaterial: for
 any integer $c \notin \{0, \pm 1\}$ the same trivial-stabilizer argument
 gives the identical jump, while $c = \pm 1$ restores the collapse --- the
 zero $-c$ must avoid the rational torsion $\{\pm 1\}$ of $\mathbb G_m$,
-and the innocent-looking $c = +1$ fails doubly ($\zeta + 1$ is
-multiplicatively dependent on the $\zeta - 1$ orbit, so $\{X-1, X+1\}$
-adds no burden at all); $c = 2$ is simply the smallest valid choice
-(companion note, final remark).
+and the innocent-looking $c = +1$ fails outright: since
+$\zeta + 1 = (\zeta^2 - 1)/(\zeta - 1)$ and $\rho_r(p)$ controls all
+conjugates of $\zeta - 1$, the mechanism congruences plus the Carmichael
+condition imply $T(1, n, r)$ automatically (measured: $48/48$ synthetic
+mechanism instances pass the $X+1$ congruence, $0/48$ the $X+2$ one), so
+the $\{X-1, X+1\}$ variant is \emph{mechanism-equivalent} to Agrawal's
+conjecture --- free armor; $c = 2$ is simply the smallest choice that
+genuinely blocks the engine (companion note, Prop.~8).
 
 \subsection{The CM-elliptic axis is closed}
 
