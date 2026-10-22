@@ -472,9 +472,11 @@ For any integer c ∉ {0, ±1}, the trivial-stabilizer lemma and the full
 Popovych burden jump hold verbatim for the pair {X−1, X+c}; c enters only
 through the norm Φ_r(−c) = (c^r+1)/(c+1) (finitely many excluded p, with
 p | c(c+1)), the excluded modulus r | c+1, and the level-1 component
-(base-(c+1) Fermat). **What must be avoided is exactly the rational
-torsion {±1} as the zero −c** — and the subtle case is c = +1, not just
-c = −1: the zero of X+1 is −1, inversion-fixed, so the collapse SURVIVES
+(base-(c+1) Fermat). **What must be avoided is exactly degeneracy of the zero −c: it must be a
+point of G_m avoiding the rational torsion {±1}**, i.e. c ∉ {0, ±1}. The
+c = 0 exclusion is vacuous, not subtle (X is a monomial: (X)^n ≡ X^n is an
+identity in every ring; the zero sits at the origin, off the torus). Among
+nonzero c, the subtle case is c = +1, not just c = −1: the zero of X+1 is −1, inversion-fixed, so the collapse SURVIVES
 ((ζ+1)^{p^{d/2}} = ζ^{−1}(ζ+1), ord | r(p^{d/2}−1) at even d), and
 ζ+1 = (ζ²−1)/(ζ−1) is multiplicatively dependent on the ζ−1 orbit — the
 pair {X−1, X+1} adds no rank and no burden. In stabilizer terms:
