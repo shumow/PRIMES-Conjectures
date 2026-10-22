@@ -1,0 +1,310 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Q}{\mathbb{Q}}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\ord}{ord}
+
+\title{What the Second Congruence Buys:\\ Quantified Evidence on
+Popovych's Conjecture\\ \large (standalone note --- v0.1)}
+\author{Dan Shumow \and Claude (Anthropic Fable~5)}
+\date{October 22, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Agrawal's conjecture asserts that for a prime $r \nmid n$ the congruence
+$(X-1)^n \equiv X^n - 1 \pmod{n, X^r - 1}$ forces $n$ prime or
+$n^2 \equiv 1 \pmod r$; Popovych (2009) conjectured that adding the second
+congruence $(X+2)^n \equiv X^n + 2$ repairs the statement, and beyond
+exhaustive search ($n < 10^{17}$, Primaboinca) no evidence has been
+published in either direction. We quantify what the second section costs
+the only known counterexample engine, the Lenstra--Pomerance
+Frobenius-matching mechanism. The mechanism's cost for the single section
+$X - 1$ is governed by an exact \emph{inversion collapse} available
+because the zero $\{1\}$ of $X - 1$ is Galois-stable; we prove the zero
+$-2$ of $X + 2$ has trivial stabilizer --- for every $\gamma \ne 1$ the
+ratio $(\zeta_r^\gamma + 2)/(\zeta_r + 2)$ is not even a unit of
+$\Z[\zeta_r]$ --- so no collapse exists for the second section at any
+depth. Consequently the pair mechanism must make a product of cyclotomic
+torus orders of total dimension $\min\{d : d \mid r-1,\ d \ge 3\} \ge 3$
+simultaneously smooth at every pool prime, for \emph{every} modulus $r$,
+against the single section's optimum of $2$; at Popovych's own $r = 5$
+the burden is $4$ ($p-1$, $p+1$ and $p^2+1$ simultaneously smooth), a
+Dickman tax of $10^{-7}$--$10^{-11}$ at representative parameters that
+empties the measured supply of the corresponding Agrawal-directed
+harvest. The burden lower bounds are unconditional given the collapse
+identities; that they are \emph{attained} (so that no thinner collapsed
+pool rescues the mechanism) is an Artin-type genericity hypothesis,
+stated explicitly and supported by exact-order computations with zero
+exceptions. To our knowledge this is the first quantified evidence
+distinguishing Popovych's conjecture from Agrawal's beyond search ranges.
+\end{abstract}
+
+\section{Introduction}
+
+For coprime $n, r$ write $T(a, n, r)$ for the congruence
+$(X + a)^n \equiv X^n + a \pmod{n,\ X^r - 1}$. Agrawal's conjecture
+\cite{AKS,BP01} states that $T(-1, n, r)$ with $r$ prime, $r \nmid n$,
+forces $n$ prime or $n^2 \equiv 1 \pmod r$; it is open, and believed
+false on the strength of the Lenstra--Pomerance (L--P) heuristic
+construction \cite{LPremarks}. Popovych \cite{Popovych09} proved a
+generalization of the L--P counterexample mechanism and proposed the
+repaired conjecture:
+
+\begin{conjecture}[Popovych]\label{conj:pop}
+If $r$ is a prime not dividing $n$ and both $T(-1, n, r)$ and
+$T(2, n, r)$ hold, then $n$ is prime or $n^2 \equiv 1 \pmod r$.
+\end{conjecture}
+
+Its evidence base is thin in both directions: a plausibility argument
+that the pair $\{X - 1, X + 2\}$ generates a large unit subgroup
+\cite{Popovych09,Popovych12}, and the Primaboinca exhaustive search
+($10^{10} < n < 10^{17}$, nothing found). This note supplies the first
+quantitative statement: \emph{every known counterexample mechanism pays
+strictly more against the pair than against the single section ---
+at least one extra algebraic-torus dimension of smoothness burden
+globally, and two extra at the canonical modulus $r = 5$.}
+
+The engine behind all published counterexample approaches
+\cite{LPremarks,Popovych09,HD21} is \emph{Frobenius matching}: modulo
+each prime $p \mid n$, the congruence $T(a, n, r)$ holds if $n \equiv
+p^{j} \pmod{\lcm(r, \ord(X + a))}$, where the order is taken in
+$(\F_p[X]/\Phi_r(X))^\times$, because $(X + a)^{p^j} \equiv X^{p^j} + a$
+exactly (Frobenius and Fermat). A construction assembles a squarefree
+$n = p_1 \cdots p_k$ meeting these congruences at every $p_i$
+simultaneously, which requires the controlling orders to be smooth
+enough to fit a common modulus. The cost of the construction is
+therefore governed by the \emph{support} of those orders, and the
+support is where the two sections differ.
+
+\section{The collapse for $X - 1$ and its absence for $X + 2$}
+
+Fix an odd prime $r \ne 3$, a prime $p \nmid 3r(2^r + 1)$, and let
+$d = \ord_r(p)$. Write $\rho_r(p)$ and $\rho'_r(p)$ for the
+multiplicative orders of $X - 1$ and $X + 2$ in
+$(\F_p[X]/\Phi_r(X))^\times$; both divide $p^d - 1 = \prod_{e \mid d}
+\Phi_e(p)$, a factorization indexed by \emph{cyclotomic levels} $e$,
+with $\Phi_e(p)$ the order of the $e$-th cyclotomic torus over $\F_p$,
+of dimension $\varphi(e)$.
+
+\begin{lemma}[inversion collapse for the first section]\label{lem:collapse}
+If $d$ is even, then $(X-1)^{p^{d/2} - 1} = -X^{-1}$ in
+$\F_p[X]/\Phi_r(X)$, and hence $\rho_r(p) \mid 2r(p^{d/2} - 1) =
+2r \prod_{e \mid d/2} \Phi_e(p)$.
+\end{lemma}
+
+\begin{proof}
+$(\Z/r)^\times$ is cyclic, so its unique involution is $-1$ and
+$p^{d/2} \equiv -1 \pmod r$. In each field component, with $X \mapsto
+\zeta$ a primitive $r$-th root of unity, iterated Frobenius gives
+$(\zeta - 1)^{p^{d/2}} = \zeta^{-1} - 1 = -\zeta^{-1}(\zeta - 1)$;
+divide by $\zeta - 1 \ne 0$. Finally $(-X^{-1})^{2r} = 1$ since
+$X^r \equiv 1 \bmod \Phi_r$.
+\end{proof}
+
+For $r = 5$, $d = 4$ this is V\'a\v{n}a's $\rho_5(p) \mid 10(p^2 - 1)$
+\cite{Vana09}, the fact that makes the L--P construction's cost the
+\emph{double} condition ($p - 1$ and $p + 1$ smooth: dimension
+$1 + 1 = 2$) rather than the full $p^4 - 1$. The collapse exists because
+the zero locus $\{1\}$ of $X - 1$ is stable under the Galois action,
+with root-of-unity cofactor. The second section has no such structure:
+
+\begin{lemma}[trivial stabilizer]\label{lem:nonunit}
+For every $\gamma \in (\Z/r)^\times$ with $\gamma \ne 1$, the element
+$(\zeta^\gamma + 2)/(\zeta + 2)$ is not a unit of $\Z[\zeta_r]$ --- in
+particular not a root of unity. Consequently no identity of the form
+$(X+2)^{p^e - 1} \in \mu_{2r}$ holds for any $e$ with
+$p^e \not\equiv 1 \pmod r$: the collapse of Lemma~\ref{lem:collapse}
+has no analogue for $X + 2$ at any depth.
+\end{lemma}
+
+\begin{proof}
+First, $N(\zeta + 2) = \Phi_r(-2) = (2^r + 1)/3$ (from $X^r - 1 =
+(X - 1)\Phi_r(X)$ at $X = -2$), which is coprime to $r$: by Fermat
+$2^r \equiv 2 \pmod r$, so $2^r + 1 \equiv 3$, and $\gcd(r, 3) = 1$.
+Let $\mathfrak q$ be a prime of $\Z[\zeta_r]$ dividing $(\zeta + 2)$;
+then $\zeta \equiv -2 \pmod{\mathfrak q}$, and the image of $-2$ in the
+residue field has multiplicative order exactly $r$ (it is the image of
+$\zeta$). If $\mathfrak q$ also divided $(\zeta^\gamma + 2)$ then
+$\zeta^\gamma \equiv -2 \equiv \zeta$, so $\zeta^{\gamma - 1} \equiv 1
+\pmod{\mathfrak q}$, forcing $r \mid \gamma - 1$. Hence for
+$\gamma \ne 1$ the ratio has a pole at $\mathfrak q$ and is not a unit.
+\end{proof}
+
+\begin{remark}[two structural asides]\label{rem:asides}
+(i) The $X = 1$ component of $T(2, n, r)$ is the base-$3$ Fermat
+condition $3^n \equiv 3 \pmod n$ --- automatic for Carmichael-type $n$,
+but nontrivial, unlike the first section's $0 = 0$. (ii) Modulo $p = 3$
+one has $-2 \equiv 1$, so the two sections \emph{coincide}: the pair
+constrains only the divisors $p > 3$ of $n$. Finitely many $p$ (those
+dividing $2^r + 1$) make $X + 2$ a zero divisor and are likewise
+excluded.
+\end{remark}
+
+\section{The burden jump}
+
+\begin{definition}[sharpness hypothesis]\label{def:sharp}
+Say \emph{generic sharpness} holds at $(r, p)$ for a section $f$ if
+every prime $\ell > 2rd$ dividing $\Phi_e(p)$ for a level $e$ in the
+support permitted by the collapse structure actually divides
+$\ord(f)$. (Failure at $\ell$ requires the image of $f$ to be an
+$\ell$-th power in every component, heuristic probability
+$\le 1/\ell$; in our exact-order computations, $0$ failures occurred in
+$196$ sampled large primes across $67 + 56$ sample primes $p$ and
+moduli $r \le 41$.)
+\end{definition}
+
+\begin{theorem}[Popovych burden]\label{thm:burden}
+Let $n$ be produced by the Frobenius-matching mechanism for the pair:
+for every $p \mid n$ there is $j_p$ with $n \equiv p^{j_p} \pmod{
+\lcm(r, \rho_r(p), \rho'_r(p))}$, and $\ord_r(n) > 2$ (validity).
+Assume generic sharpness for both sections. Then for every $p \mid n$,
+writing $d_p = \ord_r(p)$ (and noting validity forces $d_p \ge 3$),
+the quantity $\prod_{e \mid d_p} \Phi_e(p)$ --- a product of cyclotomic
+torus orders of total dimension $\sum_{e \mid d_p}\varphi(e) = d_p$ ---
+must be smooth enough to divide the construction's common modulus. In
+particular the minimal per-prime burden over admissible cells is
+\[
+\mathrm{burden}_{\mathrm{Pop}}(r) \;=\; \min\{\, d : d \mid r - 1,\
+d \ge 3 \,\} \;\ge\; 3 \qquad \text{for every prime } r,
+\]
+whereas the single-section (Agrawal) mechanism has burden
+$\min_{d \mid r-1,\, d \ge 3}(d/2$ if $d$ even, else $d)$, with global
+optimum $2$. At $r = 5$: $\mathrm{burden}_{\mathrm{Pop}} = 4$, i.e.\
+$p - 1$, $p + 1$ and $p^2 + 1$ simultaneously smooth, against the
+single section's $2$.
+\end{theorem}
+
+\begin{proof}
+For odd $d_p$ both sections are supported on all levels $e \mid d_p$
+(no involution in $\langle p \rangle$, and Lemma~\ref{lem:nonunit}
+forbids any other collapse); total dimension $d_p$. For even $d_p$ the
+first section collapses to levels $e \mid d_p/2$
+(Lemma~\ref{lem:collapse}) but by Lemma~\ref{lem:nonunit} and
+sharpness, $\rho'_r(p)$ retains the top level $e = d_p$, so
+$\lcm(\rho_r, \rho'_r)$ spans all $e \mid d_p$: the collapse is
+destroyed and the total is again $d_p$. Minimizing $d_p$ over
+$d \mid r - 1$, $d \ge 3$ gives the formula; the least such divisor is
+$3$ iff $3 \mid r - 1$, and for $r = 5$ (where $r - 1 = 4$) it is $4$,
+with levels $\{1, 2, 4\}$ and $\Phi_4(p) = p^2 + 1$. The Agrawal
+comparison is Lemma~\ref{lem:collapse} plus the same minimization.
+\end{proof}
+
+\begin{corollary}[cost at representative parameters]\label{cor:cost}
+For pool primes of $b$ bits and smoothness bound $B$, the extra
+quadratic level of Theorem~\ref{thm:burden} at $r = 5$ costs a Dickman
+factor $\rho(2b / \log_2 B)$ beyond the double condition. At the
+parameters of the Agrawal-directed harvest study in this repository
+($b = 51$; $B = 1259$ for the solver base, $B' = 12590$ for the
+enumerated base), this is $\rho(9.9) \approx 3.9\times10^{-11}$,
+respectively $\rho(7.5) \approx 1.8\times10^{-7}$ --- reducing that
+study's measured pool of $2.5\times10^5$ elements to between $10^{-5}$
+and $0.05$: empty at any feasible scale. Unlike $p \mp 1$, where
+partition-first harvesting lets one side be enumerated rather than
+tested, $\Phi_4(p)$ is pinned once $p$ is, so no enumeration trick
+removes the tax.
+\end{corollary}
+
+\begin{center}
+\begin{tabular}{@{}rccc@{}}
+\toprule
+$r$ & Agrawal burden & Popovych burden & $\Delta$ \\
+\midrule
+$5$ & $2$ & $4$ & $+2$ \\
+$7$ & $3$ & $3$ & $0$ \\
+$11$ & $5$ & $5$ & $0$ \\
+$13$ & $2$ & $3$ & $+1$ \\
+$17$ & $2$ & $4$ & $+2$ \\
+$19$ & $3$ & $3$ & $0$ \\
+$23$ & $11$ & $11$ & $0$ \\
+$29$ & $2$ & $4$ & $+2$ \\
+$31$ & $3$ & $3$ & $0$ \\
+$37$ & $2$ & $3$ & $+1$ \\
+$41$ & $2$ & $4$ & $+2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The deltas vanish exactly at $r \equiv 3 \pmod 4$, where the Agrawal
+burden is already $\ge 3$ and both conjectures share full depth; the
+Agrawal global optimum ($2$, at any $r \equiv 1 \bmod 4$) is unavailable
+to the pair at every modulus.
+
+\section{Numerical verification}
+
+All claims were verified by a deterministic script
+(\texttt{code/ag5\_popovych\_check.py} of the repository, with committed
+JSON output), on $56$ sample primes spanning $(r, d) \in \{(5,4), (13,4),
+(41,4), (7,6), (7,3), (11,5), (23,11)\}$: Frobenius matching for $X + 2$
+($56/56$); the first section's collapse bound fails to absorb $X + 2$ at
+even $d$ ($35/36$); the top level $e = d$ is present in $\rho'_r(p)$
+($55/56$); large primes of all levels $e \mid d$ divide $\rho'_r(p)$
+($47/47$, $\approx 0.28$ misses expected under the $1/\ell$ model);
+$\gcd(r, 2^r + 1) = 1$ at all tested $r$. The single exception in the
+second and third checks is $r = 13$, $p = 5$, where $\Phi_4(5) = 26 =
+2 \cdot 13$ contains no prime outside $2r$ at all --- a vacuous top
+level at one tiny prime, consistent with (indeed predicted by) the
+generic model, not a collapse event.
+
+\section{Scope}
+
+Three boundaries. (i) \emph{Mechanism scope}: the results quantify
+Frobenius-matching constructions, the family containing every published
+counterexample approach \cite{LPremarks,Popovych09,HD21}; ``accidental''
+solutions of the component equations outside it are not excluded, and no
+way to construct them is known. (ii) \emph{Conditionality}: the burden
+\emph{upper} structure (the collapse identities and support bounds) is
+unconditional; the \emph{lower} bounds use generic sharpness
+(Definition~\ref{def:sharp}), an Artin-type hypothesis --- a construction
+could in principle fish in the thin set of primes whose section orders
+collapse further, of heuristic density $\sim 1/\ell$ per avoided large
+prime, far thinner than the pools in question. (iii) \emph{Direction}:
+this is evidence that the only known counterexample engine is strictly
+more blocked against Conjecture~\ref{conj:pop} than against Agrawal's
+conjecture --- a reason the conjecture has resisted the L--P heuristic
+--- not evidence of its truth in any stronger sense.
+
+\begin{thebibliography}{9}\itemsep1pt\small
+
+\bibitem{AKS} M.~Agrawal, N.~Kayal, N.~Saxena, \emph{PRIMES is in P},
+Ann.\ of Math.\ \textbf{160} (2004), 781--793.
+
+\bibitem{BP01} R.~Bhattacharjee, P.~Pandey, \emph{Primality testing},
+BTech thesis, IIT Kanpur, 2001.
+
+\bibitem{LPremarks} H.~W.~Lenstra, Jr., C.~Pomerance, \emph{Remarks on
+Agrawal's conjecture}, AIM workshop notes, 2003.
+
+\bibitem{Popovych09} R.~Popovych, \emph{A note on Agrawal conjecture},
+Cryptology ePrint 2009/008.
+
+\bibitem{Popovych12} R.~Popovych, \emph{Elements of high order in finite
+fields of the form $\F_q[x]/\Phi_r(x)$}, Finite Fields Appl.\
+\textbf{18} (2012), 700--710.
+
+\bibitem{Vana09} T.~V\'a\v{n}a, \emph{Agrawal's conjecture and
+Carmichael numbers}, Comenius University Bratislava, 2009.
+
+\bibitem{HD21} A.~Hegde, P.~Devaraj, \emph{Heuristics for the
+construction of counterexamples to the Agrawal conjecture}, Springer
+PROMS \textbf{344}, 2021.
+
+\end{thebibliography}
+
+\end{document}

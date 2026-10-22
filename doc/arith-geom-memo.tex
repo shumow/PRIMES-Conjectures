@@ -27,6 +27,11 @@ first quantified evidence on Popovych's conjecture beyond search ranges,
 closed the elliptic-curve escape route, and gave the negative-result paper
 its structural spine: a single \emph{stabilizer-index theorem} explaining
 why every variant of the attack bottoms out at the same twin-smooth wall.
+Everything is unconditional except one named Artin-type hypothesis ---
+\emph{generic sharpness} (the support bounds are attained; $0$ exceptions
+across $196$ sampled large primes, and a theorem in the function-field
+mirror); the restriction to Frobenius-matching mechanisms is a separate,
+stated scope, not a hypothesis.
 
 \section*{1. The dictionary}
 
@@ -62,7 +67,8 @@ minimum $2$ attained exactly at $d = 4$, levels $\{1,2\}$: the double
 (twin-smooth) condition} --- realizable iff $4 \mid r - 1$, and V\'a\v{n}a's
 $\rho_5(p) \mid 10(p^2{-}1)$ is the special case. The burden formula
 reproduces the A11 empirical table at all 11 moduli (value and minimizing
-$d$); verified on 67 sample primes. ``Pick a friendlier $r$'' is closed
+$d$); verified on 67 sample primes, drawn and implemented independently of
+the A11 scan. ``Pick a friendlier $r$'' is closed
 structurally, not just empirically.
 
 \textbf{(AG5) Popovych is strictly harder --- first quantified evidence.}
@@ -73,8 +79,10 @@ $\Z[\zeta_r]$ for $\gamma \ne 1$ (disjoint ideal supports: norms $r$ vs
 $(2^r{+}1)/3$) --- so no collapse exists at any depth and the pair pays full
 burden $\min\{d : d \mid r{-}1, d \ge 3\} \ge 3$, equal to $4$ at Popovych's
 own $r = 5$: pool primes would need $p-1$, $p+1$ \emph{and} $p^2+1$
-simultaneously smooth. At the frozen harvest spec that extra
-${\approx}102$-bit level is a Dickman tax of $10^{-7}$--$10^{-11}$,
+simultaneously smooth. At the frozen harvest spec (pool primes
+${\approx}51$ bits) that extra ${\approx}102$-bit level is a Dickman tax
+$\rho(102/\log_2 B)$: $3.9\times10^{-11}$ over the solver base $B = 1259$,
+still $1.8\times10^{-7}$ over the generous $B' = 12590$ ---
 emptying the measured pool. Bonus structure: the second congruence's
 $X{=}1$ component is exactly the base-3 Fermat test $3^n \equiv 3$, and
 mod $3$ the two sections coincide.
