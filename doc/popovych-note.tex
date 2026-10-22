@@ -246,6 +246,34 @@ burden is already $\ge 3$ and both conjectures share full depth; the
 Agrawal global optimum ($2$, at any $r \equiv 1 \bmod 4$) is unavailable
 to the pair at every modulus.
 
+\begin{remark}[the constant $2$ is immaterial]\label{rem:constant}
+For any integer $c \notin \{0, \pm 1\}$, Lemma~\ref{lem:nonunit} and
+Theorem~\ref{thm:burden} hold verbatim for the pair $\{X - 1, X + c\}$:
+the proof needs only that at a prime $\mathfrak q \mid (\zeta + c)$ the
+image of $-c$ has multiplicative order $r$, which holds at the primitive
+prime divisors of $N(\zeta + c) = \Phi_r(-c) = (c^r + 1)/(c + 1)$. The
+constant enters only through that norm (its primes, with
+$p \mid c(c + 1)$, are the finitely many excluded $p$), the excluded
+modulus $r \mid c + 1$ (for $c = 2$: our standing $r \ne 3$), and the
+level-one component, the base-$(c{+}1)$ Fermat condition of
+Remark~\ref{rem:asides}. What must be avoided is exactly the rational
+torsion $\{\pm 1\}$ as the zero $-c$: $c = -1$ is the first section
+itself, and $c = +1$ --- the one innocent-looking bad choice --- has its
+zero at $-1$, fixed by inversion, so the collapse of
+Lemma~\ref{lem:collapse} \emph{survives} for $X + 1$:
+$(\zeta + 1)^{p^{d/2}} = \zeta^{-1} + 1 = \zeta^{-1}(\zeta + 1)$, whence
+$\ord(X + 1) \mid r(p^{d/2} - 1)$ for even $d$; moreover $\zeta + 1 =
+(\zeta^2 - 1)/(\zeta - 1)$ is multiplicatively dependent on the Galois
+orbit of $\zeta - 1$, so $\{X - 1, X + 1\}$ adds no rank and no burden:
+a Popovych-style conjecture with $c = 1$ would be no harder for the
+mechanism than Agrawal's. Thus $c = 2$ is simply the smallest valid
+choice ($c = -2$ works equally, with Mersenne norm $2^r - 1$).
+Numerically (\texttt{code/ag5b\_constant\_check.py} of the repository):
+at even $d$ the section $X + 1$ collapses in $22/22$ samples with the top
+level never needed, while $c \in \{2, 3, -2, 5\}$ collapse only at the
+single degenerate point $(r, p) = (13, 5)$ of Section~4.
+\end{remark}
+
 \section{Numerical verification}
 
 All claims were verified by a deterministic script

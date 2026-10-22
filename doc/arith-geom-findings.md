@@ -462,6 +462,31 @@ modulus r (A11/AG2), the Popovych pair (AG5), and the CM-elliptic axis
 exposition polish (§1 todos) and the optional AG6 function-field appendix;
 then the material is ready to fold into the negative-result paper.
 
+## AG5b addendum: the constant 2 is immaterial (2026-10-22)
+
+*Prompted by reviewer/user question; `code/ag5b_constant_check.py`,
+`data/generated/ag5b_constant_check.json`; Remark 5.8 in the tex and the
+matching remark in `doc/popovych-note.tex`.*
+
+For any integer c ∉ {0, ±1}, the trivial-stabilizer lemma and the full
+Popovych burden jump hold verbatim for the pair {X−1, X+c}; c enters only
+through the norm Φ_r(−c) = (c^r+1)/(c+1) (finitely many excluded p, with
+p | c(c+1)), the excluded modulus r | c+1, and the level-1 component
+(base-(c+1) Fermat). **What must be avoided is exactly the rational
+torsion {±1} as the zero −c** — and the subtle case is c = +1, not just
+c = −1: the zero of X+1 is −1, inversion-fixed, so the collapse SURVIVES
+((ζ+1)^{p^{d/2}} = ζ^{−1}(ζ+1), ord | r(p^{d/2}−1) at even d), and
+ζ+1 = (ζ²−1)/(ζ−1) is multiplicatively dependent on the ζ−1 orbit — the
+pair {X−1, X+1} adds no rank and no burden. In stabilizer terms:
+U(X±1) = {±1}, U(X+c) = {1} otherwise; c = 2 is merely the smallest
+valid choice (c = −2 works equally; Mersenne norm 2^r − 1).
+
+Measured (20 primes over (r,d) ∈ {(5,4),(13,4),(7,6),(7,3),(11,5)},
+c ∈ {1,2,3,−2,5}): X+1 collapses 22/22 at even d with top level never
+needed (and full support at odd d 13/13, where no section collapses);
+c ∈ {2,3,−2,5} show no collapse and full top-level presence except the
+single already-documented vacuous point (r,p) = (13,5).
+
 ## AG track wrap-up: COMPLETE (2026-10-21)
 
 *Final deliverables: `doc/arith-geom.tex` v1.0 (15 pp, compiled; AG1
