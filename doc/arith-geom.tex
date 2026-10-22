@@ -52,7 +52,15 @@ even $d$ and $d$ for odd $d$; validity of a counterexample forces $d \ge 3$,
 so the burden is minimized at $d = 4$ (possible iff $4 \mid r-1$), value $2$,
 never $1$. All identities and the resulting burden table are verified
 numerically (\texttt{code/ag2\_torus\_check.py}), reproducing A11's measured
-table for all eleven moduli tested there. Section~\ref{sec:popovych} (item
+table for all eleven moduli tested there. Throughout the document the
+collapse identities, the stabilizer and independence lemmas, and the index
+formulas are proved unconditionally; exactly \emph{one} Artin-type
+hypothesis is used --- \emph{generic sharpness}, the attainment of the
+support bounds (Proposition~\ref{prop:sharp}) --- named wherever it enters,
+empirically supported ($0$ exceptions across $196$ sampled large primes),
+and a theorem in the function-field mirror. The mechanism scope
+(Frobenius-matching constructions, Remark~\ref{rem:scope}) is a separate,
+stated restriction, not a hypothesis. Section~\ref{sec:popovych} (item
 AG5) extends the count to Popovych's two-section conjecture: the second
 section $X+2$ has trivial stabilizer in the Galois action --- its zero $-2$,
 unlike the zero $1$ of $X-1$, is not inversion-stable --- so no collapse
@@ -453,7 +461,11 @@ the localized gap per gate AG-G1 (\texttt{doc/arith-geom-plan.md}).
 \texttt{code/ag2\_torus\_check.py} (deterministic; output in
 \texttt{data/generated/ag2\_torus\_check.json}) verifies, over $67$ sample
 primes spanning $(r,d) \in \{(5,4), (13,4), (41,4), (7,3), (7,6), (19,3),
-(11,5), (23,11)\}$:
+(11,5), (23,11)\}$ --- sampled independently of the A11 scan, which drew
+$p > 1000$ in one fixed residue class per $r$, whereas here $p$ runs from
+$3$ upward over all classes of the given order, and the implementation is
+independent (exact orders by polynomial arithmetic in $\F_p[X]/\Phi_r$
+rather than A11's level attribution):
 
 \begin{center}
 \begin{tabular}{llr}
@@ -868,9 +880,13 @@ floor of $2$ is a structural invariant, and gate AG-G2 is not passed.
 
 The AKS congruence rests on the \emph{canonical} substitution
 $\sigma_n : X \mapsto X^n$ --- the Adams operation of the $\Lambda$-ring
-$\Z[\mu_r]$ (Section~\ref{sec:dictionary}). An elliptic curve over $\Z$
-carries such a canonical commuting family of Frobenius lifts if and only
-if it has complex multiplication \cite{BorgerGurney}; for a non-CM curve
+$\Z[\mu_r]$ (Section~\ref{sec:dictionary}). If an elliptic curve carried
+such a canonical commuting family, each $\psi_p$ would be an endomorphism
+of degree $p$ lifting Frobenius, and an endomorphism of non-square degree
+already forces $\mathrm{End}(E) \supsetneq \Z$, i.e.\ complex
+multiplication --- so only CM curves are eligible; conversely, for CM
+curves the canonical family exists (Borger--Gurney \cite{BorgerGurney}).
+For a non-CM curve
 there is no analogue of $\sigma_n$ at all, and testing against all
 candidate traces $a \in [-2\sqrt n, 2\sqrt n]$ is exponential. So the
 well-posed analogue is CM:
