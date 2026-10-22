@@ -29,6 +29,13 @@ via Twin Smooth Integers\\
 \begin{document}
 \maketitle
 
+\noindent\textbf{Audit notice (22 October 2026).}
+The proof of Theorem~\ref{thm:lp} and the modulus normalization in
+Section~\ref{sec:subset} have been corrected on the joint-correctness branch.
+The remaining feasibility estimates are historical, not validated by this
+correction. The tracked PDF is the original draft; current audit status is
+recorded in \texttt{doc/integration-review-status.md}.
+
 \begin{abstract}
 Agrawal's conjecture asserts that for coprime $n$ and prime $r$, the congruence
 $(X-1)^n \equiv X^n-1 \pmod{n,\,X^r-1}$ forces $n$ prime or $n^2 \equiv 1
@@ -99,20 +106,25 @@ Then $T(-1,n,5)$ holds and $n^2 \not\equiv 1 \pmod 5$; in particular such an
 $n$ with $k \ge 3$ is a counterexample to Conjecture~\ref{conj:agrawal}.
 \end{theorem}
 
-\begin{proof}[Proof sketch]
+\begin{proof}
 Since $p \equiv 3 \pmod 5$ has order $4$ in $(\Z/5)^\times$, over $\F_p$ the
 polynomial $X^5-1$ factors as $(X-1)\Phi_5(X)$ with $\Phi_5$ irreducible, so
 $\Z[X]/(p, X^5-1) \cong \F_p \times \F_{p^4}$. The $\F_p$ component of
-\eqref{eq:aks} is trivial. In $\F_{p^4}$, with $\zeta$ a primitive fifth root
-of unity, the Frobenius gives $(\zeta-1)^{p^j} = \zeta^{p^j}-1$ for every $j$.
-Conditions (c),(d) give $n \equiv 1 \pmod{p-1}$ and $n \equiv -1 \pmod{p+1}$,
-i.e.\ $n \equiv p \equiv p^3 \pmod{\lcm(p-1,p+1)}$, and the mod-$80$ condition
-resolves the $2$-adic ambiguity; V\'a\v{n}a's analysis of the quantity
-$\rho(p) \mid 10(p^2-1)$ \cite[Thm.~3.4]{Vana09} shows control modulo
-$10(p^2-1)$ suffices to conclude $(\zeta-1)^n = \zeta^n-1$ in each residue
-field. Lemma~\ref{lem:mod5} gives $n^2 \not\equiv 1 \pmod 5$.
-\todo{Phase 0: full independent re-derivation, both $k \bmod 4$ cases; see
-Question~\ref{q:cells}.}
+\eqref{eq:aks} is trivial. In $\F_{p^4}$, put $\alpha=\zeta-1$ for a
+primitive fifth root $\zeta$. Since $p^2\equiv-1\pmod5$, Frobenius gives
+$\alpha^{p^2}=-\zeta^{-1}\alpha$, so $\alpha^{10(p^2-1)}=1$.
+
+Let $j\in\{1,3\}$ satisfy $j\equiv k\pmod4$, and put
+$m=(p-1)/2$, $a=(p+1)/4$. The numbers $80,m,a$ are pairwise coprime:
+$m,a$ are odd, neither is divisible by $5$, and $\gcd(m,a)=1$.
+Also $10(p^2-1)=80ma$. Conditions (c),(d) imply
+$n\equiv p^j\pmod m$ and $n\equiv p^j\pmod a$, since $p\equiv1\pmod m$
+and $p\equiv-1\pmod a$. Finally $n\equiv3^k\equiv3^j\equiv p^j\pmod{80}$,
+using $3^4\equiv1\pmod{80}$. CRT therefore yields
+$n\equiv p^j\pmod{10(p^2-1)}$ in both odd-cardinality cases.
+Consequently $\alpha^n=\alpha^{p^j}=\zeta^{p^j}-1=\zeta^n-1$.
+This proves the congruence modulo each $p_i$; squarefreeness and CRT prove
+it modulo $n$. Lemma~\ref{lem:mod5} gives $n^2\not\equiv1\pmod5$.
 \end{proof}
 
 \begin{lemma}\label{lem:mod5}
@@ -170,8 +182,15 @@ and define the \emph{pool}
 \tfrac{p-1}{2} \text{ is } Q_-\text{-smooth},\;
 \tfrac{p+1}{4} \text{ is } Q_+\text{-smooth} \Bigr\}.
 \]
-Let $\Lambda_- = 2\,\lcm\{p-1 : p \in \cP\}$ and
-$\Lambda_+ = 4\,\lcm\{p+1 : p \in \cP\}$.
+For a nonempty pool let
+\[
+\Lambda_-=\lcm\{p-1:p\in\cP\}
+          =2\,\lcm\{(p-1)/2:p\in\cP\},\qquad
+\Lambda_+=\lcm\{p+1:p\in\cP\}
+          =4\,\lcm\{(p+1)/4:p\in\cP\}.
+\]
+The factors $2$ and $4$ belong outside the lcm of the \emph{normalized odd
+parts}, not outside the lcm of $p-1$ and $p+1$.
 
 \begin{proposition}\label{prop:reduction}
 Let $S \subseteq \cP$ with $|S|$ odd, $|S| \ge 3$, and $n = \prod_{p \in S} p$.
@@ -187,23 +206,29 @@ counterexample to Conjecture~\ref{conj:agrawal}.
 \Lambda_-$ by definition of $\Lambda_-$, and $\Lambda_- \mid n-1$ by
 \eqref{eq:target}. Likewise (d) via $\Lambda_+ \mid n+1$. The elements of $S$
 are distinct primes, so $n$ is squarefree with $k = |S| \ge 3$, hence
-composite. Note $\gcd(\Lambda_-, \Lambda_+) = 2$ by Lemma~\ref{lem:sides}
-(disjointness of $Q_\pm$) and Lemma~\ref{lem:2adic}, so \eqref{eq:target} is
-consistent.
+composite. Disjointness of $Q_\pm$ and the valuations in
+Lemma~\ref{lem:2adic} give $\gcd(\Lambda_-,\Lambda_+)=2$.
+Thus the two target residues are CRT-compatible. This is a statement about
+the congruences, not a proof that a subset of the pool realizes them.
 \end{proof}
 
 Condition \eqref{eq:target} is \emph{stronger} than (c),(d) --- it imposes the
-full lcm rather than the lcm over $S$ --- but in exchange it is linear:
-taking discrete logarithms in each cyclic component of
+full lcm rather than the lcm over $S$. Before taking discrete logarithms,
+restrict to pool elements coprime to $\Lambda_-\Lambda_+$; selected elements
+must be units because the target residues are units. In the production
+design, pool primes exceeding every factor-base prime satisfy this
+restriction automatically. Taking discrete logarithms in each cyclic component of
 $(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$ (Pohlig--Hellman
 \cite{PH78} is cheap, all component orders being smooth by design),
 \eqref{eq:target} becomes a $0/1$ subset-sum over $\bigoplus_i \Z/m_i$, with
 one extra $\Z/2$ coordinate enforcing $|S|$ odd. The heuristic solvability
-condition is
+condition, under a sufficiently uniform subset-sum model, is
 \begin{equation}\label{eq:feas}
 2^{|\cP|} \;\gg\; |G|, \qquad G = (\Z/\Lambda_-)^\times \times
 (\Z/\Lambda_+)^\times,
 \end{equation}
+This size inequality by itself guarantees collisions, not reachability of
+the specified target or an odd-cardinality solution.
 i.e.\ $|\cP| \gtrsim \log_2 \Lambda_- + \log_2 \Lambda_+$ with slack for the
 solver. Candidate solvers, in escalating order: staged CRT in the style of
 L\"oh--Niebuhr's Carmichael factories \cite{LN}, Wagner's $k$-list generalized

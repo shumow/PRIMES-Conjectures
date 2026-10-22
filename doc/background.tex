@@ -22,6 +22,12 @@
 \maketitle
 \vspace{-2.5em}
 
+\noindent\textbf{Audit notice (22 October 2026).}
+The two odd-cardinality cases and the subset-product modulus definitions below
+have been corrected. Other feasibility statements remain historical estimates.
+The tracked PDF is the original version; see
+\texttt{doc/integration-review-status.md} for current review status.
+
 \section{The conjecture and its status}
 
 For $n,r$ coprime, write $T(-1,n,r)$ for the congruence
@@ -68,12 +74,14 @@ Why this works, in one paragraph. Since $p \equiv 3 \pmod 5$ has order $4$ in
 $(\Z/5)^\times$, over $\F_p$ we have $X^5-1 = (X-1)\Phi_5(X)$ with $\Phi_5$
 irreducible, so $\Z[X]/(p, X^5-1) \cong \F_p \times \F_{p^4}$. The $\F_p$
 component of \eqref{eq:aks} is trivial. In $\F_{p^4}$, with $\zeta$ a primitive
-fifth root of unity, Frobenius gives $(\zeta-1)^{p^j} = \zeta^{p^j}-1$ for all
-$j$. Conditions (c),(d) say $n \equiv 1 \pmod{p-1}$ and $n \equiv -1
-\pmod{p+1}$, i.e.\ $n \equiv p \equiv p^3 \pmod{\lcm(p-1,p+1)}$; the mod-$80$
-condition pins the $2$-adic ambiguity, and one checks (V\'a\v{n}a's
-$\rho(p) \mid 10(p^2-1)$, \cite[Thm.~3.4]{Vana09}) that control modulo
-$10(p^2-1)$ --- not $p^4-1$ --- already forces $(\zeta-1)^n = \zeta^n - 1$.
+fifth root of unity, Frobenius gives
+$(\zeta-1)^{p^2}=-\zeta^{-1}(\zeta-1)$, hence
+$\rho(p)\mid10(p^2-1)$. Choose $j=1$ or $3$ according to $k\bmod4$.
+Conditions (c),(d) give $n\equiv p^j$ modulo the odd numbers $(p-1)/2$ and
+$(p+1)/4$; the residue $n\equiv3^k\equiv p^j\pmod{80}$ handles the remaining
+factor. These three moduli are pairwise coprime and their product is
+$10(p^2-1)$, so $n\equiv p^j\pmod{10(p^2-1)}$.
+Thus $(\zeta-1)^n=(\zeta-1)^{p^j}=\zeta^{p^j}-1=\zeta^n-1$.
 Finally $p_i \equiv 3 \pmod 5$ and $k$ odd give $n \equiv 3^k \in \{2,3\}
 \pmod 5$, so $n^2 \not\equiv 1 \pmod 5$.
 
@@ -105,14 +113,16 @@ primes $\neq 5$ and harvest the pool
 \tfrac{p-1}{2} \text{ is } Q_-\text{-smooth},\;
 \tfrac{p+1}{4} \text{ is } Q_+\text{-smooth} \,\bigr\}.
 \]
-Put $\Lambda_- = 2\lcm\{p-1\}$, $\Lambda_+ = 4\lcm\{p+1\}$ over
-$\mathcal{P}$. For any $S \subseteq \mathcal{P}$ with $|S|$ odd, $|S| \ge 3$,
+Put $\Lambda_-=\lcm\{p-1\}=2\lcm\{(p-1)/2\}$ and
+$\Lambda_+=\lcm\{p+1\}=4\lcm\{(p+1)/4\}$ over a nonempty $\mathcal{P}$.
+Disjoint odd supports give $\gcd(\Lambda_-,\Lambda_+)=2$, so the targets
+below are compatible. For any $S \subseteq \mathcal{P}$ with $|S|$ odd, $|S| \ge 3$,
 the number $n = \prod_{p \in S} p$ satisfies Theorem~\ref{thm:lp} provided
 \begin{equation}\label{eq:target}
 n \equiv 1 \pmod{\Lambda_-} \qquad\text{and}\qquad n \equiv -1 \pmod{\Lambda_+},
 \end{equation}
-a condition \emph{stronger} than (c),(d) but linear in the exponent vector:
-taking discrete logarithms in each cyclic component of
+a condition \emph{stronger} than (c),(d). Restrict to pool elements coprime
+to $\Lambda_-\Lambda_+$ before taking discrete logarithms in each cyclic component of
 $(\Z/\Lambda_-)^\times \times (\Z/\Lambda_+)^\times$ (Pohlig--Hellman is cheap
 --- all orders are smooth by design), \eqref{eq:target} becomes a $0/1$
 subset-sum over $\bigoplus_i \Z/m_i$ with one extra $\Z/2$ component for the
@@ -122,7 +132,9 @@ parity of $|S|$. Heuristically solvable once
 |G| \approx \varphi(\Lambda_-)\,\varphi(\Lambda_+),
 \]
 i.e.\ $|\mathcal{P}| \gtrsim \log_2 \Lambda_- + \log_2 \Lambda_+$ with slack
-for the solver --- ballpark: a $15$--$30$k-bit group wants a pool of
+for the solver. This needs a uniformity/reachability hypothesis; the size
+inequality alone does not guarantee a subset attaining the target.
+Ballpark: a $15$--$30$k-bit group wants a pool of
 $50$--$100$k primes. Solvers, in escalating order: staged CRT \`a la
 L\"oh--Niebuhr \cite{LN}, Wagner's $k$-list generalized birthday algorithm
 \cite{Wagner} (the pool-rich regime is exactly its habitat), lattice reduction
