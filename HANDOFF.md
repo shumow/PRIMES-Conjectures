@@ -1,14 +1,55 @@
 # HANDOFF — negative-result paper (branch `negative-result-writeup`)
 
-Status 2026-10-21: `doc/negative-result.tex` compiles clean to an 11-page
-PDF (`doc/negative-result.pdf`), within the plan's 8–12 pp target. All
+## Update 2026-10-22: external feedback incorporated (v1.1)
+
+The 2026-10-22 feedback memo was applied across both branches:
+
+- **Epistemic framing**: the one conditional ingredient (Artin-type
+  generic sharpness) is now *named in the abstracts* of the paper, the AG
+  document and the memo, with the 0/196 empirical support and its
+  theorem-status in the function-field mirror, and explicitly separated
+  from the mechanism scope.
+- **§5 restructured theorem-first**: the stabilizer-index theorem now
+  leads, with the per-section table (section / U / min burden /
+  realizability), and AG2/AG5/AG4 derived as corollaries; the sign-split
+  section closes it. Paper is now 12 pp.
+- **Technical checks**: (a) the (2^r+1)/3 norm is correct in all sources —
+  the reviewer's "(2r+1)/3" was a PDF text-extraction artifact; (b) the
+  Dickman tax now names both bases (B = 1259, B' = 12590) wherever stated;
+  (c) the AG2 verification states its 67 primes are sampled and
+  implemented independently of the A11 scan (A11: p > 1000, one fixed
+  class per r; AG2: p from 3 upward, all classes, exact orders by
+  polynomial arithmetic); (d) Borger–Gurney no longer carries the elliptic
+  only-if — the elementary degree-p-endomorphism argument is inline, with
+  B–G cited for CM existence/canonicity; (e) Howe's n failing T(−1,n,5) is
+  now in Appendix A with the script/check pointer (H1/H4).
+- **Constructive reframings** (feedback §"positive reframings" items 1–2):
+  §7 now presents the stabilizer index as a design metric / security
+  parameter for AKS-style tests, and states the unconditional
+  function-field form ("no Frobenius-matching forgery beats the floor"
+  over F_q(T)); §6 states the result *sharpens rather than kills* option
+  (b). Items 3–4 (AG3 as a standalone classification note; full
+  repackaging to lead the main paper with the metric) are left as
+  user-level packaging decisions.
+- **Standalone AG5 note written**: `doc/popovych-note.{tex,pdf}` (4 pp, on
+  the AG branch, merged here) — self-contained, conditionality in the
+  abstract, non-unit lemma, burden theorem + table, Dickman estimate with
+  explicit parameters, base-3/char-3 remarks, verification summary.
+
+Not adopted (with reasons): the full repackaging of the main paper around
+the design metric (changes the paper's genre from the planned negative
+result; the metric is §7-prominent instead) — flag to the user as a
+decision.
+
+Status 2026-10-21 (original): `doc/negative-result.tex` compiles clean
+(now 12 pp with the restructure), within the plan's 8–12 pp target. All
 sections of `doc/negative-result-plan.md` are present; §5 of the plan
 ("the untested escape") was updated to the current state of knowledge:
 A10 has since *closed* that escape (measured Wagner reach law), and the
 AG-track results (branch `arith-geom-interpretation`, `doc/arith-geom.tex`
-v1.0) are folded in as §5 "The obstruction is structural" (dimension-count
-theorem for every r, the Williams/sign-split framing, the Popovych burden
-jump, the stabilizer-index closure of the CM-elliptic axis).
+v1.0) are folded in as §5 "The obstruction is structural" (the
+stabilizer-index theorem with the dimension-count, Popovych and elliptic
+corollaries, and the Williams/sign-split framing).
 
 ## Deviations from the plan, with reasons
 

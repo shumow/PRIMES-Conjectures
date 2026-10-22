@@ -56,7 +56,13 @@ dimension-count theorem proves the double (twin-smooth) condition is the
 unique minimum-burden cell for \emph{every} AKS modulus $r$; Popovych's
 two-section variant is strictly harder (burden $\ge 3$ everywhere, $4$ at
 $r = 5$); and a stabilizer-index theorem extends the same floor to the
-CM-elliptic analogue. This is not a disproof of the conjecture, nor a proof
+CM-elliptic analogue. The structural statements are unconditional modulo
+one named equidistribution-type hypothesis --- Artin-type \emph{generic
+sharpness}, the attainment of the proved support bounds --- empirically
+supported (zero exceptions across $196$ sampled large primes) and a
+theorem in the function-field mirror by Weil's RH for curves; the
+restriction to Frobenius-matching mechanisms is a separate, stated scope.
+This is not a disproof of the conjecture, nor a proof
 that no counterexample can be constructed; it is a quantified closure of
 the known constructive route, with the residual open directions stated
 precisely.
@@ -419,61 +425,170 @@ negative result of this paper.
 
 The measurements of \S\ref{sec:solver} concern $r = 5$ and the specific
 section $X - 1$. This section shows none of those choices can be varied
-away, by results proved in the companion arithmetic-geometry document of
-this repository (\texttt{doc/arith-geom.tex}, v1.0), whose statements we
-summarize with proofs sketched; each carries the caveat structure of
-\S\ref{sec:scope} (the \emph{mechanism} scope, and one generic-sharpness
-ingredient, Artin-type, empirically supported).
+away. The results are proved in the companion arithmetic-geometry document
+of this repository (\texttt{doc/arith-geom.tex}, v1.0); we state them with
+proofs sketched. One ingredient is conditional and we name it once, here:
+\emph{generic sharpness} --- the proved support bounds on the controlling
+orders are \emph{attained} --- an Artin-type equidistribution hypothesis,
+empirically supported (zero exceptions across $196$ sampled large primes in
+three independent verification campaigns) and a \emph{theorem} in the
+function-field mirror by Weil's RH for curves. The restriction to
+Frobenius-matching mechanisms (\S\ref{sec:scope}, item 2) is a stated
+scope, not a hypothesis; the two should not be conflated.
+
+\subsection{The stabilizer-index theorem}
+
+Modulo $p \mid n$, the mechanism's cost is governed by the multiplicative
+order of the test section in the component algebra, and that order
+collapses exactly when a Galois or CM symmetry fixes the section up to a
+root-of-unity cofactor. For $X - 1$, whose zero $\{1\}$ is Galois-stable,
+inversion gives the exact identity $(X-1)^{p^{d/2}-1} = -X^{-1}$ for even
+$d = \ord_r(p)$ (V\'a\v{n}a's $\rho_5(p) \mid 10(p^2-1)$ \cite{Vana09} is
+the case $d = 4$). For $X + 2$, whose zero $-2$ has trivial stabilizer, no
+collapse exists at any depth: $(\zeta^\gamma + 2)/(\zeta + 2)$ is not even
+a unit of $\Z[\zeta_r]$ for $\gamma \ne 1$ (disjoint ideal supports,
+$N(\zeta - 1) = r$ versus $N(\zeta + 2) = (2^r + 1)/3$). For the
+$x$-coordinate on a CM elliptic curve, the CM automorphisms give exact
+collapses such as $x([i]S) = -x(S)$ on $y^2 = x^3 - x$. All cases are one
+statement:
+
+\begin{theorem}[stabilizer-index floor; \emph{proved}, sharpness generic]
+\label{thm:stabindex}
+For a one-section Frobenius test on a one-dimensional group with scalar
+Frobenius action $\lambda$ in a cyclic group and unit-stabilizer $U$ (the
+subgroup acting on the section by root-of-unity cofactors), the smoothness
+burden a Frobenius-matching forgery must pay at each pool prime is the
+index
+\[
+k' \;=\; [\langle\lambda\rangle : \langle\lambda\rangle \cap U],
+\]
+realized as simultaneous smoothness of the cyclotomic torus orders
+$\Phi_e(p)$ for $e \mid k'$ --- total torus dimension $k'$. Every credible
+exception clause equals $U$, because $U$-cells are reachable by one-sided
+AGP-type constructions (\S\ref{sec:signsplit}); a valid counterexample
+therefore forces $\lambda \notin U$, hence \textbf{burden $k' \ge 2$}.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+With $e = k'$ minimal such that $\lambda^e \in U$, the cofactor identity
+$f^{\,p^{k'}} = \zeta f$ ($\zeta$ a root of unity of small order) bounds
+the order's support by the levels $e \mid k'$ --- unconditionally, by the
+exact identities above. For $e < k'$ the cofactor $f \circ [\lambda^e]/f$
+is a non-torsion unit (cyclotomic, or elliptic with disjoint divisor
+support), so no identity collapses further; generic sharpness then places
+the full levels $e \mid k'$ in the order. Validity excludes
+$\lambda \in U$ since $U$-cells pass only inside the exception clause.
+\end{proof}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lllll@{}}
+\toprule
+section & acting group & $U$ & min.\ valid burden & realizability \\
+\midrule
+$X - 1$ on $\mu_r$ & $(\Z/r)^\times$ & $\{\pm 1\}$ & $2$ &
+$4 \mid r - 1$ \\
+$X + 2$ on $\mu_r$ & $(\Z/r)^\times$ & $\{1\}$ & $3$ ($4$ at $r{=}5$) &
+$3 \mid r - 1$ for $3$ \\
+$x$ on $E_{j=1728}$ & eigenline scalars & $\mu_4$ & $2$ &
+$8 \mid r - 1$ \\
+$x$ on $E_{j=0}$ & eigenline scalars & $\mu_6$-image & $2$ &
+$12 \mid r - 1$ \\
+\bottomrule
+\end{tabular}
+\caption{Instances of Theorem~\ref{thm:stabindex}. Measured valid-cell
+floors on $y^2 = x^3 - x$: $3$ at $r = 13$ and $2$ at $r = 17$, matching
+the index formula.}
+\label{tab:stab}
+\end{table}
+
+The remainder of this section instantiates the theorem; each corollary was
+verified by its own deterministic script (Appendix~\ref{app:repro}).
 
 \subsection{Every AKS modulus forces the double condition}
 
-For $d = \ord_r(p)$, the control order $\rho_r(p)$ of $X - 1$ in
-$(\F_p[X]/\Phi_r)^\times$ obeys an exact \emph{inversion collapse}: for
-even $d$, the unique involution of $(\Z/r)^\times$ is $-1$, so
-$p^{d/2} \equiv -1 \pmod r$ and $(X-1)^{p^{d/2}-1} = -X^{-1}$ in
-$\F_p[X]/\Phi_r$, whence $\rho_r(p) \mid 2r(p^{d/2} - 1) =
-2r\prod_{e \mid d/2}\Phi_e(p)$ --- V\'a\v{n}a's $\rho_5(p) \mid
-10(p^2-1)$ is the case $d = 4$. Since $\Phi_e(p)$ is the order of the
-$e$-th cyclotomic torus over $\F_p$, of dimension $\varphi(e)$, and
-$\sum_{e \mid m}\varphi(e) = m$:
+\begin{corollary}[torus dimension count]\label{cor:dimcount}
+Take the section $X - 1$: $U = \{\pm 1\}$, so the burden at
+$p \mid n$ is $d_p' = d_p/2$ ($d_p$ even) or $d_p$ ($d_p$ odd), where
+$d_p = \ord_r(p)$, and validity ($\ord_r(n) > 2$, which forces
+$d_p \ge 3$) gives burden $\ge 2$ for \emph{every} odd prime modulus $r$.
+The minimum $2$ is attained exactly at $d_p = 4$, levels $\{1, 2\}$:
+$p - 1$ and $p + 1$ smooth --- the double condition --- realizable iff
+$4 \mid r - 1$. For $r \equiv 3 \pmod 4$ the burden is $\ge 3$, i.e.\
+smooth values of $\Phi_e(p) \sim p^{\varphi(e)}$ with $\varphi(e) \ge 2$
+--- the quantities whose non-smoothness underpins torus-based cryptography
+\cite{RS}.
+\end{corollary}
 
-\begin{theorem}[torus dimension count; \emph{proved}, sharpness generic]
-\label{thm:dimcount}
-For every odd prime $r$ and every valid L--P-mechanism counterexample
-($\ord_r(n) > 2$, which forces $d_p = \ord_r(p) \ge 3$ at every
-$p \mid n$), each pool prime must make the $\F_p$-point orders of a
-product of cyclotomic tori of total dimension
+The resulting burden formula, $\min_{d \mid r-1,\, d \ge 3}(d/2$ if even
+else $d)$, reproduces an independent empirical scan over eleven moduli
+$r \le 41$ exactly (value and minimizing $d$), and the collapse identity,
+exact orders and sharpness behaviour were verified on $67$ sample primes
+--- sampled and implemented independently of that scan (different ranges
+and residue-class selection; exact orders by polynomial arithmetic).
+\textbf{``Choose a friendlier $r$'' is closed structurally}: every
+$r \equiv 1 \pmod 4$ reproduces the $r = 5$ economics identically, and
+every other $r$ is strictly worse.
+
+\subsection{Popovych's variant is strictly harder}
+
+\begin{corollary}[Popovych burden]\label{cor:pop}
+Take the pair $\{X - 1, X + 2\}$ \cite{Popovych09}: the second section has
+$U = \{1\}$, so the pair pays full depth $d_p$ at every parity, and
 \[
-d_p' = \begin{cases} d_p/2, & d_p \text{ even}\\ d_p, & d_p \text{ odd}
-\end{cases} \;\ge\; 2
+\mathrm{burden}_{\mathrm{Pop}}(r) = \min\{d : d \mid r - 1,\ d \ge 3\}
+\;\ge\; 3 \quad \text{for every } r, \qquad = 4 \text{ at } r = 5,
 \]
-simultaneously smooth. The minimum $2$ is attained exactly at $d_p = 4$,
-where the level set is $\{1, 2\}$: $p - 1$ and $p + 1$ smooth --- the
-double condition --- and $d_p = 4$ is realizable iff $4 \mid r - 1$. For
-$r \equiv 3 \pmod 4$ the burden is $\ge 3$ (smooth values of
-$\Phi_e(p) \sim p^{\varphi(e)}$, $\varphi(e) \ge 2$ --- the quantities
-whose non-smoothness underpins torus-based cryptography \cite{RS}).
-\end{theorem}
+i.e.\ at Popovych's own modulus the pool primes would need $p - 1$,
+$p + 1$ \emph{and} $p^2 + 1$ simultaneously smooth.
+\end{corollary}
 
-The resulting burden formula, $\min_{d \mid r-1,\, d \ge 3}
-(d/2 \text{ if even else } d)$, reproduces an independent empirical scan
-over eleven moduli $r \le 41$ exactly (value and minimizing $d$), and the
-collapse identity, the exact order $\rho_r(p)$, and the generic-sharpness
-behaviour were verified on $67$ sample primes
-(Appendix~\ref{app:repro}). \textbf{Consequence: option ``choose a
-friendlier $r$'' is closed structurally} --- every $r \equiv 1 \pmod 4$
-reproduces the $r = 5$ economics identically, and every other $r$ is
-strictly worse.
+At the frozen spec the extra ${\approx}102$-bit quadratic level is a pure
+Dickman tax $\rho(102/\log_2 B)$: $3.9\times10^{-11}$ over the solver base
+$B = 1259$, still $1.8\times10^{-7}$ over the enumerated base
+$B' = 12590$ --- emptying the measured $2.5\times10^5$ pool to below one
+element; the solver-side group only grows. To our knowledge this is the
+first quantified evidence in either direction on Popovych's conjecture
+beyond exhaustive search; a self-contained treatment is the companion
+note \texttt{doc/popovych-note.tex}.
 
-\subsection{The sign split, not the depth, is the wall}
+\subsection{The CM-elliptic axis is closed}
 
-The generalized-Carmichael record sharpens the diagnosis. In the cell
-language of the companion document: Carmichael numbers occupy the cell
-(level $\{1\}$, Frobenius power $0$) and are infinite \cite{AGP};
-Lucas--Carmichael numbers occupy $(\{2\}, 1)$ and are infinite
-\cite{Wright18} (via the elliptic Korselt criteria of \cite{Silverman12}); the L--P targets occupy $(\{1,2\}, (0,1))$ --- Williams
-numbers --- empty to $2^{64}$ \cite{McIntoshMitra}; yet Howe's
-\emph{rigid order-$2$ Carmichael number}
+A canonical elliptic analogue of the substitution $X \mapsto X^n$ requires
+CM: a canonical commuting family of Frobenius lifts would make each
+$\psi_p$ a degree-$p$ endomorphism, and an endomorphism of non-square
+degree already forces $\mathrm{End}(E) \supsetneq \Z$; conversely for CM
+curves the canonical family exists \cite{BorgerGurney}. There Frobenius
+acts on an $r$-eigenline by a scalar $\lambda$ and
+Theorem~\ref{thm:stabindex} applies with $U$ the image of the CM units:
+
+\begin{corollary}[elliptic closure]\label{cor:elliptic}
+On the CM curves the apparent burden-$1$ cells ($\lambda$ equal to a CM
+unit, e.g.\ $\lambda \equiv \pm i$, where the section order collapses to
+the split torus alone) lie exactly inside the exception clause --- the
+elliptic mirror of the rigid cells of \S\ref{sec:signsplit} --- and the
+valid floor returns to $2$, attained on levels $\{1, 2\}$: \emph{$p - 1$
+and $p + 1$ smooth, the same twin-smooth demand}, with unit-twisted mixed
+targets reproducing the sign split. The N1/A10 obstruction of
+\S\ref{sec:solver} therefore transfers verbatim.
+\end{corollary}
+
+Measured on $y^2 = x^3 - x$: valid-cell floors $3$ at $r = 13$ and $2$ at
+$r = 17$, matching the index formula, with the elliptic burden $\ge$ the
+torus burden at all eleven moduli tested (and the test degenerate at
+$r = 5$, where every cell is exceptional). Supersingular cells have
+$\varphi^2 = [-p]$ and reduce to the torus analysis. The elliptic axis
+offers no single-rare-event escape.
+
+\subsection{The sign split, not the depth, is the wall}\label{sec:signsplit}
+
+The generalized-Carmichael record explains \emph{which} cells the known
+constructive machinery can reach, and confirms the theorem's shape
+empirically. Carmichael numbers occupy the cell (level $\{1\}$, Frobenius
+power $0$) and are infinite \cite{AGP}; Lucas--Carmichael numbers occupy
+$(\{2\}, 1)$ and are infinite \cite{Wright18} (via the elliptic Korselt
+criteria of \cite{Silverman12}); the L--P targets occupy
+$(\{1,2\}, (0,1))$ --- Williams numbers --- empty to $2^{64}$
+\cite{McIntoshMitra}; yet Howe's \emph{rigid order-$2$ Carmichael number}
 $443{,}372{,}888{,}629{,}441 = 17\cdot31\cdot41\cdot43\cdot89\cdot97
 \cdot167\cdot331$ \cite{Howe00} occupies the \emph{same level set} with
 all-even powers ($p^2 - 1 \mid n - 1$; re-verified by us) and exists at
@@ -484,74 +599,16 @@ shared prime power and so force the coprime side split of
 Lemma~\ref{lem:sides} --- exactly the structure whose harvest collapse is
 Table~\ref{tab:n1} and whose solver gap is Table~\ref{tab:a10}. Rigid
 cells, by contrast, are one-sided AGP-type problems (single target $1$,
-no coprimality demands), which is why the AGP machine reaches them.
+no coprimality demands), which is why the AGP machine reaches them --- and
+why the exception clause of any credible conjecture in this family must
+contain the stabilizer cells, as Theorem~\ref{thm:stabindex} asserts.
 Validity ($n \not\equiv \pm1 \bmod r$) pins the Agrawal construction to
 the sign-split cell: a rigid-cell $n$ can pass \eqref{eq:aks} only with
 $n \equiv 1 \pmod r$, inside the exception clause --- and indeed Howe's
-$n \equiv 1 \pmod 5$ does not even pass $T(-1, n, 5)$, rigidity
-controlling $p^2 - 1$ but not the residual $\mu_{2r}$-torsion that the
-mod-$80$ conditions exist to fix.
-
-\subsection{Popovych's variant is strictly harder}
-
-Popovych \cite{Popovych09} conjectured that adding
-$(X+2)^n \equiv X^n + 2$ repairs the conjecture. The inversion collapse
-that gives the double condition its minimal burden is a property of the
-section $X - 1$, whose zero $\{1\}$ is Galois-stable; the zero $-2$ of
-$X + 2$ has trivial stabilizer ($(\zeta^\gamma + 2)/(\zeta + 2)$ is not
-even a unit of $\Z[\zeta_r]$ for $\gamma \ne 1$; \emph{proved} via
-disjoint ideal supports, $N(\zeta - 1) = r$ versus
-$N(\zeta + 2) = (2^r + 1)/3$). Hence no collapse exists for the second
-section at any depth, and the pair mechanism pays full depth:
-\[
-\mathrm{burden}_{\mathrm{Pop}}(r) = \min\{d : d \mid r - 1,\ d \ge 3\}
-\;\ge\; 3 \quad \text{for every } r, \qquad = 4 \text{ at } r = 5,
-\]
-i.e.\ at Popovych's own modulus the pool primes would need $p - 1$,
-$p + 1$ \emph{and} $p^2 + 1$ simultaneously smooth. At the frozen spec
-the extra ${\approx}102$-bit quadratic level is a pure Dickman tax of
-$1.8\times10^{-7}$--$3.9\times10^{-11}$, emptying the measured
-$2.5\times10^5$ pool to below one element; the solver-side group only
-grows. To our knowledge this is the first quantified evidence in either
-direction on Popovych's conjecture beyond exhaustive search: every known
-counterexample mechanism is strictly more blocked against the pair than
-against the single section.
-
-\subsection{The elliptic axis is closed: the stabilizer-index floor}
-
-Finally, the one axis outside everything above: replace $\mu_r$ by
-elliptic torsion. A canonical elliptic analogue of the substitution
-$X \mapsto X^n$ exists only for CM curves (a canonical Frobenius-lift
-family on an elliptic curve is a $\Lambda$-structure, which exists iff CM
-\cite{BorgerGurney}); there, Frobenius acts on an $r$-eigenline by a
-scalar $\lambda$, and the exact curve-automorphism identities (e.g.\
-$x([i]S) = -x(S)$ on $y^2 = x^3 - x$) play the role of the inversion
-collapse. The unifying statement:
-
-\begin{theorem}[stabilizer-index floor; \emph{proved}, sharpness generic]
-\label{thm:stabindex}
-For a one-section Frobenius test on a one-dimensional group with scalar
-Frobenius $\lambda$ and unit-stabilizer $U$ (the subgroup acting on the
-section by root-of-unity cofactors), the smoothness burden is
-$[\langle\lambda\rangle : \langle\lambda\rangle \cap U]$, and every
-credible exception clause equals $U$ (its cells are AGP-constructible),
-so a valid counterexample forces burden $\ge 2$. Instances:
-$(\mu_r, X{-}1)$: $U = \{\pm1\}$, Theorem~\ref{thm:dimcount};
-$(\mu_r, X{+}2)$: $U = \{1\}$, the Popovych jump; CM elliptic with
-section $x$: $U = $ the CM-unit image ($\mu_4$ or $\mu_6$).
-\end{theorem}
-
-On the CM curves the apparent burden-$1$ cells ($\lambda$ equal to a unit,
-e.g.\ $\lambda \equiv \pm i$, where the section order collapses to the
-split torus alone) lie exactly inside the exception clause --- the
-elliptic mirror of rigid Carmichael numbers --- and the valid floor
-returns to $2$, attained on levels $\{1, 2\}$: \emph{$p - 1$ and $p + 1$
-smooth, the same twin-smooth demand}, with unit-twisted mixed targets
-reproducing the sign split. Measured on $y^2 = x^3 - x$: the valid-cell
-floor is $3$ at $r = 13$ and $2$ at $r = 17$, matching the index formula,
-with the elliptic burden $\ge$ the torus burden at all eleven moduli
-tested. The N1/A10 obstruction therefore transfers verbatim; the elliptic
-axis offers no single-rare-event escape.
+$n \equiv 1 \pmod 5$ does not even pass $T(-1, n, 5)$ (verified: check H4
+of \texttt{code/ag3\_hierarchy\_check.py}), rigidity controlling
+$p^2 - 1$ but not the residual $\mu_{2r}$-torsion that the mod-$80$
+conditions exist to fix.
 
 \section{Scope, caveats, and what remains open}\label{sec:scope}
 
@@ -588,8 +645,10 @@ makes ``outgrow it'' quantitatively hopeless.
 solver paradigm for $0/1$ subset-products in ${\sim}24{,}000$-bit
 smooth-exponent groups with dense vectors and only linear pool/dimension
 ratio --- posed precisely, with a regression harness, in the repository's
-option-(b) brief; any breakthrough there would unblock the torus route
-only, the Popovych and elliptic variants remaining strictly harder.
+option-(b) brief. The results of \S\ref{sec:structural} \emph{sharpen
+rather than kill} this direction: a breakthrough there would unblock the
+torus route only, the Popovych and elliptic variants remaining strictly
+harder.
 (ii)~The admissible-local-cells question (which residue cells mod $2^k$
 and mod $r$ support the mechanism --- the boost polynomials $2x^n - 1$
 are excluded by a mod-$16$ obstruction, but other side-separating
@@ -615,6 +674,21 @@ vocabulary tying this problem to the Williams/Howe literature, with the
 sign-split criterion predicting which cells the AGP machine can reach.
 All code and data are committed alongside this paper
 (Appendix~\ref{app:repro}).
+
+Two constructive reframings deserve emphasis. First, the stabilizer index
+of Theorem~\ref{thm:stabindex} is a \emph{design metric} for AKS-style
+tests: for any proposed section (a polynomial section of $\mu_r$, a CM
+$x$-coordinate) and any modulus, it computes the smoothness burden a
+Frobenius-matching forgery must pay --- in effect a security parameter,
+maximized by choosing sections with small unit-stabilizer and moduli whose
+$(r-1)$-divisor structure keeps the index high (Table~\ref{tab:stab});
+Popovych's pair, read this way, is a deliberate stabilizer reduction from
+$\{\pm1\}$ to $\{1\}$. Second, over $\F_q(T)$ (the Carlitz-module mirror)
+the sharpness hypothesis is a theorem by Weil's RH for curves, so the
+statement \emph{``no Frobenius-matching forgery beats the
+stabilizer-index floor''} holds unconditionally there --- a positive
+theorem that isolates the residual difficulty of the problem over $\Z$ in
+the unconditional-equidistribution gap.
 
 The conclusion in one paragraph: the Lenstra--Pomerance route to an
 Agrawal counterexample is a two-stage pipeline whose supply stage we
@@ -663,7 +737,7 @@ $23$ & $11$ & $d = 11$, levels $\{1,11\}$ \\
 \bottomrule
 \end{tabular}
 \caption{The burden $\min_{d \mid r-1,\,d\ge3}(d/2$ if even else $d)$ of
-Theorem~\ref{thm:dimcount} over the empirically scanned moduli; the
+Corollary~\ref{cor:dimcount} over the empirically scanned moduli; the
 formula reproduces the scan exactly ($11/11$, value and minimizing $d$).
 Popovych burdens (full depth): $4, 3, 5, 3, 4, 3, 11, 4, 3, 3, 4$ for
 $r = 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41$.}
@@ -676,7 +750,10 @@ $11$\,s, exponential beyond; annealing within the $\mathrm{GF}(2)$ family
 stalls at $\ge 19$ odd components; requirement at the co-designed spec:
 thousands of components, ${\sim}24{,}000$ odd bits. Hierarchy census below
 $10^7$: $105$ Carmichael, $135$ Lucas--Carmichael, $0$ Williams, $0$
-order-$2$.
+order-$2$. Howe's rigid order-$2$ number: confirmed rigid at all eight
+primes (level-$2$ Frobenius powers all even), not a Williams number,
+$n \equiv 1 \pmod 5$, and $T(-1, n, 5)$ \emph{fails} (script
+\texttt{ag3\_hierarchy\_check.py}, checks H1/H4).
 
 \section{Reproducibility}\label{app:repro}
 
