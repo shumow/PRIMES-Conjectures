@@ -1,0 +1,201 @@
+{
+ "howe": {
+  "n": 443372888629441,
+  "factors": [
+   17,
+   31,
+   41,
+   43,
+   89,
+   97,
+   167,
+   331
+  ],
+  "rows": [
+   {
+    "p": 17,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   },
+   {
+    "p": 31,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   },
+   {
+    "p": 41,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   },
+   {
+    "p": 43,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   },
+   {
+    "p": 89,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   },
+   {
+    "p": 97,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   },
+   {
+    "p": 167,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   },
+   {
+    "p": 331,
+    "i_level1": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "i_level2": [
+     0,
+     2,
+     4
+    ],
+    "rigid_here": true,
+    "lucas_here": false
+   }
+  ],
+  "is_order2": true,
+  "is_rigid": true,
+  "is_williams": false,
+  "n_mod_5": 1
+ },
+ "dictionary": {
+  "trials": 60,
+  "agree": 60,
+  "results_sample": [
+   {
+    "p": 1277,
+    "i": 1,
+    "cong": true,
+    "holds": true
+   },
+   {
+    "p": 14107,
+    "i": 0,
+    "cong": false,
+    "holds": false
+   },
+   {
+    "p": 67547,
+    "i": 0,
+    "cong": true,
+    "holds": true
+   },
+   {
+    "p": 4877,
+    "i": 1,
+    "cong": true,
+    "holds": true
+   },
+   {
+    "p": 82723,
+    "i": 1,
+    "cong": true,
+    "holds": true
+   }
+  ]
+ },
+ "howe_aks_r5": false,
+ "census": {
+  "limit": 10000000,
+  "counts": {
+   "carmichael": 105,
+   "lucas_carmichael": 135,
+   "williams": 0,
+   "howe_order2": 0
+  },
+  "smallest": {
+   "carmichael": 561,
+   "lucas_carmichael": 399,
+   "williams": null,
+   "howe_order2": null
+  }
+ }
+}

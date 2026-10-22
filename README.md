@@ -1,5 +1,11 @@
 # Literature Survey: Agrawal's Conjecture and Popovych's Conjecture
 
+> **Integration working branch.** The constructive experiments and the
+> arithmetic-geometric analysis have been combined for joint review. Historical
+> claims and outputs are preserved, but neither track is being certified by this
+> merge. See [`doc/integration-review-status.md`](doc/integration-review-status.md)
+> for the known concerns, provenance, and the next review steps.
+
 *Compiled 2026-08-05. Status of both conjectures: **open**. Agrawal's is believed false
 (Lenstra–Pomerance heuristic); Popovych's has no known evidence in either direction beyond
 computation.*
@@ -100,6 +106,49 @@ then n is prime or n² ≡ 1 (mod r). If true → deterministic primality in Õ(
   the form F_q[x]/Φ_r(x)," Finite Fields and Their Applications 18(4) (2012), 700–710.**
 - Primaboinca tested it alongside Agrawal's over 10¹⁰ < n < 10¹⁷: nothing found.
 - Conference talk: [R. Popovych, "On Agrawal conjecture"](http://at.yorku.ca/c/b/f/n/39.htm).
+
+## 4a. Generalized Carmichael structures (the counterexample cells' relatives)
+
+*Added 2026-10-21 by the AG track (branch `arith-geom-interpretation`; see
+`doc/arith-geom.tex` §6 for how these map onto "impersonation cells").*
+
+- **H. C. Williams, "On numbers analogous to the Carmichael numbers," Canad.
+  Math. Bull. 20 (1977), 133–143.** Asked whether a Carmichael number can
+  also satisfy p+1 | n+1 for all p | n; showed such n need ≥ 4 prime
+  factors. These are now called **Williams numbers** (Echi's "1-Williams"),
+  and they are exactly the Carmichael+Lucas–Carmichael objects of the L–P
+  construction (OEIS A329223 is this cell plus Agrawal's local refinements).
+- **R. J. McIntosh, D. Mitra, "Carmichael numbers with p+1 | n+1," J. Number
+  Theory 147 (2015), 81–91.** The modern search floor: **no Williams number
+  below 2^64 ≈ 1.8·10^19**; only finitely many exist with any given set of
+  all-but-three prime factors; a 4-factor Williams number needs smallest
+  prime > 2·10^4. Nonemptiness of the cell is open.
+- **T. Wright, "There are infinitely many elliptic Carmichael numbers,"
+  Bull. LMS 50 (2018), 791–800 (arXiv:1609.00231).** As a by-product proves
+  **infinitude of Lucas–Carmichael numbers** — so both single conditions
+  (p−1 | n−1 by AGP 1994, p+1 | n+1 by Wright) hold infinitely often
+  separately, while their conjunction (Williams) has no known example.
+- **E. W. Howe, "Higher-order Carmichael numbers," Math. Comp. 69 (2000),
+  1711–1719.** Defines order-m Carmichael numbers (x ↦ x^n an endomorphism
+  of every Z/n-algebra on m generators); Korselt-type criterion: for each
+  p | n and r ≤ m, n ≡ p^i (mod p^r − 1) for some i. Constructed the
+  explicit **rigid order-2 example 443372888629441 = 17·31·41·43·89·97·167·
+  331** (p²−1 | n−1 for all p; re-verified in code/ag3_hierarchy_check.py);
+  heuristic for infinitude at every order. With McIntosh–Mitra this gives
+  the striking contrast: **depth-2 impersonation is constructible (rigid,
+  one-sided targets) at 4.4·10^14, while the sign-split Williams cell is
+  empty to 2^64** — the structural reading of this project's N1/A10 results.
+- **O. Eterevsky, M. Vsemirnov, Fibonacci Quart. 42 (2004), 141–148.**
+  Order-m Carmichael numbers need ≥ m+2 prime factors; no order-3 example
+  is known.
+- **J. Grantham, "Frobenius pseudoprimes," Math. Comp. 70 (2001),
+  873–891.** The impersonation idea as a primality test against one
+  quadratic section.
+- **Elliptic analogues** (the AG4 bridge): J. H. Silverman, "Elliptic
+  Carmichael numbers and elliptic Korselt criteria," Acta Arith. 155
+  (2012), 233–246; A. Ekstrom, C. Pomerance, D. S. Thakur, "Infinitude of
+  elliptic Carmichael numbers," J. Aust. Math. Soc. 92 (2012), 45–60
+  (conditional); Wright 2018 (unconditional).
 
 ## 5. Context: why the conjectures still matter
 
