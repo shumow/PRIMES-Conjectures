@@ -660,6 +660,36 @@ truth of the conjecture. Note also the char-$3$ degeneracy: modulo $p = 3$
 the two sections coincide, so the pair constrains only $p > 3$ divisors.
 \end{remark}
 
+\begin{remark}[the constant $2$ is immaterial]\label{rem:constant}
+For any integer $c \notin \{0, \pm 1\}$ the argument of
+Lemma~\ref{lem:nocollapse} runs verbatim for the section $X + c$: at a
+prime $\mathfrak q \mid (\zeta + c)$ the image of $-c$ has multiplicative
+order $r$, so no $\gamma \ne 1$ preserves the divisor, the stabilizer is
+trivial, and the full burden jump of Theorem~\ref{thm:popburden} holds
+with $c$ entering only through the norm $\Phi_r(-c) = (c^r + 1)/(c + 1)$
+(whose primes, with $p \mid c(c+1)$, are the finitely many excluded $p$),
+the excluded modulus $r \mid c + 1$ (for $c = 2$: $r = 3$), and the
+level-one component, the base-$(c{+}1)$ Fermat condition. What must be
+avoided is exactly the rational torsion $\mu_2(\Q) = \{\pm 1\}$ as the
+zero $-c$: $c = -1$ is the first section itself, and $c = +1$ --- the one
+innocent-looking bad choice --- has its zero at $-1$, fixed by inversion,
+so the collapse \emph{survives}: $(\zeta + 1)^{p^{d/2}} =
+\zeta^{-1}(\zeta + 1)$, giving $\ord(X + 1) \mid r(p^{d/2} - 1)$ for even
+$d$; worse, $\zeta + 1 = (\zeta^2 - 1)/(\zeta - 1)$ is multiplicatively
+dependent on the Galois orbit of $\zeta - 1$, so the pair
+$\{X - 1, X + 1\}$ adds no rank and no burden at all --- a Popovych-style
+conjecture with $c = 1$ would be no harder for the mechanism than
+Agrawal's. In the language of Theorem~\ref{thm:stabindex}:
+$U(X + c) = \{\pm 1\}$ for $c = \pm 1$ and $\{1\}$ otherwise; $c = 2$ is
+simply the smallest valid choice ($c = -2$ works equally, with Mersenne
+norm $2^r - 1$). Verified numerically
+(\texttt{code/ag5b\_constant\_check.py}): at even $d$ the section $X + 1$
+collapses in $22/22$ samples with the top level never needed, while
+$c \in \{2, 3, -2, 5\}$ collapse only at the single degenerate point
+$(r, p) = (13, 5)$, where $\Phi_4(5) = 26$ has no prime outside $2r$ and
+the top level is vacuous for every section.
+\end{remark}
+
 \subsection{Numerical validation}\label{sec:popnumerics}
 
 \texttt{code/ag5\_popovych\_check.py} (deterministic; output in
