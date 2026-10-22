@@ -10,6 +10,7 @@
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{conjecture}[theorem]{Conjecture}
 \newtheorem{definition}[theorem]{Definition}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
 \newtheorem{question}[theorem]{Question}
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
@@ -26,7 +27,7 @@
 
 \title{Arithmetic-Geometric Structure of Agrawal's Conjecture\\
 and the Torus Dimension Count Behind the Double Condition\\
-\large (AG track working document --- v1.0: items AG1--AG6 complete)}
+\large (AG track working document --- joint correctness audit)}
 \author{Dan Shumow \and Claude (Anthropic Fable~5)}
 \date{October 21, 2026}
 
@@ -34,72 +35,37 @@ and the Torus Dimension Count Behind the Double Condition\\
 \maketitle
 
 \noindent\textbf{Joint audit notice (22 October 2026).}
-The local description of the original L--P mechanism has been corrected to
-include both odd-cardinality cases. The other AG claims remain under review;
-the historical N1/A10 experiments do not establish an algorithmic no-go theorem.
-The tracked PDF is the original version. Current status and outstanding
-issues are in \texttt{doc/integration-review-status.md}.
+This source corrects the fixed-ring dictionary, support hypothesis and global
+versus finite-field distinctions. The elliptic section now proves only its
+cofactor upper bound; the function-field appendix is exploratory. Historical
+N1/A10 experiments do not establish an algorithmic no-go theorem. The tracked
+PDF is the original version, not this revision. Current status and unresolved
+modeling questions are in \texttt{doc/integration-review-status.md}.
 
 \begin{abstract}
-We reframe Agrawal's conjecture and the Lenstra--Pomerance counterexample
-mechanism in the language of one-dimensional algebraic groups. The main new
-result (item AG2 of \texttt{doc/arith-geom-plan.md}) upgrades the empirical
-finding A11 of this project (\texttt{data/FINDINGS.md}) to a structural
-statement: for \emph{every} AKS modulus $r$, the constructive
-(Lenstra--Pomerance-style) route forces smoothness control on the $\F_p$-point
-orders of a product of cyclotomic tori of total dimension at least $2$, and
-the minimum $2$ is attained exactly by the split and nonsplit one-dimensional
-tori --- orders $p-1$ and $p+1$ --- i.e.\ by the Carmichael + Lucas--Carmichael
-double condition (equivalently, twin-smoothness). The key identity is an
-inversion collapse: when $d=\ord_r(p)$ is even, the unique involution of
-$(\Z/r)^\times$ is $-1$, forcing $(X-1)^{p^{d/2}-1}\equiv -X^{-1} \pmod{p,\,
-\Phi_r(X)}$ and collapsing the order of $X-1$ into the cyclotomic levels
-$e \mid d/2$. Since $\sum_{e \mid m}\varphi(e) = m$, the burden is $d/2$ for
-even $d$ and $d$ for odd $d$; validity of a counterexample forces $d \ge 3$,
-so the burden is minimized at $d = 4$ (possible iff $4 \mid r-1$), value $2$,
-never $1$. All identities and the resulting burden table are verified
-numerically (\texttt{code/ag2\_torus\_check.py}), reproducing A11's measured
-table for all eleven moduli tested there. Throughout the document the
-collapse identities, the stabilizer and independence lemmas, and the index
-formulas are proved unconditionally; exactly \emph{one} Artin-type
-hypothesis is used --- \emph{generic sharpness}, the attainment of the
-support bounds (Proposition~\ref{prop:sharp}) --- named wherever it enters,
-empirically supported ($0$ exceptions across $196$ sampled large primes),
-and a theorem in the function-field mirror. The mechanism scope
-(Frobenius-matching constructions, Remark~\ref{rem:scope}) is a separate,
-stated restriction, not a hypothesis. Section~\ref{sec:popovych} (item
-AG5) extends the count to Popovych's two-section conjecture: the second
-section $X+2$ has trivial stabilizer in the Galois action --- its zero $-2$,
-unlike the zero $1$ of $X-1$, is not inversion-stable --- so no collapse
-exists at any depth, the burden rises to $\min\{d : d \mid r-1,\ d \ge 3\}
-\ge 3$ for every modulus ($4$ at Popovych's own $r=5$: $p-1$, $p+1$ and
-$p^2+1$ simultaneously smooth), and the twin-smooth regime, the only one
-this project found supply-feasible, does not exist for the pair. This is
-the first quantified evidence in either direction on Popovych's conjecture
-beyond search ranges. Section~\ref{sec:hierarchy} (item AG3) organizes the
-generalized-Carmichael literature into a hierarchy of \emph{impersonation
-cells} indexed by cyclotomic levels and Frobenius-power parities: Carmichael,
-Lucas--Carmichael, Williams and Howe's higher-order Carmichael numbers are
-the cells $(\{1\},0)$, $(\{2\},1)$, $(\{1,2\},(0,1))$ and depth-$2$-any-power
-respectively, and the striking asymmetry of the record --- rigid depth-$2$
-impersonators exist at $4.4\times10^{14}$ (Howe) while the Williams cell is
-empty to $2^{64}$ --- shows that \emph{sign splitting}, not depth, is the
-constructible/blocked boundary, in exact agreement with this project's
-N1/A10 measurements. Section~\ref{sec:elliptic} (item AG4) settles the
-elliptic axis: a canonical elliptic Agrawal congruence exists only for CM
-curves, and there a single \emph{stabilizer-index theorem} --- burden $=
-[\langle\lambda\rangle : \langle\lambda\rangle \cap U]$, where $U$ is the
-unit-stabilizer of the test section --- subsumes
-Theorems~\ref{thm:dimcount} and \ref{thm:popburden} and gives the same
-floor of $2$: the would-be burden-$1$ cells lie inside the exception
-clause (they are the elliptic analogue of rigid Carmichael numbers), the
-burden-$2$ cells demand twin-smoothness again with sign-split targets, and
-gate AG-G2 is not passed --- the negative result extends to the
-CM-elliptic axis. Appendix~\ref{app:ff} (item AG6) sketches the
-function-field mirror, where both heuristic ingredients of the analysis
-are theorems by Weil's RH for curves while the problem itself carries no
-complexity content --- locating the residual difficulty over $\Z$
-precisely in the unconditional-equidistribution gap.
+We study the cyclotomic support bounds of Frobenius-matching constructions
+related to Agrawal's conjecture. For even $d=\ord_r(p)$ the exact identity
+$(X-1)^{p^{d/2}-1}=-X^{-1}$ gives
+$\rho_r(p)\mid2r(p^{d/2}-1)$. The associated containing torus has dimension
+$d'=d/2$ for even $d$ and $d'=d$ for odd $d$. Valid Frobenius matching forces
+$d\ge3$, so this model's minimum dimension is $2$, at $d=4$.
+Turning the upper support bound into a necessary smoothness condition
+requires an explicit, section-specific support-sharpness hypothesis; neither
+its density nor the cost of targeting exceptional primes is established here.
+
+For Popovych's section $X+2$, a characteristic-zero ideal argument rules out
+Galois-conjugate ratios that are roots of unity. It does not exclude accidental
+finite-field collapses or prove generic order saturation. Under a separate
+full-support hypothesis, the pair has model dimension
+$\min\{d:d\mid r-1,\ d\ge3\}$, equal to $4$ at $r=5$. Dickman estimates are
+parameter-specific heuristics, not harvest impossibility theorems.
+We also record the generalized-Carmichael dictionary, the automatic $X+1$
+congruence under matching plus the Carmichael condition, and a cofactor-based
+stabilizer-index upper bound. The stronger elliptic lower bound, the transfer
+of solver obstructions, and unconditional function-field sharpness/existence
+claims are not established. The original numerical artifacts are preserved as
+finite checks; they do not certify these broader conclusions or settle either
+conjecture.
 \end{abstract}
 
 \section{The Frobenius-lift dictionary}\label{sec:dictionary}
@@ -148,17 +114,20 @@ Frobenius lifts carries a unique $\lambda$-ring structure; in Borger's
 absolute geometry a $\Lambda$-structure \emph{is} descent data to $\F_1$
 \cite{Borger}. In this language:
 \[
-\text{$n$ is prime} \iff \text{$\psi^n$ is a Frobenius lift at $n$},
+\text{$n$ is prime} \Longrightarrow
+\psi^n(f)\equiv f^n\pmod n\quad\text{for every }f.
 \]
-and the AKS congruence \eqref{eq:aks} is the lift condition tested on the
-single section $X - 1$ of $\mu_r$. Agrawal's conjecture is therefore a
-\emph{quantitative descent statement}: one well-chosen section certifies
-the lift condition globally, up to the $\sigma_n^2 = \mathrm{id}$
-exception. The \emph{pseudofields} of Lenstra--Pomerance \cite{LPGauss}
-are the operational form of the same object --- finite rings equipped with
-a certified Frobenius datum, which their $\tilde O(\log^6 n)$ algorithm
-constructs unconditionally; an Agrawal-type conjecture asserts the datum
-can be certified from a single section, at $\tilde O(\log^3 n)$.
+The converse fails in a fixed truncated ring: take
+$n=399001=31\cdot61\cdot211$ and $r=5$. Each prime factor is $1\bmod5$ and
+each $p-1$ divides $n-1$. Thus $A_n$ is a product of copies of these prime
+fields, every element satisfies $f^n=f$, and $\psi^n$ is the identity since
+$n\equiv1\pmod5$. This composite passes the coincidence on \emph{every}
+section, inside the conjecture's exception clause. Wilkerson's criterion
+does not assert the converse. The AKS test is the coincidence on one section;
+its proposed primality consequence requires the exception clause and the
+other algorithmic safeguards. The pseudofield constructions of
+Lenstra--Pomerance \cite{LPGauss} provide related Frobenius data, not an
+identification of all these truncated tests with certified pseudofields.
 
 \begin{lemma}[the exceptional clause]\label{lem:clause}
 $n^2 \equiv 1 \pmod r$ iff $\sigma_n$, viewed as the element
@@ -196,7 +165,7 @@ $\varphi(e) = 1$ iff $e \in \{1,2\}$. We refer to the index $e$ in
 
 \subsection{The order of $X-1$}
 
-Fix primes $p \ne r$, $p \nmid n$, and let $d = d_p := \ord_r(p)$. Then
+Fix primes $p \ne r$ and let $d = d_p := \ord_r(p)$. Then
 \[
 \F_p[X]/(X^r-1) \;\cong\; \F_p \times \F_p[X]/(\Phi_r(X)), \qquad
 \F_p[X]/(\Phi_r(X)) \;\cong\; \prod_{i=1}^{(r-1)/d} \F_{p^{d}},
@@ -238,13 +207,10 @@ $n\equiv p^j\pmod{\lcm(5,\rho_5(p))}$ in both cases. Our Track~A pipeline
 
 \begin{remark}[scope]\label{rem:scope}
 The mechanism is sufficient, not necessary, for \eqref{eq:aks}: the component
-equation $(\zeta-1)^n = \zeta^n - 1$ could conceivably hold ``accidentally''
-for some $p$, outside the Frobenius-matching family \eqref{eq:mech}. No such
-solutions are known, and no way to construct them is known; every published
-counterexample construction \cite{LP,Popovych09,HegdeDevaraj} is an instance
-of Definition~\ref{def:mech}. All results below quantify \emph{this
-mechanism}, in line with the scope discipline of the negative-result paper
-(\texttt{doc/negative-result-plan.md}).
+equation $(\zeta-1)^n=\zeta^n-1$ need not be analyzed here outside the
+Frobenius-matching family \eqref{eq:mech}. The original L--P sufficient
+construction is in this family. We do not prove necessity, classify all
+possible constructions, or exclude accidental local solutions.
 \end{remark}
 
 \section{The torus dimension count}\label{sec:dimcount}
@@ -334,49 +300,43 @@ The bound \eqref{eq:support} is an upper bound on support; the mechanism's
 cost analysis also needs it to be generically \emph{attained} --- otherwise a
 harvest could fish for primes $p$ where $\rho_r(p)$ collapses further.
 
-\begin{proposition}[generic sharpness; heuristic + empirical]
+\begin{hypothesis}[support sharpness at a specified threshold]
 \label{prop:sharp}
-Let $\ell > 2rd$ be a prime with $\ell \mid \Phi_e(p)$ for some
-$e \mid d'$. Then $\ell \mid \rho_r(p)$ unless in every component the image
-of $X - 1$ is an $\ell$-th power in $\F_{p^d}^\times$. Modelling the
-components as independent uniform elements, the exceptional probability is
-$\ell^{-(r-1)/d}\le 1/\ell$. Consequently, for all $p$ outside a set of
-(heuristic) density $O(\sum_\ell 1/\ell)$, the large-prime part of
-$\prod_{e \mid d'}\Phi_e(p)$ divides $\rho_r(p)$, and requiring
-``$\rho_r(p)$ is $B$-smooth'' is equivalent to requiring
-``$\Phi_e(p)$ is $B$-smooth for every $e \mid d'$''.
-\end{proposition}
+Put $P_r(p)=\prod_{e\mid d'}\Phi_e(p)$ and fix $B\ge2rd$.
+For the selected prime $p$, assume every prime $\ell>B$ dividing $P_r(p)$
+also divides $\rho_r(p)$. This is a hypothesis about prime support, not
+divisibility with full prime-power multiplicities.
+For another section with order $\rho_f(p)$ and a permitted product $P_f(p)$,
+the analogous assumption must be stated separately.
+\end{hypothesis}
 
-\begin{proof}[Evidence]
-$\ell \nmid \rho_r(p)$ iff the image of $X-1$ has trivial $\ell$-part in
-each cyclic component group $\F_{p^d}^\times$, i.e.\ is an $\ell$-th power
-in every component whose order $\ell$ divides; the $\ell$-th powers have index $\ell$ in each
-component containing $\ell$-torsion. Rigorously controlling the image of
-$\zeta - 1$ is an open Artin-type problem; empirically
-(\texttt{code/ag2\_torus\_check.py}, 67 sample primes across
-$r \in \{5,7,11,13,19,23,41\}$, $d \in \{3,4,5,6,11\}$): all $37$ tested
-large primes $\ell$ divided $\rho_r(p)$ ($0$ exceptions; $\approx 0.19$
-expected under the $1/\ell$ model), and in all $67$ cases removing the top
-level $e = d'$ from the bound \eqref{eq:support} broke it (the top level is
-genuinely present in $\rho_r(p)$).
-\end{proof}
+\begin{remark}[what the uniform model actually says]
+In a cyclic group of order $N$ with $a=v_\ell(N)$, one has
+$\ell\nmid\ord(x)$ iff $x$ is an $\ell^a$-th power: writing $x=g^b$,
+both say $\ell^a\mid b$. A uniform element misses $\ell$ with probability
+$\ell^{-a}$, not necessarily $1/\ell$. Being merely an $\ell$-th power
+does not suffice when $a>1$. Independent uniform components would multiply
+these probabilities, but the values $\zeta_i-1$ have algebraic relations
+and are not proved to follow that distribution. The committed AG2 samples
+are finite sanity checks, not a density theorem or a quantified comparison
+with the twin-smooth population.
+\end{remark}
 
 \subsection{The dimension-count theorem}
 
 \begin{theorem}[torus dimension count]\label{thm:dimcount}
-Let $r$ be an odd prime and let $n$ be produced by the L--P mechanism
+Let $r\ge5$ be prime and let an odd $n$ be produced by the L--P mechanism
 (Definition~\ref{def:mech}) with $\ord_r(n) > 2$. For each $p \mid n$ put
 $d_p = \ord_r(p)$ and $d_p'$ as in Definition~\ref{def:support}. Assume
-generic sharpness (Proposition~\ref{prop:sharp}) at $p$. Then, for the CRT
-system \eqref{eq:mech} to admit assembly over many primes with a common
-$B$-smooth modulus (the setting of the Track-A pipeline), each $p \mid n$
-must satisfy:
+Hypothesis~\ref{prop:sharp} at every $p\mid n$, with one common
+$B\ge\max_{p\mid n}2rd_p$. In the design requiring a $B$-smooth matching
+modulus, $\rho_r(p)$ is $B$-smooth if and only if:
 \[
 \Phi_e(p) \ \text{is $B$-smooth for every } e \mid d_p'
 \quad\Longleftrightarrow\quad
 \#\Bigl(\textstyle\prod_{e \mid d_p'} T_e\Bigr)(\F_p) \ \text{is $B$-smooth},
 \]
-a smoothness condition on the $\F_p$-points of a torus of dimension
+a smoothness condition on the points of a \emph{containing} torus of dimension
 \[
 \dim \prod_{e \mid d_p'} T_e \;=\; \sum_{e \mid d_p'} \varphi(e) \;=\; d_p'
 \;=\;
@@ -392,9 +352,10 @@ one-dimensional torus. (Indeed $d_p' = 1$ would force $d_p \in \{1,2\}$,
 contradicting $d_p \ge 3$ from Lemma~\ref{lem:frob}(iii).)
 \item[(b)] $d_p' = 2$ iff $d_p = 4$, in which case the level set is
 $\{1,2\}$ and the condition is: $p - 1 = \#T_1(\F_p)$ and
-$p + 1 = \#T_2(\F_p)$ both $B$-smooth --- the Carmichael +
-Lucas--Carmichael \emph{double condition}, i.e.\ twin-smoothness of
-$\bigl(\tfrac{p-1}{2}, \tfrac{p+1}{2}\bigr)$.
+$p + 1 = \#T_2(\F_p)$ both $B$-smooth, i.e.\ twin-smoothness of
+$\bigl(\tfrac{p-1}{2}, \tfrac{p+1}{2}\bigr)$. This is the supply condition
+used in the original Carmichael/Lucas--Carmichael construction, not by itself
+a proof of either divisibility condition on $n$.
 \item[(c)] $d_p = 4$ is realizable iff $4 \mid r - 1$; hence for
 $r \equiv 1 \pmod 4$ the minimal burden is $2$, identical in structure to
 the $r = 5$ case, while for $r \equiv 3 \pmod 4$ every admissible $d_p$
@@ -410,8 +371,10 @@ which reproduces the measured A11 table for all eleven moduli tested there
 \end{theorem}
 
 \begin{proof}
-The support statement is \eqref{eq:support} plus
-Proposition~\ref{prop:sharp}; the dimension computation is
+If $P_r(p)$ is $B$-smooth then so is $\rho_r(p)$ by \eqref{eq:support}
+and $2r\le B$. Conversely Hypothesis~\ref{prop:sharp} implies every prime
+above $B$ dividing $P_r(p)$ would divide $\rho_r(p)$. This proves the
+smoothness equivalence. The dimension computation is
 $\sum_{e \mid m}\varphi(e) = m$ with $m = d_p'$, together with
 $\dim T_e = \varphi(e)$ and $\#T_e(\F_p) = \Phi_e(p)$
 (Section~\ref{sec:setup}). (a): $d_p \ge 3$ by
@@ -422,48 +385,42 @@ $p$ odd, $B$-smoothness of $p \mp 1 = 2m, 2(m+1)$ is twin-smoothness of the
 pair $(m, m+1)$ up to the factor $2$. (c): $d_p = 4$ requires
 $4 \mid \#(\Z/r)^\times = r-1$; conversely if $4 \mid r-1$ the cyclic group
 $(\Z/r)^\times$ has elements of order $4$, and primes $p$ in those residue
-classes exist (Dirichlet), with $\ord_r(n) = 4 \mid d_p$ satisfiable.
+classes exist (Dirichlet). This realizes the local order $d_p=4$, not the
+assembly of a composite counterexample.
 For $r \equiv 3 \pmod 4$: even $d \mid r-1$ satisfy
 $d \equiv 2 \pmod 4$, so even $d \ge 3$ means $d \ge 6$, burden
 $d/2 \ge 3$; odd $d \ge 3$ gives burden $d \ge 3$. (d) is the minimization
 of $d_p'$ over admissible $d_p$.
 \end{proof}
 
-\begin{corollary}[structural closure of option (c)]\label{cor:optc}
-For every AKS modulus $r$, the L--P mechanism requires each pool prime to
-satisfy a smoothness condition on the point-orders of a torus of dimension
-at least $2$; no modulus reduces the requirement to a single
-one-dimensional torus (a single condition of the shape ``$p \pm 1$
-smooth''). The minimum, dimension exactly $2$, is achieved precisely by the
-split/nonsplit pair $\{T_1, T_2\}$ --- the twin-smooth double condition ---
-and only for $r \equiv 1 \pmod 4$. The double condition measured
-empirically in A11 is therefore intrinsic: it is the unique minimizer of a
-dimension count, not an artifact of $r = 5$.
+\begin{corollary}[conditional minimum in the support model]\label{cor:optc}
+Under the hypotheses and smooth-modulus design of
+Theorem~\ref{thm:dimcount}, the containing-torus dimension is at least $2$.
+Its unique dimension-$2$ level set is $\{1,2\}$, locally realizable for
+$r\equiv1\pmod4$. This is not an unconditional lower bound on the actual
+order at every prime, a runtime lower bound, or a closure of all
+alternative-modulus constructions.
 \end{corollary}
 
 \begin{remark}[cost interpretation]\label{rem:cost}
 Under the standard Dickman heuristic, $B$-smoothness of $\Phi_e(p)$, a
 quantity of size $p^{\varphi(e)}$, has cost governed by
 $u = \varphi(e)\log p / \log B$; total burden across the level set is
-governed by $\sum_{e \mid d'}\varphi(e) = d'$. Burden $2$ is the
-twin-smooth regime this project has harvested at scale; burden $\ge 3$
-requires smooth values of $\Phi_e(p) \sim p^{\varphi(e)}$ with
-$\varphi(e) \ge 2$, the same quantities whose \emph{non}-smoothness
-underpins torus-based cryptography \cite{RS}. This is the structural
-content of A11's ``every other $r$ is strictly worse''.
+modeled using $\sum_{e\mid d'}\varphi(e)=d'$. Polynomial-value smoothness,
+local congruence biases and joint dependence still matter: total dimension
+alone does not determine harvest yield or solver cost. The project has
+sampled twin-smooth supply, not proved that every higher-dimensional
+construction is more expensive. Torus-based cryptography \cite{RS} provides
+related group structures, not a computational lower bound for this search.
 \end{remark}
 
 \begin{remark}[what remains conditional]\label{rem:conditional}
-Lemmas~\ref{lem:frob} and \ref{lem:collapse}, the support bound
-\eqref{eq:support}, and parts (a)--(d) of Theorem~\ref{thm:dimcount} as
-statements about the support of $\rho_r(p)$ are unconditional. The
-conditional ingredient is generic sharpness
-(Proposition~\ref{prop:sharp}): a harvest could in principle target the
-thin set of primes where $\rho_r(p)$ collapses below \eqref{eq:support}.
-Such primes have heuristic density $O(1/\ell)$ per large prime $\ell$
-avoided --- i.e.\ the ``collapsed'' pool is far thinner than the twin-smooth
-pool itself --- so this escape is uneconomical, but it is recorded here as
-the localized gap per gate AG-G1 (\texttt{doc/arith-geom-plan.md}).
+Lemmas~\ref{lem:frob} and \ref{lem:collapse}, the upper bound
+\eqref{eq:support}, and the dimension minimization for the chosen containing
+tori are unconditional. Necessity of the smoothness conditions uses
+Hypothesis~\ref{prop:sharp}. Neither an asymptotic density for its failures
+nor a comparison with smooth-prime supply has been proved here. Targeting
+exceptional orders is not excluded by this argument.
 \end{remark}
 
 \section{Numerical validation}\label{sec:numerics}
@@ -486,15 +443,16 @@ V1 & Frobenius matching (Lemma~\ref{lem:frob}(i)) & $67/67$ \\
 V2 & collapse identity $(X-1)^{p^{d/2}-1} = -X^{-1}$
      (Lemma~\ref{lem:collapse}) & $36/36$ \\
 V3 & exact $\rho_r(p)$ computed within bound \eqref{eq:support} & $67/67$ \\
-V4 & large primes of levels $e \mid d'$ divide $\rho_r(p)$
-     (Prop.~\ref{prop:sharp}) & $37/37$ \\
+V4 & sampled large primes of levels $e \mid d'$ divide $\rho_r(p)$
+     (finite check, not Hypothesis~\ref{prop:sharp}) & $37/37$ \\
 V5 & top level $e = d'$ genuinely needed in $\rho_r(p)$ & $67/67$ \\
 V6 & burden formula (Thm.~\ref{thm:dimcount}(d)) vs.\ A11 table & $11/11$ \\
 \hline
 \end{tabular}
 \end{center}
 
-V4's $0$ exceptions are consistent with the $1/\ell$ model
+These are historical finite checks; they do not prove support saturation.
+V4's $0$ exceptions were compared to the historical $1/\ell$ model
 ($\approx 0.19$ misses expected over this sample). V6 reproduces, for
 $r \in \{5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41\}$, both the burden value
 and the minimizing $d$ of the A11 measurement
@@ -509,12 +467,12 @@ Agrawal's to the simultaneous pair
 \quad\text{and}\quad
 (X+2)^n \equiv X^n + 2 \pmod{n,\, X^r - 1},
 \end{equation}
-with the same conclusion. Beyond the Primaboinca search range ($n < 10^{17}$)
-there is no published evidence in either direction. This section quantifies
-what the second section costs the L--P mechanism --- the only known
-counterexample engine --- and finds that it destroys exactly the structure
-that made Agrawal's conjecture attackable: the inversion collapse of
-Lemma~\ref{lem:collapse}, and with it the twin-smooth (burden-$2$) regime.
+with the same conclusion. This section compares support models for the
+Frobenius-matching mechanism. The first section has the exact inversion
+identity of Lemma~\ref{lem:collapse}; the second lacks its characteristic-zero
+analogue. A larger necessary smoothness burden still requires the explicit
+section-specific support hypotheses. No priority claim or proof of resistance
+to all counterexample constructions is made here.
 
 Throughout, $r \ne 3$ is prime and $p \nmid 3(2^r+1)$; the finitely many
 excluded $p$ are degenerate ($p = 3$ makes $-2 \equiv 1$, so the two sections
@@ -539,8 +497,8 @@ ideals with disjoint prime support: $N(\zeta - 1) = \Phi_r(1) = r$ while
 $N(\zeta + 2) = \Phi_r(-2) = (2^r+1)/3$, and
 $\gcd\bigl(r,\, 2^r + 1\bigr) = \gcd(r, 3) = 1$. Since neither is a unit,
 $\zeta - 1$ and $\zeta + 2$ generate a rank-$2$ subgroup of
-$\Q(\zeta_r)^\times$ modulo roots of unity: no multiplicative identity ties
-the order of one reduction to the order of the other.
+$\Q(\zeta_r)^\times$ modulo roots of unity. This is global multiplicative
+independence; it does not assert independence of finite-field orders.
 \end{lemma}
 
 \begin{proof}
@@ -550,13 +508,12 @@ $X^r - 1 = (X-1)\Phi_r(X)$ gives $\Phi_r(-2) = ((-2)^r - 1)/(-3) =
 support plus non-unit norms gives independence modulo torsion.
 \end{proof}
 
-\begin{lemma}[trivial stabilizer: no collapse at any depth]\label{lem:nocollapse}
+\begin{lemma}[global non-unit ratios]\label{lem:nocollapse}
 For every $\gamma \in (\Z/r)^\times$ with $\gamma \ne 1$, the ratio
 $\sigma_\gamma(\zeta+2)/(\zeta+2) = (\zeta^\gamma + 2)/(\zeta + 2)$ is not a
-root of unity --- it is not even a unit of $\Z[\zeta_r]$. Consequently the
-mechanism of Lemma~\ref{lem:collapse} has no analogue for $X + 2$: no
-relation $(X+2)^{p^e - 1} \in \mu_{2r}$ holds for any $e$ with
-$p^e \not\equiv 1 \pmod r$.
+root of unity --- it is not even a unit of $\Z[\zeta_r]$. Thus there is no
+characteristic-zero root-of-unity identity for this ratio analogous to the
+inversion identity for $X-1$. This does not exclude special reductions.
 \end{lemma}
 
 \begin{proof}
@@ -571,18 +528,25 @@ ratio has nonzero valuation at $\mathfrak q$ and is not a unit.
 Contrast with the first section: $\sigma_{-1}(\zeta - 1)/(\zeta - 1) =
 -\zeta^{-1} \in \mu_{2r}$, available because the ideal $(\zeta - 1)$ (the
 totally ramified prime above $r$) is fixed by the whole Galois group ---
-geometrically, the zero locus $\{1\}$ of $X - 1$ is Galois-stable, while
-the zero $-2$ of $X + 2$ has trivial stabilizer.
+the ratio under inversion is torsion for $X-1$ but not for $X+2$.
+This statement concerns conjugate ratios at $\zeta$, not the absolute
+Galois stability of the rational point $-2$.
 \end{proof}
 
-\begin{corollary}[full-level support of the second section]\label{cor:fullsupport}
+\begin{remark}[finite-field exception]
+For $r=13$, $p=5$, one has $5^2\not\equiv1\pmod{13}$ but
+$(X+2)^{24}\in\mu_{26}$ in $\F_5[X]/\Phi_{13}(X)$.
+This is not excluded by $p\nmid3r(2^r+1)$. The global non-unit proof
+does not prevent such accidental finite-field relations.
+\end{remark}
+
+\begin{corollary}[conditional smoothness for the second section]\label{cor:fullsupport}
 Define $\rho'_r(p)$ as the multiplicative order of $X + 2$ in
 $(\F_p[X]/\Phi_r(X))^\times$. Then $\rho'_r(p) \mid p^d - 1 =
-\prod_{e \mid d}\Phi_e(p)$, and --- in the generic-sharpness sense of
-Proposition~\ref{prop:sharp}, now justified globally by
-Lemma~\ref{lem:nocollapse} --- its support includes \emph{all} levels
-$e \mid d$, in particular the top level $\Phi_d(p)$ of dimension
-$\varphi(d)$, for even $d$ the level the first section never sees.
+\prod_{e \mid d}\Phi_e(p)$. If the section-specific version of
+Hypothesis~\ref{prop:sharp} holds with $P_f(p)=p^d-1$ and $B\ge2rd$,
+then $\rho'_r(p)$ is $B$-smooth iff every $\Phi_e(p)$, $e\mid d$, is
+$B$-smooth. The global lemma does not prove that support hypothesis.
 \end{corollary}
 
 \begin{theorem}[Popovych burden]\label{thm:popburden}
@@ -591,8 +555,10 @@ Run the L--P mechanism for the pair \eqref{eq:pair}: for each $p \mid n$,
 n \equiv p^{\,j_p} \pmod{\lcm\bigl(r,\ \rho_r(p),\ \rho'_r(p)\bigr)},
 \qquad \ord_r(n) > 2 .
 \]
-Under generic sharpness for both sections, the combined support is all
-levels $e \mid d_p$, so the smoothness burden at $p$ is
+Assume the section-specific support hypotheses above for both sections at a
+common $B\ge\max_{p\mid n}2rd_p$. In the $B$-smooth matching-modulus design,
+the pair then requires every $\Phi_e(p)$, $e\mid d_p$, to be $B$-smooth.
+The dimension of this containing torus is
 $\sum_{e \mid d_p} \varphi(e) = d_p$ for \emph{every} parity of $d_p$.
 Hence
 \[
@@ -617,12 +583,11 @@ at any modulus.
 \end{theorem}
 
 \begin{proof}
-For odd $d$ both sections are supported on all $e \mid d$ already
-(Section~\ref{sec:dimcount}), total $d$; the pair ties with the single
-section there. For even $d$ the first section collapses to $e \mid d/2$
-(Lemma~\ref{lem:collapse}) but the second does not
-(Corollary~\ref{cor:fullsupport}), so the $\lcm$ spans all $e \mid d$,
-total $\sum_{e \mid d}\varphi(e) = d$ --- the collapse is destroyed.
+Corollary~\ref{cor:fullsupport} gives the smoothness equivalence for the
+second section under its own support hypothesis, not from global
+independence alone. Its containing product has dimension
+$\sum_{e\mid d}\varphi(e)=d$. The single-section product has dimension
+$d'$ by Theorem~\ref{thm:dimcount}.
 Admissibility $d \ge 3$ is Lemma~\ref{lem:frob}(iii), unchanged.
 Minimizing $d$ over $d \mid r-1$, $d \ge 3$ gives the formula. (a): the
 least divisor $\ge 3$ of $r-1$ is $3$ iff $3 \mid r-1$. (b): if
@@ -634,9 +599,9 @@ $2$ the Popovych value is $\ge 3$ by the displayed bound. (d) is (a) plus
 Theorem~\ref{thm:dimcount}(b).
 \end{proof}
 
-\begin{proposition}[cost at the measured scale]\label{prop:popcost}
+\begin{remark}[heuristic cost at the projected scale]\label{prop:popcost}
 At the frozen harvest spec of this project (\texttt{doc/harvest-spec.md}:
-pool primes $p \approx 51$ bits, measured supply/demand ratio $13.8$, pool
+pool primes $p \approx 51$ bits, projected supply/demand ratio $13.8$, pool
 $2.5\times 10^5$), the extra quadratic level of
 Theorem~\ref{thm:popburden}(b) is a pure Dickman tax on a
 $\approx 102$-bit quantity: $\rho(u)$ with $u = 102/\log_2 B$, i.e.
@@ -645,29 +610,24 @@ u \approx 9.9,\ \rho(u) \approx 3.9\times10^{-11} \quad (B = 1259),
 \qquad
 u \approx 7.5,\ \rho(u) \approx 1.8\times10^{-7} \quad (B' = 12590),
 \]
-multiplying the measured ratio down to $5\times10^{-10}$--$2.5\times10^{-6}$
-and the pool to $10^{-5}$--$0.05$ elements: \emph{the pair-mechanism harvest
-is empty at any feasible scale}. Unlike $p \mp 1$, where partition-first
-harvesting lets one side be enumerated rather than tested
-(\texttt{data/FINDINGS.md}, A1), $\Phi_4(p)$ is pinned once $p$ is, so no
-enumeration trick removes this tax. On the solver side the group acquires
-the level-$4$ components, so $\log_2|G|$ grows and the identity density
-falls below the measured $\rho \approx 0.004$ of H7 pools: the N1/A10
-obstruction for the pair strictly contains the one for the single section.
-\end{proposition}
+multiplying the projected ratio down to $5\times10^{-10}$--$2.5\times10^{-6}$
+and the expected pool to $10^{-5}$--$0.05$ elements under this model.
+This additionally assumes Dickman behavior for the polynomial values and
+the relevant conditional independence. It is not a statement that every
+feasible harvest is empty, nor does it exclude structured enumeration or
+exceptional-order designs. The N1/A10 experiments do not establish a
+solver obstruction that transfers to the pair, and their density parameters
+are not measurements of full H7 component identities.
+\end{remark}
 
 \begin{remark}[interpretation and scope]\label{rem:popscope}
-Theorem~\ref{thm:popburden} and Proposition~\ref{prop:popcost} are, to our
-knowledge, the first quantified evidence in either direction on Popovych's
-conjecture beyond exhaustive search: every known counterexample mechanism
-pays at least one more torus dimension against the pair than against the
-single section globally ($3$ vs.\ $2$), and two more at the canonical
-$r = 5$ ($4$ vs.\ $2$); the burden-$2$ regime that made the Agrawal attack
-supply-feasible does not exist for the pair. The caveats are those of
-Remarks~\ref{rem:scope} and \ref{rem:conditional}, applied to both
-sections: this quantifies the failure of the only known engine, not the
-truth of the conjecture. Note also the char-$3$ degeneracy: modulo $p = 3$
-the two sections coincide, so the pair constrains only $p > 3$ divisors.
+Theorem~\ref{thm:popburden} compares the containing dimensions under its
+support hypotheses: global minima $3$ versus $2$, and $4$ versus $2$ at
+$r=5$. Remark~\ref{prop:popcost} adds a separate heuristic cost model.
+Neither is a proof about every pool or construction, a universal solver
+lower bound, or evidence deciding the truth of either conjecture. Modulo
+$p=3$ the sections coincide, an additional degeneracy that must be
+handled explicitly.
 \end{remark}
 
 \begin{remark}[the constant $2$ is immaterial]\label{rem:constant}
@@ -675,7 +635,8 @@ For any integer $c \notin \{0, \pm 1\}$ the argument of
 Lemma~\ref{lem:nocollapse} runs verbatim for the section $X + c$: at a
 prime $\mathfrak q \mid (\zeta + c)$ the image of $-c$ has multiplicative
 order $r$, so no $\gamma \ne 1$ preserves the divisor, the stabilizer is
-trivial, and the full burden jump of Theorem~\ref{thm:popburden} holds
+trivial. With a separate support-sharpness hypothesis for that section,
+the conditional burden calculation of Theorem~\ref{thm:popburden} applies,
 with $c$ entering only through the norm $\Phi_r(-c) = (c^r + 1)/(c + 1)$
 (whose primes, with $p \mid c(c+1)$, are the finitely many excluded $p$),
 the excluded modulus $r \mid c + 1$ (for $c = 2$: $r = 3$), and the
@@ -709,14 +670,15 @@ the top level is vacuous for every section.
 \begin{proposition}[the $X+1$ variant is mechanism-equivalent to
 Agrawal's conjecture]\label{prop:xplus1}
 Suppose $n \equiv p^{j} \pmod{\lcm(r, \rho_r(p))}$ and $p - 1 \mid n - 1$
-(the mechanism congruence together with the Carmichael condition, both
-imposed by every L--P-style construction). Then $T(1, n, r)$ holds modulo
+(the matching congruence plus the Carmichael condition, as in the original
+L--P sufficient construction). Then $T(1, n, r)$ holds modulo
 $p$ outright. Consequently every counterexample to Agrawal's conjecture
 produced by the mechanism also defeats the variant conjecture whose
 hypothesis is the pair $\{T(-1,n,r),\, T(1,n,r)\}$: that variant, though
 formally stronger-looking, is exactly as resistant as Agrawal's --- the
-second hypothesis is free armor --- whereas $c = 2$ (or any
-$c \notin \{0, \pm 1\}$) genuinely blocks the engine.
+second hypothesis adds no constraint within these assumptions. The section
+$X+2$ generally imposes a separate order condition; that is not a proof
+that it blocks every matching construction.
 \end{proposition}
 
 \begin{proof}
@@ -758,7 +720,7 @@ P4 & large primes of \emph{all} levels $e \mid d$ divide $\rho'_r(p)$
 P5 & burden table: $\mathrm{burden}_{\mathrm{Pop}}$ vs.\
      $\mathrm{burden}_{\mathrm{Agr}}$, $11$ moduli & as stated \\
 P6 & $\gcd(r, 2^r+1) = 1$ (Lemma~\ref{lem:indep}) & $11/11$ \\
-P7 & Dickman cost table (Proposition~\ref{prop:popcost}) & as stated \\
+P7 & heuristic Dickman cost table (Remark~\ref{prop:popcost}) & as stated \\
 \hline
 \end{tabular}
 \end{center}
@@ -767,8 +729,9 @@ The single P2/P3 exception is $r = 13$, $p = 5$: there $\Phi_4(5) = 26 =
 2 \cdot 13$ contains no prime outside $2r$ at all, so the top level is
 vacuous for this one tiny prime --- a small-prime degeneracy, not a
 collapse event; it is consistent with (indeed predicted by) the generic
-model, under which exceptions have probability $\sim 1/\ell$ per large
-prime $\ell$ and $\approx 0.28$ misses were expected over this sample. The
+model, under which exceptions have probability modeled historically as $\sim1/\ell$ per large prime $\ell$,
+with $\approx0.28$ misses estimated over this sample. This is not a verified
+probability law for the actual conjugate values. The
 burden deltas of P5: $+2$ at $r \in \{5, 17, 29, 41\}$, $+1$ at
 $r \in \{13, 37\}$, $0$ at the $r \equiv 3 \pmod 4$ moduli (where the
 Agrawal burden was already $\ge 3$ and both conjectures share full depth).
@@ -783,7 +746,7 @@ each --- the related-work backbone and vocabulary for the negative-result
 paper (\texttt{doc/negative-result-plan.md}).
 
 \begin{definition}[impersonation cells]\label{def:cells}
-Let $p$ be prime and $n$ coprime to $p$. For a finite set $S$ of levels and
+Let $p$ be prime and $n$ a positive integer. For a finite set $S$ of levels and
 powers $\mathbf i = (i_e)_{e \in S}$, say \emph{$n$ impersonates Frobenius
 at $p$ on $S$ with powers $\mathbf i$} if
 \[
@@ -811,15 +774,19 @@ $p \mid n$) iff $n$ lies in the cell $(\{1\}, 0)$.
 \item[(ii)] $n$ is a Lucas--Carmichael number ($p + 1 \mid n + 1$) iff $n$
 lies in $(\{2\}, 1)$: indeed $p + 1 \mid n - p \iff p + 1 \mid n + 1$.
 \item[(iii)] $n$ is a Williams number \cite{Williams77,Echi07,McIntoshMitra}
-(both conditions) iff $n$ lies in $(\{1,2\}, (0,1))$, equivalently iff $n$
-impersonates at depth $2$ with the uniform power $1$:
+(both conditions) iff $n$ lies in $(\{1,2\}, (0,1))$, equivalently iff
 $n \equiv p \pmod{(p^2-1)/2}$ for every $p \mid n$.
 \item[(iv)] $n$ is a Carmichael number of order $m$ in the sense of Howe
 \cite{Howe00} ($x \mapsto x^n$ an endomorphism of every $\Z/n$-algebra
-generated by $m$ elements) iff for every $p \mid n$ and every depth
+generated as a $\Z/n$-\emph{module} by at most $m$ elements) iff for every
+$p \mid n$ and every depth
 $r \le m$ some power works: $\exists i,\ p^r - 1 \mid n - p^i$ (Howe's
-Theorem~1). For $m = 2$ this is: Carmichael, plus level-$2$ membership with
-\emph{some} parity. Howe's \emph{rigid} numbers are the all-powers-$0$
+Theorem~1). For $m=2$ this includes the exact congruence modulo $p^2-1$.
+Separate level-$1$ and level-$2$ congruences control only
+$\lcm(p-1,p+1)=(p^2-1)/2$ and can miss a factor of $2$.
+For example, at $p=7$, $n=217$ satisfies $n\equiv1$ modulo both $6$ and $8$,
+but $n\equiv25\pmod{48}$ is neither $1$ nor $7$, the powers of $7$ modulo $48$.
+Howe's \emph{rigid} numbers are the all-powers-$0$
 (all-even-parity) case $\lcm_{r \le m}(p^r - 1) \mid n - 1$.
 \item[(v)] The Lenstra--Pomerance pool for Agrawal's conjecture is the
 Williams cell refined by the local conditions ($p \equiv 3 \bmod 80$,
@@ -838,8 +805,8 @@ rather than all torus points.
 and $n \equiv -1 \equiv p \bmod p+1$ combine by CRT to
 $n \equiv p \bmod \lcm(p-1,p+1) = (p^2-1)/2$); the point-identity form of
 the dictionary is verified numerically in Section~\ref{sec:hiernumerics}.
-(iv) is Howe's Theorem~1 \cite{Howe00} together with the level-$1$
-normalization above. (v) collects Sections~\ref{sec:dimcount} and
+(iv) is Howe's Theorem~1 \cite{Howe00}, retaining the full moduli.
+(v) collects the conditional support models in Sections~\ref{sec:dimcount} and
 \ref{sec:popovych}.
 \end{proof}
 
@@ -856,7 +823,8 @@ $n$ need at least four prime factors; McIntosh--Mitra \cite{McIntoshMitra}
 verified none exist below $2^{64} \approx 1.8\times10^{19}$ and proved
 finiteness results (only finitely many with a given set of all but three
 prime factors). The Agrawal cell (v) is a refinement, a fortiori empty
-there --- consistent with OEIS A329223's emptiness against Pinch's tables.
+there. OEIS A329223 is a nonempty sequence of certain base-$2$ pseudoprimes;
+it is not the Williams-number sequence and does not itself supply this bound.
 \item[(d)] Depth-$2$, any parity (Howe order $2$): \emph{nonempty}. Howe's
 explicit example $n = 443372888629441 = 17\cdot31\cdot41\cdot43\cdot89
 \cdot97\cdot167\cdot331$ is rigid of order $2$ ($p^2 - 1 \mid n - 1$ for
@@ -871,31 +839,31 @@ by Ekstrom--Pomerance--Thakur \cite{EPT}, unconditional by Wright
 \end{enumerate}
 \end{theorem}
 
-\begin{remark}[sign splitting, not depth, is the wall]\label{rem:signs}
+\begin{remark}[sign splitting as a structural distinction]\label{rem:signs}
 Contrast (c) and (d): rigid depth-$2$ impersonators exist at
 $4.4\times10^{14}$, while the Williams cell --- the \emph{same} level set
---- is empty to $2^{64}$. Depth is not the obstruction; the sign structure
-is. The rigid cell's condition is one-sided: $n \equiv 1 \pmod{
+--- is empty to $2^{64}$. This comparison suggests a sign-structure distinction; it does not prove
+a constructibility boundary. The rigid cell's condition is one-sided:
+$n \equiv 1 \pmod{
 \lcm_{p \mid n}(p^2-1)}$ is an AGP-type problem --- harvest primes with
 $p^2 - 1 \mid \Lambda$ for a single highly composite $\Lambda$ (the $p-1$
 and $p+1$ parts may share prime support freely) and solve one
 subset-product with target $1$; that machine produced (d) at modest size.
 The Williams parities $(0, 1)$ instead force target $+1$ on the level-$1$
-side and $-1$ on the level-$2$ side; on any shared prime power the two
-targets conflict, so the modulus must split into coprime sides --- exactly
+side and $-1$ on the level-$2$ side; on a shared odd prime power the two
+targets conflict, so the sides must be coprime away from $2$ --- exactly
 the side-coprimality (working paper Lemma~2.3) whose harvest collapse this
 project measured as N1 and whose two-sided solver obstruction is A10. In
-cell language: the project's negative results concern precisely the
-\emph{sign-split} cells, and Howe's example shows the unsplit cells are
-reachable --- the empirical record (c) vs.\ (d) confirms the split, not the
-depth, as the constructible/blocked boundary.
+cell language: the project's original target is a \emph{sign-split} cell, whereas Howe's example
+shows that an unsplit cell is reachable. N1/A10 are finite experiments with
+modeling limitations, not a proof that the sign-split cell is unconstructible.
 
-The AKS validity twist pins the construction to a sign-split cell: a
-rigid-cell $n$ can satisfy the component equation of
-Lemma~\ref{lem:frob}(ii) only with exponent $j = 0$, forcing $n \equiv 1
-\pmod r$ --- inside the exception clause, not a counterexample (cf.\
-V\'a\v{n}a's observation \cite{Vana} that Carmichael-type numbers pass
-$T(-1,n,r)$ only in such classes). Concretely: Howe's rigid $n$ has
+For the original $r=5$ \emph{full-bound} construction, rigidity
+$p^2-1\mid n-1$ is incompatible with an odd Frobenius exponent:
+$n\equiv1\pmod{p+1}$ but $p^j\equiv-1\pmod{p+1}$ for odd $j$.
+An even exponent gives $n\equiv\pm1\pmod5$, inside the exception clause.
+This argument uses the full-bound design and is not an exclusion of all
+rigid cells for every modulus or actual section order. Concretely: Howe's rigid $n$ has
 $n \equiv 1 \pmod 5$, yet it does not even pass $T(-1,n,5)$
 (Section~\ref{sec:hiernumerics}): rigidity controls the $p^2-1$ part of
 $\rho_5(p)$ but not the extra $\mu_{2r}$-torsion --- the factor $2r$ in
@@ -948,11 +916,10 @@ $\mu_{2r}$ torsion must be arranged separately.
 \section{The elliptic axis: formulation and the stabilizer-index floor}
 \label{sec:elliptic}
 
-Everything measured in this project (A1--A11, N1) lives on $\Gm$ and its
-tori. Item AG4 asks whether replacing $\mu_r \subset \Gm$ by elliptic
-torsion opens a route the torus negative results do not cover. The answer,
-reached here through stages (a) and (b) of the plan, is no: the burden
-floor of $2$ is a structural invariant, and gate AG-G2 is not passed.
+Item AG4 asks whether elliptic torsion provides an alternative construction.
+The cofactor identities below are useful upper bounds. They do not prove
+generic support saturation, a mandatory exception clause, or transfer of an
+algorithmic obstruction from the torus experiments.
 
 \subsection{Formulation (AG4a): the test needs CM}
 
@@ -962,12 +929,11 @@ $\Z[\mu_r]$ (Section~\ref{sec:dictionary}). If an elliptic curve carried
 such a canonical commuting family, each $\psi_p$ would be an endomorphism
 of degree $p$ lifting Frobenius, and an endomorphism of non-square degree
 already forces $\mathrm{End}(E) \supsetneq \Z$, i.e.\ complex
-multiplication --- so only CM curves are eligible; conversely, for CM
-curves the canonical family exists (Borger--Gurney \cite{BorgerGurney}).
-For a non-CM curve
-there is no analogue of $\sigma_n$ at all, and testing against all
-candidate traces $a \in [-2\sqrt n, 2\sqrt n]$ is exponential. So the
-well-posed analogue is CM:
+multiplication. This restricts that particular endomorphism-lift formulation,
+not all elliptic primality tests. Gurney's thesis \cite{BorgerGurney} studies
+CM moduli and curves of Shimura type with $\Lambda$-structures, with base and
+descent hypotheses; it is not a blanket assertion for every CM curve over
+$\Q$. We therefore consider only the following ordinary, split CM setting:
 
 \begin{definition}[elliptic AKS test, CM form]\label{def:elltest}
 Let $E/\Q$ have CM by $O_K$, $K$ imaginary quadratic with unit group
@@ -992,13 +958,11 @@ Let $U \le (\Z/r)^\times$ be the image of $O_K^\times$ (for $j = 1728$:
 $U = \mu_4 = \{\pm1, \pm i\}$, present iff $4 \mid r-1$). Cells with
 $\lambda_p \in U$ at every $p \mid n$ are the elliptic analogue of the
 rigid cells of Section~\ref{sec:hierarchy}: their assembly is a one-sided
-AGP-type problem (heuristically constructible, as Howe's example
-demonstrates for the rigid torus cell), so a credible elliptic Agrawal
-conjecture must read: \emph{the congruence forces $n$ prime or
-$\tau \in U$} --- the clause is the stabilizer, exactly as
-$n^2 \equiv 1 \pmod r$ is $\sigma_n \in \{\pm 1\}$
-(Lemma~\ref{lem:clause}). Validity of a counterexample therefore means
-$\lambda$-data escaping $U$.
+AGP-type problem in analogy with the rigid torus cell. This analogy does not
+prove that an elliptic conjecture must adopt $\tau\in U$ as its exception.
+For the following index model we \emph{choose} that exception and restrict to
+Frobenius-matching cells escaping $U$. The need for that exception, and any
+construction of composite examples inside it, remain separate questions.
 \end{remark}
 
 \subsection{The stabilizer-index theorem (AG4b)}
@@ -1013,83 +977,65 @@ $\lambda^e \equiv \pm i$ gives $x(T)^{p^e} = -x(T)$; with
 k' \;:=\; \min\{\, e \ge 1 : \lambda^e \in U \,\}
 \;=\; [\langle\lambda\rangle : \langle\lambda\rangle \cap U],
 \]
-the order of $x(T)$ divides $2(p^{k'} - 1)$: support on the levels
-$e \mid k'$, burden $k'$. The same computation in each earlier setting
-yields one statement:
+the order of $x(T)$ divides $2(p^{k'}-1)$. This is a containing support
+bound, not an attained order or a necessary smoothness burden.
 
-\begin{theorem}[stabilizer-index floor]\label{thm:stabindex}
+\begin{theorem}[cofactor-based stabilizer-index upper bound]\label{thm:stabindex}
 Let a test section $f$ on a torsion scheme carry a scalar Frobenius
-action $\lambda$ in a cyclic group $\Gamma$, and let $U \le \Gamma$ be
-the subgroup whose action fixes $f$ up to root-of-unity cofactors (the
-stabilizer of $\operatorname{div} f$ up to torsion units). Then the
-$p$-dependent support of the control order is the levels
-$e \mid k'$ with $k' = [\langle\lambda\rangle : \langle\lambda\rangle
-\cap U]$ --- an unconditional upper bound via the exact cofactor
-identities, attained generically in the sense of
-Proposition~\ref{prop:sharp}. A valid counterexample requires
-$\lambda \notin U$ (Remark~\ref{rem:ellclause} and its torus analogues),
-hence $\langle\lambda\rangle \cap U \lneq \langle\lambda\rangle$ and
+action $\lambda$ in a cyclic group $\Gamma$. Suppose $f(T)\ne0$, and
+$U\le\Gamma$ has exact cofactor identities after good reduction:
+$f([u]T)=\eta_u(T)f(T)$, where $\eta_u(T)^L=1$ for a specified $L$.
+Set $k'=[\langle\lambda\rangle:\langle\lambda\rangle\cap U]$. Then
 \[
-\text{burden} \;=\; k' \;\ge\; 2 .
+\ord(f(T))\mid L(p^{k'}-1).
 \]
-Instances: $(\mu_r,\, X-1)$: $U = \{\pm1\}$, burden $d/\gcd(d,2)$
-adjusted to $d'$ --- Theorem~\ref{thm:dimcount}; $(\mu_r,\, X+2)$:
-$U = \{1\}$, burden $d$ --- Theorem~\ref{thm:popburden};
-$(E_{j=1728},\, x)$: $U = \mu_4$, burden $m/\gcd(m, 4)$ for
-$\ord(\lambda) = m$; $(E_{j=0},\, x)$: $U = \mu_6$-image, burden
-$m/\gcd(m, 6)$.
+If the chosen model additionally requires $\lambda\notin U$, its index
+$k'$ is at least $2$. The index is $d/\gcd(d,2)$ for $U=\{\pm1\}$,
+$d$ for $U=\{1\}$, and $m/\gcd(m,w)$ when $\ord(\lambda)=m$ and $U$ is
+a subgroup of order $w$ in the cyclic scalar group. Attainment of all
+large-prime support in this upper bound is a separate section-specific
+hypothesis, not a conclusion of the index formula.
 \end{theorem}
 
 \begin{proof}
-Collapse: with $e = k'$ minimal, $\lambda^{k'} \in U$ gives
-$f(T)^{p^{k'}} = \zeta f(T)$ with $\zeta$ a root of unity of small order
-(the cofactor of the unit action on $f$: $-\zeta^{-1}$ for $X - 1$ under
-inversion, $-1$ for $x$ under $[i]$, $\zeta_3^{\pm1}$ for $x$ under
-$[\zeta_3]$), so $\ord f(T)$ divides $(\text{small}) \cdot (p^{k'}-1)$.
-No smaller $e$ works: for $e < k'$, $\lambda^e \notin U$ and the cofactor
-$f \circ [\lambda^e] / f$ is a non-torsion unit (cyclotomic for $\mu_r$,
-Lemma~\ref{lem:nocollapse}; elliptic for $E$, where the division values
-are supported above $r$ and distinct points give distinct prime support
---- the same disjoint-support argument), so no identity collapses the
-order; generic sharpness then puts the full levels $e \mid k'$ in the
-order. The index formula is cyclicity of $\langle\lambda\rangle$.
-Validity excludes $\lambda \in U$, so the index is at least $2$.
+The index is the order of $\lambda$ in
+$\langle\lambda\rangle/(\langle\lambda\rangle\cap U)$, so
+$\lambda^{k'}\in U$. Frobenius and the assumed cofactor identity give
+$f(T)^{p^{k'}}=\eta_{\lambda^{k'}}(T)f(T)$. Dividing by the nonzero value
+and raising to $L$ proves the order bound. The cyclic-group index formulas
+and the inequality for $\lambda\notin U$ follow directly. No assertion of
+minimal finite-field collapse or disjoint elliptic prime supports is used.
 \end{proof}
 
 \begin{remark}[supersingular cells]
 For $p$ inert in $K$ (e.g.\ $p \equiv 3 \bmod 4$ on $y^2 = x^3 - x$),
 $a_p = 0$ and $\varphi^2 = [-p]$, so the collapse of $x$-values is
 governed by $\langle p \rangle \subseteq (\Z/r)^\times$ exactly as in the
-torus case --- supersingular cells offer no separate escape.
+torus case at the level of this endomorphism relation. A complete
+supersingular matching and assembly analysis is not supplied by that relation.
 \end{remark}
 
 \subsection{Gate AG-G2: not passed}
 
-\begin{corollary}[the elliptic axis is closed]\label{cor:ellclosed}
-On the $j = 1728$ curve the per-modulus burden is
+\begin{remark}[conditional elliptic index model; axis not closed]\label{cor:ellclosed}
+On the $j=1728$ curve, the arithmetic candidate for the containing index is
 $\mathrm{burden}_{\mathrm{ell}}(r) = \min\{\, m/\gcd(m,4) \ge 2 : m \mid
-r - 1 \,\}$, degenerate (no valid cell) when $r - 1 \mid 4\cdot 2^\infty$
-fails to provide one, e.g.\ $r = 5$; on $j = 0$ replace $4$ by $6$. In
-every tested case (Section~\ref{sec:ellnumerics})
+r - 1 \,\}$, with no index outside $U$ at $r=5$; for the analogous
+$j=0$ model replace $4$ by $6$, where the specified unit image exists.
+In the historical table (Section~\ref{sec:ellnumerics})
 $\mathrm{burden}_{\mathrm{ell}}(r) \ge \mathrm{burden}_{\mathrm{Agr}}(r)$,
-and the floor $2$ --- attained iff $8 \mid r-1$ ($j = 1728$) or
-$12 \mid r-1$ ($j = 0$) --- lands on the levels $\{1, 2\}$: \emph{$p - 1$
-and $p + 1$ smooth, the same twin-smooth demand as the torus route}, now
-with a ray-class slice ($\lambda_p$ of order $2w$ mod $r$, a positive-%
-density Chebotarev condition) in place of the mod-$80$ cell, and with
-unit-twisted mixed targets ($x(T)^{p^{k'}} = -x(T)$), i.e.\ the
-sign-split structure of Remark~\ref{rem:signs} --- so the N1/A10
-harvest-and-solver obstruction transfers verbatim. The apparent
-burden-$1$ cells ($\lambda \in U$) are exactly the exception clause.
-Gate AG-G2 of the plan is therefore \textbf{not passed}: the elliptic
-axis offers no single-rare-event escape, and stage AG4(c) is cancelled;
-this section extends the negative result to the CM-elliptic axis.
-\end{corollary}
+and index $2$ is arithmetically available iff $8\mid r-1$ ($j=1728$)
+or $12\mid r-1$ ($j=0$). Its containing support is $\{1,2\}$.
+Interpreting this as a necessary twin-smooth supply condition requires
+elliptic support saturation and a specified exception/matching model.
+Neither the existence of appropriate harvested eigenline data nor transfer
+of an algorithmic obstruction has been proved. The historical decision not
+to pursue AG4(c) is not a mathematical closure of the elliptic axis.
+\end{remark}
 
 Caveats, beyond the standing ones (mechanism scope, Remark~\ref{rem:scope};
-generic sharpness, Remark~\ref{rem:conditional}): the formulation itself is
-CM-bound --- the non-CM "elliptic Agrawal" is not well-posed for lack of a
-canonical Frobenius lift \cite{BorgerGurney} --- and the eigenline kernel
+generic sharpness, Remark~\ref{rem:conditional}): the chosen endomorphism-lift formulation is
+CM-bound, without excluding other elliptic tests, and the eigenline kernel
 polynomial is certificate-style data for general $n$ (explicit only for
 special sequences, as in \cite{GK12,CouveignesLercier}).
 
@@ -1128,49 +1074,33 @@ cells are exceptional.
 
 \appendix
 
-\section{The function-field mirror (item AG6, sketch)}\label{app:ff}
+\section{A function-field analogy, not a sharpness theorem}\label{app:ff}
 
-Over $A = \F_q[t]$ every object of this document has a classical mirror,
-and the comparison isolates what our two heuristic caveats --- generic
-sharpness (Proposition~\ref{prop:sharp}) and the L--P-style density counts
---- are standing in for over $\Z$.
+Over $A=\F_q[t]$ the Carlitz module
+$C:A\to\mathrm{End}(\mathbb G_a)$ has $C_t(x)=tx+x^q$ and commuting
+operations $C_a$. For monic irreducible $P$ of degree $d$ its standard
+Frobenius congruence is $C_P(x)\equiv x^{q^d}\pmod P$.
+For an auxiliary monic irreducible $R$, $A[x]/(C_R(x))$ describes the
+full torsion algebra, including the zero point; the nonzero torsion
+cyclotomic polynomial is $C_R(x)/x$. These give natural analogies for
+Frobenius data and cofactor bounds, not an automatic transport of all
+integer support and assembly statements.
 
-The mirror of $\Gm$ with its Adams operations is the \emph{Carlitz module}
-$C : A \to \mathrm{End}(\mathbb G_a)$, $C_t(x) = tx + x^q$: the maps
-$C_a$ commute, and for a monic irreducible $P$ of degree $d$ one has the
-Frobenius-lift congruence $C_P(x) \equiv x^{q^d} \pmod P$ --- here a
-\emph{theorem} of the module rather than a test. The mirror of
-$\Z[\mu_r]$ is the Carlitz cyclotomic ring $A[x]/(C_R(x))$ for an
-auxiliary irreducible $R$, whose torsion values generate the cyclotomic
-function fields (Carlitz--Hayes theory). The mechanism analysis of
-Sections~\ref{sec:setup}--\ref{sec:dimcount} transposes: residue fields
-of torsion values are constant-field extensions $\F_{q^{de}}$, their unit
-orders factor through the same cyclotomic levels, and the stabilizer-index
-principle of Theorem~\ref{thm:stabindex} applies with $U$ the image of
-the constants $\F_q^\times$, which act on the identity section with
-monomial cofactors ($C_c(x) = cx$).
+Function-field Chebotarev and Weil's bounds provide equidistribution for
+specified finite extensions, with errors depending on the extension and
+its constant field and genus. To deduce the sharpness or smooth-order supply
+claims considered here, one must specify those extensions, the asymptotic
+regime, the varying order primes, uniform error bounds, local obstructions,
+and the joint smoothness conditions. This appendix supplies none of those
+arguments. Consequently it does \emph{not} prove
+Hypothesis~\ref{prop:sharp}, infinitude of a proposed smooth pool, or an
+unconditional function-field burden lower bound.
 
-Two ingredients change epistemic status. (i) The sharpness questions ---
-which large primes divide the order of the reduction of a fixed torsion
-value as $P$ varies --- become effective: Frobenius equidistribution in
-the relevant cyclotomic-function-field extensions holds with square-root
-error by Weil's RH for curves (function-field Chebotarev), which is
-exactly the Artin-type input that keeps Proposition~\ref{prop:sharp}
-heuristic over $\Z$. (ii) The existence side (primes $P$ in prescribed
-cells with smooth order data) becomes quantitative for the same reason.
-Yet the mirror carries no complexity content: irreducibility testing in
-$\F_q[t]$ is unconditionally deterministic polynomial time (Frobenius
-linear algebra: $x^{q^n} \equiv x$ and gcd conditions), so no
-Agrawal-type conjecture is needed there. The conclusion of the comparison
-is a placement, not a plan: \emph{the mechanism analysis of this document
-is complete in itself, and the part of the Agrawal problem that resists
-it over $\Z$ is exactly the unconditional-equidistribution gap that Weil
-closes over $\F_q[t]$} --- a GRH-grade input, consistent with the fact
-that the best unconditional test \cite{LPGauss} works by constructing its
-Frobenius datum rather than certifying it from one section. We make no
-claims here about Carlitz analogues of the Carmichael hierarchy of
-Section~\ref{sec:hierarchy}; that literature is not needed for the
-placement above.
+Irreducibility testing over a finite field is deterministic polynomial time
+via modular Frobenius powers and gcd tests. That fact does not establish
+the proposed counting assertions or identify the integer problem's sole
+remaining difficulty as an equidistribution gap. The analogy remains an
+exploratory direction.
 
 
 \begin{thebibliography}{99}
@@ -1223,9 +1153,9 @@ elliptic Carmichael numbers, \emph{J.\ Aust.\ Math.\ Soc.} 92 (2012),
 45--60.
 \bibitem{Grantham} J.~Grantham, Frobenius pseudoprimes, \emph{Math.\ Comp.}
 70 (2001), 873--891.
-\bibitem{BorgerGurney} J.~Borger, L.~Gurney, Canonical lifts and
-$\Lambda$-structures (elliptic curves with complex multiplication),
-arXiv:1710.08674.
+\bibitem{BorgerGurney} L.~Gurney, Elliptic curves with complex multiplication
+and $\Lambda$-structures, Ph.D.\ thesis, Australian National University,
+2015; arXiv:1710.08674 (2017).
 \bibitem{CouveignesLercier} J.-M.~Couveignes, R.~Lercier, Elliptic periods
 and primality proving, arXiv:0810.2853.
 \end{thebibliography}

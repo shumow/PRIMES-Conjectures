@@ -82,6 +82,55 @@ Run the focused regression suite from the repository root:
 python -B -m unittest discover -s code -p "*correctness.py" -v
 ```
 
+### Arithmetic-geometric first-pass findings
+
+- **R5, fixed-ring dictionary:** replaced the invalid primality converse with
+  the forward implication and the `399001 = 31*61*211`, `r=5` counterexample.
+  The untruncated characterization remains distinct. Scalar CRT checks and
+  sample full-ring identities independently confirm the counterexample.
+- **R6, support:** replaced the purported generic-sharpness proposition by
+  an explicit hypothesis at `B >= 2*r*d`, separately for each section. The
+  smoothness equivalence is valid under that hypothesis; full prime-power
+  divisibility, a failure-density theorem and economic bounds do not follow.
+  The correct cyclic-group criterion uses `ell**v_ell(N)`-th powers.
+  The model's dimension minimization remains an elementary conditional
+  comparison, not an algorithmic lower bound.
+- **R7, global versus local:** retained the characteristic-zero non-unit
+  argument and corrected its finite-field consequence. Independent direct
+  reduction modulo `Phi_13` confirms `(X+2)^24` is in `mu_26` at `p=5`.
+  The inversion identity and the `X+1` matching implication remain sound
+  under their explicit assumptions.
+- **R8, broader claims:** reduced the stabilizer-index theorem to the exact
+  cofactor upper bound `ord(f(T)) | L*(p**k - 1)`. Its index inequality is
+  conditional on a chosen exception model; neither elliptic support
+  saturation nor a mandatory exception clause is proved. Removed the
+  asserted transfer of N1/A10 into elliptic impossibility. The function-field
+  appendix now records an analogy and the missing extensions, asymptotics,
+  uniform errors and joint smoothness arguments; it does not claim that
+  Weil's bounds alone prove the proposed sharpness/existence statements.
+- **Further dictionary corrections:** Howe's definition concerns module
+  generators, not algebra generators. Separate level-1/2 congruences
+  control `(p**2-1)/2`, not necessarily the full depth-2 modulus.
+  At `p=7`, `n=217` passes the even levelwise conditions but is not a power
+  of 7 modulo 48. The sign-split comparison is not a proved
+  constructibility boundary.
+- **References checked:** the
+  [OEIS definition](https://oeis.org/A329223/internal) and
+  [Gurney thesis record](https://arxiv.org/abs/1710.08674) correct the two
+  misdescriptions in the initial queue.
+  [Howe's abstract](https://arxiv.org/abs/math/9812089) confirms the module
+  definition; [Wright's abstract](https://arxiv.org/abs/1609.00231) does
+  explicitly include the infinitude of Lucas-Carmichael numbers, so that
+  contribution has not been withdrawn. This is not a complete bibliography
+  or novelty audit.
+
+Seven independent geometric regression tests use direct cyclotomic
+polynomial reduction and ordinary modular arithmetic, not the AG scripts'
+SymPy helpers. **All 36 correctness tests pass.** The five edited paper
+sources have matching environments, unique labels and resolved local
+references/citations in a structural check. This is not a TeX compilation:
+`pdflatex` is unavailable, and no PDF has been regenerated.
+
 **Preservation and limits:** original findings, JSON outputs, datasets, paper
 bylines, and PDFs are retained. The PDF versions of the corrected LaTeX sources
 are historical and have not been regenerated. Old solver timings and frontier
@@ -91,7 +140,11 @@ actual prime-power moduli, target reachability, and measured identity
 frequencies must precede any production benchmark. In particular, a squarefree
 `q-1` component model omits the `q**(e-1)` contribution to
 `phi(q**e)` when a harvested modulus contains prime powers.
-The arithmetic-geometric proof review (R5-R8) also remains pending.
+R5-R8 have the first-pass dispositions above, not blanket approval of the AG
+track. Remaining work includes actual harvested-vector assembly/modeling,
+reproduction of legacy output-generating experiments with provenance,
+the rest of the survey/cell-census literature and numerical checks, and
+properly specified proofs for any stronger hypotheses or extensions.
 Older execution plans are historical instructions, not authority for this audit.
 
 ## 1. Captured inputs and result
