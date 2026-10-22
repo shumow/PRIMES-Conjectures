@@ -1,5 +1,11 @@
 # Literature Survey: Agrawal's Conjecture and Popovych's Conjecture
 
+> **Integration working branch.** The constructive experiments and the
+> arithmetic-geometric analysis have been combined for joint review. Historical
+> claims and outputs are preserved, but neither track is being certified by this
+> merge. See [`doc/integration-review-status.md`](doc/integration-review-status.md)
+> for the known concerns, provenance, and the next review steps.
+
 *Compiled 2026-08-05. Status of both conjectures: **open**. Agrawal's is believed false
 (Lenstra–Pomerance heuristic); Popovych's has no known evidence in either direction beyond
 computation.*
