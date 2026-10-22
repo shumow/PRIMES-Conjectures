@@ -16,8 +16,9 @@
 \begin{center}
 {\LARGE\bfseries Research memo: the arithmetic-geometric direction}\\[3pt]
 {\small PRIMES-Conjectures project --- AG track, branch
-\texttt{arith-geom-interpretation} --- October 21, 2026\\
-Full development: \texttt{doc/arith-geom.tex} (v1.0, 15 pp);
+\texttt{arith-geom-interpretation} --- October 21--22, 2026\\
+Full development: \texttt{doc/arith-geom.tex} (v1.0, 16 pp);
+standalone Popovych note: \texttt{doc/popovych-note.tex} (5 pp);
 results log: \texttt{doc/arith-geom-findings.md}}
 \end{center}
 
@@ -85,13 +86,32 @@ $\rho(102/\log_2 B)$: $3.9\times10^{-11}$ over the solver base $B = 1259$,
 still $1.8\times10^{-7}$ over the generous $B' = 12590$ ---
 emptying the measured pool. Bonus structure: the second congruence's
 $X{=}1$ component is exactly the base-3 Fermat test $3^n \equiv 3$, and
-mod $3$ the two sections coincide. The constant $2$ is immaterial: any
-$c \notin \{0, \pm 1\}$ gives the identical jump, while $c = \pm 1$
-restores the collapse --- indeed the $\{X{-}1, X{+}1\}$ variant is
-\emph{mechanism-equivalent} to Agrawal's conjecture
-($\zeta{+}1 = (\zeta^2{-}1)/(\zeta{-}1)$ makes $T(+1)$ automatic under the
-mechanism congruences; measured $48/48$, vs $0/48$ for $T(+2)$) --- so
-$c = 2$ is the smallest choice that genuinely blocks the engine.
+mod $3$ the two sections coincide.
+
+\textbf{(AG5b, Oct 22 addendum) Does the ``2'' matter? No --- but ``not
+$1$'' is subtly incomplete.} For any integer $c \notin \{0, \pm 1\}$ the
+trivial-stabilizer argument runs verbatim for $X + c$ and the full burden
+jump holds, with $c$ entering only through the norm
+$\Phi_r(-c) = (c^r{+}1)/(c{+}1)$ (finitely many excluded $p$, with
+$p \mid c(c{+}1)$), the excluded modulus $r \mid c{+}1$, and the level-one
+component --- the base-$(c{+}1)$ Fermat test. What must be avoided is
+exactly the rational torsion $\{\pm 1\}$ as the section's zero $-c$:
+$c = -1$ is the first section itself, and the innocent-looking $c = +1$
+fails \emph{outright}. Its zero $-1$ is inversion-fixed, so the collapse
+survives ($\ord(X{+}1) \mid r(p^{d/2}{-}1)$ at even $d$, measured
+$22/22$); worse, $\zeta{+}1 = (\zeta^2{-}1)/(\zeta{-}1)$ with both
+numerator and denominator values of $X - 1$ at primitive roots, whose
+orders divide $\rho_r(p)$ --- so the mechanism congruences plus the
+Carmichael condition imply $T(+1, n, r)$ \emph{automatically} (proved:
+Prop.~8 of the note / Prop.~5.9 of the full document; measured: $48/48$
+synthetic mechanism instances pass $T(+1)$, $0/48$ pass $T(+2)$). The
+hypothetical ``$\{X{-}1, X{+}1\}$ conjecture'' --- Popovych's statement
+with $2$ replaced by $1$ --- is therefore \emph{mechanism-equivalent} to
+Agrawal's: formally stronger-looking, but every counterexample the known
+engine could ever build defeats both simultaneously. In stabilizer terms
+$U(X \pm 1) = \{\pm 1\}$ while $U(X + c) = \{1\}$ otherwise: $c = 2$ is
+simply the smallest constant that genuinely blocks the engine ($c = -2$
+works equally, with Mersenne norm $2^r - 1$).
 
 \textbf{(AG3) The impersonation hierarchy --- our targets have a name, and
 the wall has a shape.} Define cells by (level set, Frobenius powers); at
@@ -150,15 +170,24 @@ approach); four deterministic verification scripts
 \section*{4. Where this leaves the program}
 
 \begin{itemize}\itemsep1pt
-\item \textbf{Negative-result paper}: written (branch
-\texttt{negative-result-writeup}, 11 pp) with the AG results as \S5 ---
-the obstruction is now structural, not parametric: no modulus, no second
-section, no CM curve escapes the stabilizer-index floor, and the floor's
-minimum is exactly the twin-smooth sign-split cell that N1/A10 measured
-dead.
-\item \textbf{Standalone note candidate}: AG5 (Popovych) is self-contained
-and would be the first published evidence in either direction beyond
-search ranges.
+\item \textbf{Negative-result paper}: written and revised to v1.1 (branch
+\texttt{negative-result-writeup}, 12 pp): \S5 now \emph{leads} with the
+stabilizer-index theorem (with a per-section table: section / $U$ /
+minimum burden / realizability) and derives the modulus, Popovych and
+elliptic results as corollaries; the one conditional ingredient is named
+in the abstract; \S7 adds two constructive reframings --- the index as a
+\emph{design metric} (security parameter) for AKS-style tests, and the
+unconditional function-field floor --- per external review feedback.
+The obstruction is structural, not parametric: no modulus, no second
+section, no CM curve escapes the floor, whose minimum is exactly the
+twin-smooth sign-split cell that N1/A10 measured dead.
+\item \textbf{Standalone Popovych note}: now written
+(\texttt{doc/popovych-note.tex}, 5 pp) --- self-contained, conditionality
+in the abstract, the non-unit lemma, the burden theorem with the $r = 5$
+computation and comparison table, the Dickman estimate with explicit
+parameters, and the AG5b addendum (Prop.~8: the $X{+}1$ variant is
+mechanism-equivalent to Agrawal's). First quantified evidence beyond
+search ranges; ready to circulate.
 \item \textbf{The only live constructive direction} remains option (b): a
 fundamentally new solver for $0/1$ subset-products in ${\sim}24$k-bit
 smooth-exponent groups at identity-density ${\sim}0.004$. The AG results
