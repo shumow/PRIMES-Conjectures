@@ -1,5 +1,12 @@
 # Execution plan: the "quantified infeasibility" negative-result paper
 
+> **Historical writing plan; audit update 2026-10-22.** Do not use the
+> "reuse verbatim" or "do not recompute" instructions below as authority for
+> correctness work. The reduction, solver algebra and benchmark definitions
+> have since been corrected, and the experiments do not establish a general
+> infeasibility theorem. See [current audit status](integration-review-status.md#current-correctness-audit-2026-10-22).
+> The separate paper branch is not part of this audit checkout.
+
 **For:** a fresh agent, working in a **separate git branch**, with no access to
 the conversation that produced the repo. Everything you need is in the repo;
 this document tells you what to build, where every number comes from, and the

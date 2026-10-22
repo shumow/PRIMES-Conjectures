@@ -1,5 +1,12 @@
 # Plan v2: Constructing a Counterexample to Agrawal's Conjecture
 
+> **Historical plan; audit update 2026-10-22.** The reduction and solver
+> implementations have received correctness repairs. Density definitions and
+> benchmark reporting have also changed; the old "closed" gates and "proved"
+> labels below are not validated conclusions. For current work, use
+> [the audit status](doc/integration-review-status.md#current-correctness-audit-2026-10-22)
+> and corrected sources rather than the historical PDFs or no-rerun directives.
+
 *Rewritten 2026-08-07 after Phase 1a calibration. v1 is in git history
 (commits 552330e..1925d7e). Supporting documents: doc/working-paper.pdf
 (math), data/FINDINGS.md (measurements), doc/twin-smooth-review.md

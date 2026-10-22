@@ -1,9 +1,10 @@
 # Component registry: harvesters, solvers, and validators
 
 > **Audit update, 2026-10-22:** S2-S4 have received correctness repairs backed
-> by small independent regression oracles. Historical timings/frontiers and
-> the broader "closed" conclusions elsewhere in this registry have not been
-> revalidated. They are not proofs of infeasibility. Use
+> by small independent regression oracles. S6/S7 use forced-zero mixture
+> weights, S8 uses literal zero probability, and H8 counts side support.
+> S8's minimum tracker has been repaired. Historical timings/frontiers are
+> not revalidated measurements or proofs of infeasibility. Use
 > [current audit status](integration-review-status.md#current-correctness-audit-2026-10-22)
 > rather than historical gate decisions to plan new experiments.
 
@@ -23,21 +24,20 @@ Method analysis: `doc/a4-solver-analysis.md`, `doc/twin-smooth-review.md`.
 | id | file | status | paradigm | notes |
 |----|------|--------|----------|-------|
 | **H1 native-sieve** | `phase1a_calibration.py` | ✅ | enumerate all B-smooth m ≤ X, keep twins | provably complete ≤ X; small-end complete; caps ~B=130 in python |
-| **H2 CHM-closure (py)** | `chm_closure.py` | ✅ | CHM iteration to Størmer closure | no size cap; recovers full fixed-B set; slow past B≈130 |
-| **H3 CHM-closure (C)** | `chm_closure.c` | ✅ | same, compiled (`__int128`) | B=200 → 346,110 (99.98% of complete) in ~3 min; validated vs published records |
+| **H2 CHM-closure (py)** | `chm_closure.py` | ✅ | heuristic CHM iteration | no size cap; near-complete in historical comparisons, not certified complete; slow past B≈130 |
+| **H3 CHM-closure (C)** | `chm_closure.c` | ✅ | same, compiled (`__int128`) | historical B=200 → 346,110: 99.98% of original CHM count, 99.2% of supplied corpus; ~3 min |
 | **H4 PTE-import** | `import_pte_results.py` | ✅ | parse microsoft/twin-smooth-integers PTE results | 20,070 records; 0 LP-eligible (residue coverage poor) → calibration-only |
 | **H5 corpus-stream** | `b547_pool_analysis.py` | ✅ | stream full TwinSmooths B=547 corpus → pool | needs private data in scratchpad; 73,163-element pool |
-| **H6 partition-first** | `a1_yield_prototype.py`, `a2_grid.py` | ✅🔬 | fix Q₋/Q₊ first, enumerate m over Q₋, test (m+1)/2 over Q₊ | the **main-line** harvester; measurement mode; ratio 13.8–44 |
-| **H7 co-designed** | `a5_codesign.py`, `a5_yield.py` | ✅🔬 | H6 + both factor bases odd-smooth-constrained (odd part of q−1 ≤ t0) | caps solver max-odd-prime (6269→97); ratio ~7.7 at t0=100/B=2003 |
-| **H8 divisor-paradigm** | `a9_divisor_harvest.py` | ❌ tested/blocked | fix highly-composite Λ₋,Λ₊; harvest m \| Λ₋/2, (m+1) \| Λ₊/2 | N1 (2026-08-08): ~empty pool (0–2) under the double condition; can't get non-empty AND high-density. Gives AGHS density but unharvestable |
+| **H6 partition-first** | `a1_yield_prototype.py`, `a2_grid.py` | ✅🔬 | fix Q₋/Q₊ first, enumerate m over Q₋, test (m+1)/2 over Q₊ | sampler-based projected ratio 13.8–44; not a completed production pool |
+| **H7 co-designed** | `a5_codesign.py`, `a5_yield.py` | ✅🔬 | H6 + both factor bases odd-smooth-constrained (odd part of q−1 ≤ t0) | q−1-model max odd prime 6269→97; projected ratio ~7.7 at t0=100/B=2003; actual prime-power moduli require checking |
+| **H8 divisor-paradigm** | `a9_divisor_harvest.py` | 🟡🔬 | fix disjoint bases; enumerate bounded squarefree divisors | historical N1 trials yielded 0–2 elements; reported fraction is side support, not full-group identity density; not a general impossibility result |
 
-**Harvester selection.** For a real production pool use **H6/H7** (partition-first
-— supply is over-provisioned, ratio ≫ gate). For ground-truth/validation corpora
+**Harvester selection.** **H6/H7** remain promising sampler-based production
+candidates, pending real-pool modeling and a validated solver. For validation corpora
 use **H1** (provably complete small end) or **H3** (near-complete fixed-B, fast).
 **H5** taps Michael's full B=547 data. **H4** is calibration-only. **H8** is
-**blocked** (N1: unharvestable under the double condition). The density question
-is now **settled** (A10/S7): the AGHS-class solver needs ρ≳0.98, which only H8
-would give, and H8 is unharvestable — so H6/H7 have no viable scalable solver.
+limited by sparse yields in the tested configurations. Neither N1 nor A10
+establishes a universal density threshold or closes the AGHS direction.
 
 ---
 
@@ -45,23 +45,20 @@ would give, and H8 is unharvestable — so H6/H7 have no viable scalable solver.
 
 | id | file | status | method | frontier / regime |
 |----|------|--------|--------|-------------------|
-| **S1 coloring-opt** | `phase1a_calibration.py`, `b547_pool_analysis.py` | 🗄️ | greedy + partition-space local search over side-assignment | for the **dataset-mining** route; hits the 0.06 wall — superseded by partition-first harvest, but still the tool if mining a fixed corpus |
+| **S1 coloring-opt** | `phase1a_calibration.py`, `b547_pool_analysis.py` | 🗄️ | greedy + partition-space local search over side-assignment | historical achieved ratios ~0.06–0.083 are lower bounds on optimization, not upper bounds on feasible colorings |
 | **S2 GF(2) projection** | `a4_solver.py` | ✅ | corrected particular solution and kernel for mod-2 constraints + parity | exhaustively checked small affine systems; only G/2G, not the full 2-primary group; old timing unvalidated |
 | **S3 anneal residual** | `a6_oddsolver.py` | 🟡 | shared GF(2) projection + local search checking odd components and higher 2-powers with carries | returned solutions checked in the original group; historical frontier requires rerun |
 | **S4 exact MITM** | `a6_oddsolver.py` (`mitm_frontier`) | 🟡 | parity-aware meet-in-the-middle over the whole pool | small targets checked against enumeration; exponential; timeouts are inconclusive |
 | **S5 per-prime+MITM** | `a7_lohniebuhr.py` | 🟡 | GF(l) reduction pre-pass then MITM core | scaffold; reduction pre-pass is phase-2 |
-| **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | scalable in principle but needs high identity-density (ρ≳0.98); a8 stub solves only r≤20/high-ρ |
-| **S7 Wagner-4 birthday** | `a10_wagner_density.py` | ✅🔬 | generalized-birthday 4-sum over CRT components; density-reach measurement | A10: reach r_max ≈ O(log N)/(1−ρ). At H7's ρ≈0.004, r_max≈20 vs thousands needed. **Proves the low-density escape (option a) is closed** |
-| **S8 adaptive cultivation** | `a12_adaptive_cultivation.py` | ❌🔬 | merge harvest+solve: greedy descent picking next move from the partial-solution deficit (column generation) | A12: at ρ≈0.004 no descent gradient (dense moves), stalls ~20 like S3/S7; control at ρ≥0.9 solves — isolates density, not architecture, as the cause |
+| **S6 ω-guided prototype** | `a8_omega_solver.py` | 🟡 | simplified strict top-down walk inspired by Löh–Niebuhr / AGHS | not the full AGHS method; forced-zero mixture; odd cardinality is not enforced |
+| **S7 four-list birthday** | `a10_wagner_density.py` | ✅🔬 | bounded filtered four-sum diagnostic | historical rho=0.004 means literal P(0)=0.336 for Z/3; first-failure frontier of this implementation, not a general solver bound; outputs have even cardinality |
+| **S8 adaptive cultivation** | `a12_adaptive_cultivation.py` | 🟡🔬 | finite-budget greedy filtering with random on-demand moves | literal-zero model; minimum tracker corrected; no number-theoretic pricing oracle or odd-subset certificate; historical floors require rerun |
 
-**Solver selection.** **S6** (AGHS ω-guided) was the intended production solver
-but A10 (S7) showed it needs ρ≳0.98, available only from the unharvestable H8 —
-so no solver in this family solves the harvestable H6/H7 pools. **S2** is a
-solved, reusable sub-step (the 2-part) for any future solver. **S3/S4** map the
-generic-method frontier (~15 odd comps). **S7** is the density-reach diagnostic
-that closed option (a). **S1** applies only to the deprecated mining route. Any
-new attempt must be a fundamentally different paradigm (option b) that tolerates
-low density, or target a different construction/r (option c).
+**Solver selection.** **S2** supplies the validated mod-2 projection, **S4**
+is a small-instance oracle including parity, and **S3** is a corrected residual
+heuristic. S6-S8 are diagnostics with different models and constraints; no
+validated end-to-end production solver is supplied. The full AGHS method and
+other algorithms have not been excluded by these experiments.
 
 ---
 
@@ -74,36 +71,33 @@ low density, or target a different construction/r (option c).
 | V3 yield validation | `a2_validate_and_extend.py` | checks the harvest yield model against the complete B=547 corpus (model is conservative, 0.68×) |
 | V4 group decomposition | `a4_solver.py` (`study_mod2_scale`) | full 2-primary size vs actual mod-2 projection and remaining residual bits; synthetic component model |
 | V5 general-r degree | `a11_general_r.py` | harvest-burden degree per AKS modulus r (option c): floor is 2 (double condition), intrinsic to all r |
-| V6 solver regression | `test_solver_correctness.py` | independent small binary/group enumeration; checks elimination, XOR residuals, carries, parity and returned solutions |
+| V6 correctness regression | `test_*correctness.py` | independent small construction/binary/group checks and bounded benchmark model/reporting tests |
 
 ---
 
 ## Recommended combinations
 
-- **Former production target (now blocked):** H8 → S6. N1 showed H8 is
-  unharvestable under the double condition, so this route is closed as conceived.
-- **Current best measured:** H7 (co-designed, ratio 7.7, max-odd-prime 97) →
-  *no viable solver*. A10 (S7) settled the open question: the AGHS-class birthday
-  solver needs identity-density ρ≳0.98 to reach thousand-component groups; H7
-  gives ρ≈0.004 and pool growth only helps ~log(N). The low-density escape
-  (option a) is CLOSED, and A11 closed option (c) — no modulus r is friendlier.
-  Only a fundamentally different low-density solver paradigm (option b) remains.
+- **Historically attempted:** H8 → S6. N1's particular finite squarefree
+  configurations supplied few elements; this does not exclude other configurations.
+- **Promising supply candidate:** H7 (projected ratio ~7.7) → *solver and
+  actual-vector model still unvalidated*. A10 does not supply an AGHS threshold.
+  A11/AG results require their separate proof audit before drawing universal
+  conclusions about moduli or constructions.
 - **Validation / calibration:** H1 or H3 (complete-ish corpus) → S1 (coloring)
-  reproduces the 0.06 mining wall and V3's model checks. Historical baseline.
+  reproduces achieved coloring ratios and V3's historical model checks.
 - **Regression harness for new solvers:** synthetic instances from
   `a8_omega_solver.make_structured` (tunable identity-density ρ) / 
   `a6_oddsolver.make_codesigned`, run S4 (exact, small) as an oracle against any
-  new scalable solver on the same planted instances — and sweep ρ down to
-  H7's ~0.004 to test low-density tolerance directly.
+  new scalable solver on the same planted instances. Specify forced-zero bias,
+  per-component literal identity probability, component orders, target/parity,
+  and budgets before comparing results. Do not equate a synthetic parameter
+  0.004 to measured H7 density.
 
 ## Gate status (see PLAN.md)
 
-G1 ✅ (supply exists) · G2 ✅ (H6/H7 ratio ≫ gate) · **G3 ✗ blocked**: the
-solver route (S6+H8) is closed — high-density pools unharvestable (N1) and
-low-density pools unsolvable (A10). A3 production harvest not launched. The
-twin-smooth/L–P route via AGHS-class solvers is a quantified dead end.
-**Option (c) also closed (A11):** no AKS modulus r gives a friendlier group —
-the double condition is intrinsic to every r (floor degree 2, = r=5; usually
-worse). Outcome is the option-(d) negative-result paper
-(doc/negative-result-plan.md). Only option (b) — a fundamentally different
-low-density solver paradigm — remains as a (long-shot) live direction.
+G1/G2 are historical supply/projection gates. **G3 has no validated production
+pass**; A3 was not launched. Correctness regressions now pass for small solver
+and benchmark cases, but the actual harvested group, constraints and resource
+requirements remain to be established. A quantified experimental report is
+possible; a general infeasibility theorem or closure of every modulus/algorithm
+does not follow from the current experiments.

@@ -20,7 +20,18 @@ observations, not validated limits of the corrected implementation.
 """
 import math, random, sys, time
 from phase1a_calibration import primes_upto
-from a4_solver import gf2_solve, solve_mod2
+from a4_solver import gf2_solve as _gf2_solve, solve_mod2
+
+def gf2_solve(rows, rhs, ncols):
+    """Compatibility entry point returning x0, kernel and sorted pivot columns."""
+    result = _gf2_solve(rows, rhs, ncols)
+    if result is None:
+        return None
+    x0, kernel = result
+    # A4 uses lowest-bit pivots; each kernel vector's highest bit is its free column.
+    free_columns = {vector.bit_length() - 1 for vector in kernel}
+    pivots = [column for column in range(ncols) if column not in free_columns]
+    return x0, kernel, pivots
 
 # ---- faithful co-designed instance ----
 

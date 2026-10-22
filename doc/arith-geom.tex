@@ -33,6 +33,13 @@ and the Torus Dimension Count Behind the Double Condition\\
 \begin{document}
 \maketitle
 
+\noindent\textbf{Joint audit notice (22 October 2026).}
+The local description of the original L--P mechanism has been corrected to
+include both odd-cardinality cases. The other AG claims remain under review;
+the historical N1/A10 experiments do not establish an algorithmic no-go theorem.
+The tracked PDF is the original version. Current status and outstanding
+issues are in \texttt{doc/integration-review-status.md}.
+
 \begin{abstract}
 We reframe Agrawal's conjecture and the Lenstra--Pomerance counterexample
 mechanism in the language of one-dimensional algebraic groups. The main new
@@ -220,10 +227,13 @@ n \;\equiv\; p_i^{\,j_i} \pmod{\lcm\bigl(r,\ \rho_r(p_i)\bigr)},
 and $\ord_r(n) > 2$ (validity).
 \end{definition}
 
-The original $r=5$ construction \cite{LP,Popovych09} is the instance
-$j_i = 1$: the conditions $p \equiv 3 \pmod{80}$, $p-1 \mid n-1$,
-$p+1 \mid n+1$ give $n \equiv p \pmod{\lcm(5,\rho_5(p))}$ once
-$\rho_5(p) \mid 10(p^2-1)$ is known. Our entire Track~A pipeline
+The original $r=5$ construction \cite{LP,Popovych09} uses a uniform exponent
+$j_i=j\in\{1,3\}$ with $j\equiv k\pmod4$: $j=1$ for $k\equiv1\pmod4$
+and $j=3$ for $k\equiv3\pmod4$. The conditions $p\equiv3\pmod{80}$,
+$p-1\mid n-1$ and $p+1\mid n+1$ give
+$n\equiv p^j\pmod{10(p^2-1)}$, by CRT on the pairwise-coprime factors
+$80$, $(p-1)/2$ and $(p+1)/4$. With $\rho_5(p)\mid10(p^2-1)$ this implies
+$n\equiv p^j\pmod{\lcm(5,\rho_5(p))}$ in both cases. Our Track~A pipeline
 (\texttt{PLAN.md}) is a search inside Definition~\ref{def:mech}.
 
 \begin{remark}[scope]\label{rem:scope}

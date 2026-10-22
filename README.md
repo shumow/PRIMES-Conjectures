@@ -2,8 +2,9 @@
 
 > **Joint correctness audit in progress.** The constructive experiments and the
 > arithmetic-geometric analysis have been combined. Initial follow-up work
-> corrects the written modulus reduction and A4/A6 solver algebra, with small
-> independent regression tests. Historical claims and outputs are preserved;
+> corrects the written modulus reduction, A4/A6 solver algebra, and benchmark
+> definitions/reporting, with small independent regression tests. Historical
+> claims and outputs are preserved;
 > neither track is certified. See
 > [`doc/integration-review-status.md`](doc/integration-review-status.md)
 > for verified corrections, outstanding concerns, provenance, and test commands.

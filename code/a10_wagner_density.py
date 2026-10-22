@@ -1,32 +1,30 @@
 #!/usr/bin/env python3
-"""A10 (option a): does the AGHS-class birthday solver work at H7's low density?
+"""A10: bounded four-list/four-sum diagnostic on synthetic groups.
 
-The scalable subset-product method (AGHS / Wagner generalized birthday) cancels
-group components by finding collisions among combinations of pool elements. Its
-feasibility hinges on how many components must actually be cancelled -- and that
-is governed by IDENTITY-DENSITY rho: a pool element that is identity (=0) on a
-component imposes no constraint there, so only the ~(1-rho) fraction of
-components on which elements are non-trivial have to be cancelled.
+The legacy rho parameter is a FORCED-zero mixture weight: otherwise a
+coordinate is uniform over Z/ell, including zero. Literal P(0) is
+rho + (1-rho)/ell. This differs from A12's literal-zero model.
 
-  AGHS pools:      rho ~ 0.3-0.5 (primes = 1 on many components; p-1 | Lambda)
-  Our H7 pools:    rho ~ 0.004   (p-1 = 2m, m a product of ~4 primes)
-
-This measures, with a CORRECT Wagner-4 (four-list, 4-sum-to-identity over a
-small-prime group), the largest solvable component-count r as a function of rho
-at fixed pool N -- the birthday REACH and its density dependence. It answers
-option (a): whether low density (H7) can ever be solved, or whether AGHS-class
-methods need the high density the double condition can't supply.
-
-Wagner-4 solves a 4-sum in time/space ~ N when N >~ |Geff|^(1/... ), where the
-EFFECTIVE group Geff is the components on which the four chosen elements are not
-all identity. We report, per rho, the max r with success over trials.
+The search filters pair sums on the first half of the coordinates and caps
+intermediate lists. Its first-failure frontier is a finite heuristic statistic,
+not a bound on general subset-product algorithms or the full AGHS method.
+Four-element outputs also do not satisfy the construction's odd-cardinality
+requirement. Historical results remain in data/FINDINGS.md.
 """
 import math, random, sys, time
 from collections import defaultdict
 
+def identity_probability(rho, ell):
+    """Literal P(0) in the forced-zero/uniform mixture, not its bias parameter."""
+    if not 0 <= rho <= 1 or ell < 2:
+        raise ValueError("rho must be in [0, 1] and the group order at least 2")
+    return rho + (1 - rho) / ell
+
 def make_pool(r, rho, N, ell, rng):
-    """N elements of (Z/ell)^r; each coord is 0 (identity) w.p. rho else
-    uniform nonzero-ish (uniform over Z/ell)."""
+    """N elements with forced-zero mixture weight rho; otherwise uniform."""
+    identity_probability(rho, ell)
+    if r < 0 or N < 0:
+        raise ValueError("pool dimensions must be nonnegative")
     pool = []
     for _ in range(N):
         v = tuple(0 if rng.random() < rho else rng.randrange(ell)
@@ -38,7 +36,9 @@ def wagner4_zero(pool, r, ell, rng, target=None):
     """Find 4 DISTINCT indices a,b,c,d with pool[a]+pool[b]+pool[c]+pool[d] ==
     target (default identity 0) over (Z/ell)^r. Split components into two
     blocks; two half-joins matched on block1, then matched on block2.
-    Returns the 4 indices or None."""
+    Returns the 4 indices or None. None is inconclusive: filtering, random
+    partitioning and list caps can miss valid four-sums.
+    """
     if target is None:
         target = tuple([0] * r)
     N = len(pool)
@@ -49,7 +49,6 @@ def wagner4_zero(pool, r, ell, rng, target=None):
     def blk1(v): return v[:h]
     def blk2(v): return v[h:]
     def add(u, v): return tuple((u[k] + v[k]) % ell for k in range(r))
-    def sub1(u, v): return tuple((u[k] - v[k]) % ell for k in range(h))
     # L12: a+b with block1 == target|block1
     t1 = target[:h]
     map2 = defaultdict(list)
@@ -88,10 +87,13 @@ def wagner4_zero(pool, r, ell, rng, target=None):
         need = tuple((t2[k] - s[k]) % ell for k in range(len(t2)))
         for (c, d) in m34.get(need, ()):
             if len({a, b, c, d}) == 4:
+                assert all(sum(pool[i][k] for i in (a, b, c, d)) % ell
+                           == target[k] % ell for k in range(r)), "invalid four-sum"
                 return (a, b, c, d)
     return None
 
 def max_solvable_r(rho, N, ell, rng, rcap=200):
+    """Historical API: last accepted dimension before the first failed trial set."""
     maxr = 0
     for r in range(4, rcap, 2):
         ok = 0
@@ -109,23 +111,23 @@ def main():
     rng = random.Random(int(sys.argv[1]) if len(sys.argv) > 1 else 3)
     ell = 3
     N = int(sys.argv[2]) if len(sys.argv) > 2 else 20000
-    print(f"Wagner-4 4-sum over (Z/{ell})^r, pool N={N}. Max solvable r "
-          f"(component count) vs identity-density rho (3 trials each).")
-    print("Reach law: (1-rho)*r_max ~ const (pool-limited effective components).")
-    print(f"{'rho':>7}{'r_max':>7}{'(1-rho)*rmax':>14}  interpretation")
-    rows = [(0.004, "<- H7 pools (identity on ~0.4% of components)"),
+    print(f"Four-list 4-sum over (Z/{ell})^r, pool N={N}; forced-zero rho.")
+    print("Literal P(0)=rho+(1-rho)/ell. First-failure frontier: 3 trials each,")
+    print("accept >=2 successes; stop at first failure; cap r<200.")
+    print("This is not a general solver bound or a measurement of H7 vectors.")
+    print(f"{'rho':>7}{'literal P(0)':>14}{'frontier':>10}")
+    rows = [(0.004, "   historical setting (not literal P(0)=0.004)"),
             (0.0,   "   uniform baseline"),
             (0.5,   ""),
             (0.9,   ""),
-            (0.98,  "<- threshold to reach ~thousand-component groups"),
+            (0.98,  ""),
             (0.996, "")]
     for rho, note in rows:
         mr = max_solvable_r(rho, N, ell, rng)
-        print(f"{rho:>7}{mr:>7}{(1-rho)*mr:>14.1f}  {note}")
+        print(f"{rho:>7}{identity_probability(rho, ell):>14.3f}{mr:>10}  {note}")
 
-    # pool-scaling at fixed low (H7) density: does harvesting more help? (log only)
-    print("\nPool scaling at rho=0.004 (H7): r_max vs N -- growth is ~log(N),")
-    print("so harvesting more cannot reach thousand-component groups.")
+    print("\nPool scaling at forced-zero rho=0.004 (literal P(0)=0.336).")
+    print("Finite first-failure frontiers, not an asymptotic impossibility result.")
     print(f"{'N':>9}{'r_max':>7}{'log3(N)':>9}")
     for NN in [2000, 20000, 100000]:
         mr = max_solvable_r(0.004, NN, ell, rng)

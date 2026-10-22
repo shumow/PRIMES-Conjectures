@@ -18,13 +18,16 @@ claim that the entire R1-R8 queue has been resolved.
 - **R1, written reduction:** corrected the two modulus definitions in the
   working-paper and background sources. Completed the local proof for both
   `k = 1 mod 4` and `k = 3 mod 4`, with Frobenius exponent `j = 1` and `j = 3`,
-  respectively. Explicitly distinguished CRT-compatible targets from subset
+  respectively, and corrected the AG document's description of this original
+  mechanism to include both cases. Explicitly distinguished CRT-compatible targets from subset
   reachability and restricted discrete logs to units. The full harvested-vector
   implementation and quantitative feasibility estimates remain to be audited.
 - **R2/R3, solver algebra:** independently reproduced the elimination and carry
   defects, then corrected back-substitution for both particular solutions and
   kernel vectors. A6 now reuses A4's exact mod-2 projection and searches the
-  original residual group, including higher 2-powers with carries.
+  original residual group, including higher 2-powers with carries. Its public
+  `gf2_solve` compatibility entry point retains the original three-value return
+  (particular solution, kernel, sorted pivot columns).
 - **Additional coupled defects:** A4's residual closer had the target sign
   reversed and treated overlapping XOR moves as additive. Its historical
   `mitm_close` entry point now uses bounded, exact Gray-code enumeration of a
@@ -41,6 +44,37 @@ claim that the entire R1-R8 queue has been resolved.
   the need to exclude nonunits, and 126 local matching cases across 21 primes
   below 5,000. Together the 16 tests pass; the solver oracles cover 5,054 binary
   systems and 336 small-group target cases.
+- **R4, density and benchmark review:** preserved A8/A10's seeded stochastic
+  behavior, but relabeled `rho` as a forced-zero mixture weight. Literal zero
+  probability is `rho + (1-rho)/order`: `0.336`, not `0.004`, for A10's ternary
+  setting. A12 uses literal `rho` and nonzero-only sampling. N1's side-support
+  count is yet a third statistic: plus-side factors give `p = -1`, not identity
+  in the full unit group. No literal H7 component-density measurement has been
+  established by these synthetic tests.
+- **Additional reporting defect:** A12 returned the deficit at the end of a
+  restart rather than the minimum visited deficit. A deterministic two-step
+  regression reached 1, perturbed to 2, and previously reported 2. The minimum
+  tracker now reports 1 and invalid budgets/dimensions raise explicit errors.
+  Old A12 "floor" claims need rerunning with the corrected statistic.
+- **Validation after benchmark corrections:** all 29 small regression tests
+  pass, including A6's helper-return compatibility check.
+  Twelve benchmark tests cover model definitions, preserved A10 random
+  draws, minimum tracking, explicit input errors, and four-sum validity.
+  Bounded A12 demonstrations at `D=30`, `ell=3`, seed 60, a 15-move planted
+  target, `K=200`, 40 steps and two restarts gave initial/minimum deficits
+  `18/9` at literal `rho=0.004` and `19/0` at `rho=0.9`. These are finite
+  demonstrations, not thousand-component frontier estimates.
+
+**Interpretation of the experiments:** no universal solver-density threshold
+or algorithmic closure follows from the implemented methods. A10 filters and
+caps four-element sums (even cardinality), A8 is a simplified walk that does
+not enforce odd cardinality, and A12 is budgeted random filtering rather than
+a number-theoretic pricing oracle. The
+[AGHS paper](https://arxiv.org/html/1203.6664v2) analyzes different algorithms
+with explicit symmetry, independence, pool-size and component assumptions;
+its applicability was not tested by reproducing one four-list diagnostic.
+Pigeonhole collisions do not prove target reachability, and finite harvest or
+coloring experiments do not supply general upper bounds.
 
 Run the focused regression suite from the repository root:
 
@@ -52,9 +86,13 @@ python -B -m unittest discover -s code -p "*correctness.py" -v
 bylines, and PDFs are retained. The PDF versions of the corrected LaTeX sources
 are historical and have not been regenerated. Old solver timings and frontier
 claims are not measurements of the corrected code. Large harvests, private
-corpus validation, the full density audit (R4), and the arithmetic-geometric
-proof review (R5-R8) remain pending. The older execution plans are historical
-instructions, not authority for this audit.
+corpus validation and real-pool component modeling remain pending: unit checks,
+actual prime-power moduli, target reachability, and measured identity
+frequencies must precede any production benchmark. In particular, a squarefree
+`q-1` component model omits the `q**(e-1)` contribution to
+`phi(q**e)` when a harvested modulus contains prime powers.
+The arithmetic-geometric proof review (R5-R8) also remains pending.
+Older execution plans are historical instructions, not authority for this audit.
 
 ## 1. Captured inputs and result
 

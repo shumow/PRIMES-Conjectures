@@ -34,6 +34,12 @@ class BinaryEliminationTests(unittest.TestCase):
         self.assertEqual(x0, 0)
         self.assertEqual(kernel, [7])
 
+    def test_a6_retains_legacy_pivot_column_return(self):
+        x0, kernel, pivots = a6_oddsolver.gf2_solve([3, 6], [1, 0], 3)
+        self.assertTrue(satisfies_binary(x0, [3, 6], [1, 0]))
+        self.assertEqual(kernel, [7])
+        self.assertEqual(pivots, [0, 1])
+
     def test_exhaustive_affine_solution_sets(self):
         for ncols in range(4):
             for nrows in range(4):
