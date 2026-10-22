@@ -1,5 +1,12 @@
 # Component registry: harvesters, solvers, and validators
 
+> **Audit update, 2026-10-22:** S2-S4 have received correctness repairs backed
+> by small independent regression oracles. Historical timings/frontiers and
+> the broader "closed" conclusions elsewhere in this registry have not been
+> revalidated. They are not proofs of infeasibility. Use
+> [current audit status](integration-review-status.md#current-correctness-audit-2026-10-22)
+> rather than historical gate decisions to plan new experiments.
+
 The pipeline is **Harvest → Solve**, with supporting **Validate/Analyze** tools.
 Multiple interchangeable implementations exist for each phase; the winning
 combination is not yet settled, so this catalogs every component built, its
@@ -39,9 +46,9 @@ would give, and H8 is unharvestable — so H6/H7 have no viable scalable solver.
 | id | file | status | method | frontier / regime |
 |----|------|--------|--------|-------------------|
 | **S1 coloring-opt** | `phase1a_calibration.py`, `b547_pool_analysis.py` | 🗄️ | greedy + partition-space local search over side-assignment | for the **dataset-mining** route; hits the 0.06 wall — superseded by partition-first harvest, but still the tool if mining a fixed corpus |
-| **S2 GF(2) 2-part** | `a4_solver.py` | ✅ | exact GF(2) Gaussian elimination on mod-2 constraints + parity | scales to full dim (4586 comps, 12s); solves ~16% of demand bits (the 2-part) |
-| **S3 anneal odd** | `a6_oddsolver.py` | 🟡 | GF(2) 2-part + simulated annealing on odd residual (dense kernel moves) | stalls ≥19 odd components — weak; kept as baseline |
-| **S4 exact MITM** | `a6_oddsolver.py` (`mitm_frontier`) | 🟡 | meet-in-the-middle over the whole pool | exact but exponential; caps ~N=40 / ~15 odd comps |
+| **S2 GF(2) projection** | `a4_solver.py` | ✅ | corrected particular solution and kernel for mod-2 constraints + parity | exhaustively checked small affine systems; only G/2G, not the full 2-primary group; old timing unvalidated |
+| **S3 anneal residual** | `a6_oddsolver.py` | 🟡 | shared GF(2) projection + local search checking odd components and higher 2-powers with carries | returned solutions checked in the original group; historical frontier requires rerun |
+| **S4 exact MITM** | `a6_oddsolver.py` (`mitm_frontier`) | 🟡 | parity-aware meet-in-the-middle over the whole pool | small targets checked against enumeration; exponential; timeouts are inconclusive |
 | **S5 per-prime+MITM** | `a7_lohniebuhr.py` | 🟡 | GF(l) reduction pre-pass then MITM core | scaffold; reduction pre-pass is phase-2 |
 | **S6 ω-guided (AGHS)** | `a8_omega_solver.py` | 🟡 | subexponential distance-to-identity reduction (Löh–Niebuhr / AGHS) | scalable in principle but needs high identity-density (ρ≳0.98); a8 stub solves only r≤20/high-ρ |
 | **S7 Wagner-4 birthday** | `a10_wagner_density.py` | ✅🔬 | generalized-birthday 4-sum over CRT components; density-reach measurement | A10: reach r_max ≈ O(log N)/(1−ρ). At H7's ρ≈0.004, r_max≈20 vs thousands needed. **Proves the low-density escape (option a) is closed** |
@@ -65,8 +72,9 @@ low density, or target a different construction/r (option c).
 | V1 machinery tests | `verify_machinery.py` | unit-tests the r=5 congruence machinery + local lemmas (Prop 6.1 etc.) |
 | V2 PTE import tests | `test_pte_import.py` | re-verifies every imported record (reconstruction, factorization, smoothness, primality) |
 | V3 yield validation | `a2_validate_and_extend.py` | checks the harvest yield model against the complete B=547 corpus (model is conservative, 0.68×) |
-| V4 group decomposition | `a4_solver.py` (`study_mod2_scale`) | 2-part vs odd-part bits, max odd prime, #distinct — sizes any pool for the solver |
+| V4 group decomposition | `a4_solver.py` (`study_mod2_scale`) | full 2-primary size vs actual mod-2 projection and remaining residual bits; synthetic component model |
 | V5 general-r degree | `a11_general_r.py` | harvest-burden degree per AKS modulus r (option c): floor is 2 (double condition), intrinsic to all r |
+| V6 solver regression | `test_solver_correctness.py` | independent small binary/group enumeration; checks elimination, XOR residuals, carries, parity and returned solutions |
 
 ---
 

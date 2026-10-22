@@ -8,6 +8,54 @@ single reviewer can assess both. **This merge is an integration and
 review-preparation step only. It is not a correctness review and certifies
 nothing.** A clean Git merge is not scientific validation.
 
+## Current correctness audit (2026-10-22)
+
+The preparation record below remains unchanged in substance. Follow-up work is
+on `audit/joint-correctness`, based on merged main commit
+`1e65eec822380c7d3a17d78b4fd1824a265f929f`. This is the current status, not a
+claim that the entire R1-R8 queue has been resolved.
+
+- **R1, written reduction:** corrected the two modulus definitions in the
+  working-paper and background sources. Completed the local proof for both
+  `k = 1 mod 4` and `k = 3 mod 4`, with Frobenius exponent `j = 1` and `j = 3`,
+  respectively. Explicitly distinguished CRT-compatible targets from subset
+  reachability and restricted discrete logs to units. The full harvested-vector
+  implementation and quantitative feasibility estimates remain to be audited.
+- **R2/R3, solver algebra:** independently reproduced the elimination and carry
+  defects, then corrected back-substitution for both particular solutions and
+  kernel vectors. A6 now reuses A4's exact mod-2 projection and searches the
+  original residual group, including higher 2-powers with carries.
+- **Additional coupled defects:** A4's residual closer had the target sign
+  reversed and treated overlapping XOR moves as additive. Its historical
+  `mitm_close` entry point now uses bounded, exact Gray-code enumeration of a
+  sampled kernel subspace. This is a correctness baseline, not a scalable
+  algorithmic improvement. A6's direct MITM now distinguishes subset parity,
+  and the local solver handles a unique projection solution with no kernel.
+- **Regression evidence:** `code/test_solver_correctness.py` initially ran
+  13 tests with 11 failures, one error, and one pass against the baseline.
+  All 13 pass after the corrections. The tests compare full affine solution
+  sets for small binary systems and all small-group targets against independent
+  enumeration; returned A4/A6 solutions are checked against original group
+  equations and odd-cardinality parity.
+- **Construction regressions:** three additional tests check normalized moduli,
+  the need to exclude nonunits, and 126 local matching cases across 21 primes
+  below 5,000. Together the 16 tests pass; the solver oracles cover 5,054 binary
+  systems and 336 small-group target cases.
+
+Run the focused regression suite from the repository root:
+
+```text
+python -B -m unittest discover -s code -p "*correctness.py" -v
+```
+
+**Preservation and limits:** original findings, JSON outputs, datasets, paper
+bylines, and PDFs are retained. The PDF versions of the corrected LaTeX sources
+are historical and have not been regenerated. Old solver timings and frontier
+claims are not measurements of the corrected code. Large harvests, private
+corpus validation, the full density audit (R4), and the arithmetic-geometric
+proof review (R5-R8) remain pending. The older execution plans are historical
+instructions, not authority for this audit.
+
 ## 1. Captured inputs and result
 
 All SHAs were captured after `git fetch origin` on the preparation date and
@@ -20,7 +68,7 @@ inputs.
 | `origin/arith-geom-interpretation` tip (second parent) | `9a5bd56400e4be9b0aba09c871b799b2cdfdaee2` |
 | Common merge base | `cb7633f20f22f7d340d09437990eae83d3d787a5` |
 | Pure merge commit | `98be6455cd5953b59654553f920269f1f278e3f9` |
-| Review-readiness commit | *(this document; recorded in the handback)* |
+| Review-readiness commit | `7a20e5ce2281473a7906f0e5f4582568a6925f69` |
 
 Divergence at these tips: `main` had **1** unique commit (A12, adaptive
 cultivation); the geometric branch had **19** (AG2–AG5b scripts/outputs,

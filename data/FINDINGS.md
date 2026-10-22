@@ -1,5 +1,11 @@
 # Phase 0/1a First Results (2026-08-06)
 
+> **Correctness audit, 2026-10-22:** the dated research record below is preserved.
+> A4/A6 elimination, carry, residual-search and parity defects have since been
+> repaired and tested. Their historical timings and failure frontiers do not
+> validate the corrected solvers or prove an algorithmic impossibility.
+> See [current audit status](../doc/integration-review-status.md#current-correctness-audit-2026-10-22).
+
 Code: `code/verify_machinery.py`, `code/phase1a_calibration.py`,
 `code/chm_closure.py`. All runs deterministic (fixed seeds).
 
