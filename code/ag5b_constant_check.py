@@ -26,7 +26,8 @@ for c = 1 and present otherwise.
 
 Writes data/generated/ag5b_constant_check.json.
 """
-import json, os, sys
+import json, os, random, sys
+from math import lcm
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sympy import primerange
 from sympy.polys.specialpolys import cyclotomic_poly
@@ -38,6 +39,43 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,
 CONSTS = [1, 2, 3, -2, 5]
 CASES = [(5, 4, 8, 4000), (13, 4, 8, 3000), (7, 6, 6, 1500),
          (7, 3, 8, 2500), (11, 5, 5, 1000)]
+
+def t_congruence(c, n, p, r):
+    """(X+c)^n = X^n + c in F_p[X]/(X^r - 1)?"""
+    lhs = polpow([c % p, 1] + [0] * (r - 2), n, p, r)
+    rhs = [c % p] + [0] * (r - 1)
+    rhs[n % r] = (rhs[n % r] + 1) % p
+    return lhs == rhs
+
+def mechanism_freeness():
+    """W: under the X-1 mechanism congruences n = p (mod lcm(r, rho_r(p)))
+    plus Carmichael (p-1 | n-1), T(+1) holds automatically -- the identity
+    zeta+1 = (zeta^2-1)/(zeta-1) with rho controlling all conjugates --
+    while T(+2) generically fails at even d (half-depth modulus misses
+    rho'). So the {X-1, X+1} 'conjecture' is mechanism-equivalent to
+    Agrawal's, whereas c = 2 genuinely blocks the engine."""
+    rng = random.Random(7)
+    res = {1: [0, 0], 2: [0, 0]}
+    for (r, d, k, pmax) in [(5, 4, 8, 3000), (13, 4, 8, 2500)]:
+        primes = [p for p in primerange(7, pmax)
+                  if p != r and ord_mod(p, r) == d][:k]
+        for p in primes:
+            bf, ok = factor_resolved(2 * r)
+            for e in divisors(d // 2):
+                fe, o2 = factor_resolved(phi_val(e, p))
+                ok = ok and o2
+                for q, m in fe.items():
+                    bf[q] = bf.get(q, 0) + m
+            if not ok:
+                continue
+            rho = exact_order([(-1) % p, 1] + [0] * (r - 2), bf, p, r)
+            M = lcm(r, rho, p - 1)
+            for _ in range(3):
+                n = p + rng.randrange(1, 10**4) * M
+                for c in (1, 2):
+                    res[c][0] += t_congruence(c, n, p, r)
+                    res[c][1] += 1
+    return res
 
 def main():
     rows = []
@@ -104,8 +142,16 @@ def main():
         t_ok, t = (stats[c]["top_even"][0] + stats[c]["top_odd"][0],
                    stats[c]["top_even"][1] + stats[c]["top_odd"][1])
         assert t_ok >= t * 0.9, (c, t_ok, t)
+    free = mechanism_freeness()
+    print(f"\nW mechanism-freeness (n = p mod lcm(r, rho, p-1), even d):")
+    print(f"   T(+1) passes {free[1][0]}/{free[1][1]}   "
+          f"T(+2) passes {free[2][0]}/{free[2][1]}")
+    assert free[1][0] == free[1][1], "T(+1) must be free for the mechanism"
+    assert free[2][0] <= free[2][1] * 0.1, "T(+2) must generically fail"
+
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    json.dump({"rows": rows, "stats": stats}, open(OUT, "w"), indent=1)
+    json.dump({"rows": rows, "stats": stats, "mechanism_freeness": free},
+              open(OUT, "w"), indent=1)
     print(f"\nwrote {OUT}")
 
 if __name__ == "__main__":

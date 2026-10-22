@@ -690,6 +690,39 @@ $(r, p) = (13, 5)$, where $\Phi_4(5) = 26$ has no prime outside $2r$ and
 the top level is vacuous for every section.
 \end{remark}
 
+
+\begin{proposition}[the $X+1$ variant is mechanism-equivalent to
+Agrawal's conjecture]\label{prop:xplus1}
+Suppose $n \equiv p^{j} \pmod{\lcm(r, \rho_r(p))}$ and $p - 1 \mid n - 1$
+(the mechanism congruence together with the Carmichael condition, both
+imposed by every L--P-style construction). Then $T(1, n, r)$ holds modulo
+$p$ outright. Consequently every counterexample to Agrawal's conjecture
+produced by the mechanism also defeats the variant conjecture whose
+hypothesis is the pair $\{T(-1,n,r),\, T(1,n,r)\}$: that variant, though
+formally stronger-looking, is exactly as resistant as Agrawal's --- the
+second hypothesis is free armor --- whereas $c = 2$ (or any
+$c \notin \{0, \pm 1\}$) genuinely blocks the engine.
+\end{proposition}
+
+\begin{proof}
+At the $X = 1$ component, $(1+1)^n = 2^n \equiv 2 \pmod p$ since
+$\ord_p(2) \mid p - 1 \mid n - 1$. In the $\Phi_r$ components,
+$\zeta + 1 = (\zeta^2 - 1)/(\zeta - 1)$, a unit (its norm is
+$\Phi_r(-1) = 1$), and both $\zeta - 1$ and $\zeta^2 - 1$ are values of
+$X - 1$ at primitive $r$-th roots of unity, so their orders divide
+$\rho_r(p) = \lcm_a \ord(\zeta^a - 1)$. Hence
+$(\zeta^a - 1)^n = (\zeta^a - 1)^{p^j} = \zeta^{a p^j} - 1$ for
+$a = 1, 2$, and
+\[
+(\zeta + 1)^n \;=\; \frac{(\zeta^2 - 1)^n}{(\zeta - 1)^n}
+\;=\; \frac{\zeta^{2p^j} - 1}{\zeta^{p^j} - 1}
+\;=\; \zeta^{p^j} + 1 \;=\; \zeta^n + 1,
+\]
+using $n \equiv p^j \pmod r$ in the last step. Measured
+(\texttt{code/ag5b\_constant\_check.py}, check W): $48/48$ synthetic
+mechanism instances pass $T(1, n, r)$, while $0/48$ pass $T(2, n, r)$.
+\end{proof}
+
 \subsection{Numerical validation}\label{sec:popnumerics}
 
 \texttt{code/ag5\_popovych\_check.py} (deterministic; output in

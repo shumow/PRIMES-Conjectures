@@ -487,6 +487,14 @@ needed (and full support at odd d 13/13, where no section collapses);
 c ∈ {2,3,−2,5} show no collapse and full top-level presence except the
 single already-documented vacuous point (r,p) = (13,5).
 
+**Sharper (2026-10-22, prompted by the follow-up question):** the X+1
+variant is *mechanism-equivalent* to Agrawal's conjecture (Prop in the tex
+and note): since ζ+1 = (ζ²−1)/(ζ−1) and ρ_r(p) controls all conjugates of
+ζ−1, the mechanism congruence n ≡ p^j (mod lcm(r, ρ_r(p))) plus the
+Carmichael condition imply T(+1, n, r) outright — every mechanism-built
+Agrawal counterexample passes the X+1 test for free. Measured (ag5b check
+W): 48/48 synthetic mechanism instances pass T(+1); 0/48 pass T(+2).
+
 ## AG track wrap-up: COMPLETE (2026-10-21)
 
 *Final deliverables: `doc/arith-geom.tex` v1.0 (15 pp, compiled; AG1
