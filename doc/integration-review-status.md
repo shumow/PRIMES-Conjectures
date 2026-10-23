@@ -149,6 +149,21 @@ the rest of the survey/cell-census literature and numerical checks, and
 properly specified proofs for any stronger hypotheses or extensions.
 Older execution plans are historical instructions, not authority for this audit.
 
+### Follow-up: actual-prime pilot
+
+The separate [real-pool pilot](real-pool-pilot.md), branched from merged main
+`e1bedc9b210590a58d7a78cc1ece261860c8c597`, implements actual harvesting,
+full prime-power assembly, measured vector structure and bounded validation.
+The complete medium family supplies 483 certified primes; its binary
+projection has rank 393 and nullity 90. It passes the implemented necessary
+checks, but the full real target remains unresolved. Known feasible planted
+controls remain distinct from possible counterexamples.
+
+The pilot extends the generic A4/A6 APIs with an explicit minimum-cardinality
+option while preserving their old defaults, and adds a standalone verifier and
+a separately generated compressed dataset. It does not retroactively validate
+the old production projections or close any research direction.
+
 ### PR #2 review follow-up (2026-10-22)
 
 Feedback: [review comment 6353782287](https://github.com/shumow/PRIMES-Conjectures/pull/2#issuecomment-6353782287).
