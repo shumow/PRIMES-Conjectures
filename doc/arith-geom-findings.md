@@ -1,5 +1,19 @@
 # Arithmetic-geometric interpretations of Agrawal's conjecture: initial findings
 
+> **Audit update, 2026-10-22:** this chronological record is retained, not
+> certified by its historical "complete" labels. The current LaTeX sources
+> correct the fixed-ring primality converse, prime-power order criterion,
+> and global-versus-reduction claims. Smoothness necessities are explicit
+> hypotheses; the elliptic result is an upper bound, and the function-field
+> appendix does not prove sharpness or smooth-pool existence. Original JSON
+> and PDFs are unchanged. See [current audit status](integration-review-status.md#current-correctness-audit-2026-10-22).
+>
+> **Reference erratum (PR #2 review):** the dated entry below naming
+> "Borger–Gurney, arXiv:1710.08674" uses the original, incorrect attribution.
+> That identifier is [Lance Gurney's thesis](https://arxiv.org/abs/1710.08674),
+> *Elliptic curves with complex multiplication and Lambda-structures*.
+> The original log wording is retained as history, not as the current citation.
+
 *Recorded 2026-09-01, branch `arith-geom-interpretation`. Status: interpretive /
 theoretical — no new computation yet. Companion plan: `doc/arith-geom-plan.md`.
 This document reframes the conjecture, the Lenstra–Pomerance counterexample

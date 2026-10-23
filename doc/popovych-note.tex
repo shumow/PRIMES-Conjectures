@@ -27,33 +27,35 @@ Popovych's Conjecture\\ \large (standalone note --- v0.1)}
 \begin{document}
 \maketitle
 
+\noindent\textbf{Audit revision (22 October 2026).}
+The support lower bounds below are conditional, not consequences of the
+collapse upper bounds alone. Special finite-field collapses are possible.
+The same-name PDF beside this source is historical. The rebuilt audit version
+is in \texttt{doc/audit-pdfs/}; see \texttt{doc/integration-review-status.md}.
+
 \begin{abstract}
 Agrawal's conjecture asserts that for a prime $r \nmid n$ the congruence
 $(X-1)^n \equiv X^n - 1 \pmod{n, X^r - 1}$ forces $n$ prime or
 $n^2 \equiv 1 \pmod r$; Popovych (2009) conjectured that adding the second
-congruence $(X+2)^n \equiv X^n + 2$ repairs the statement, and beyond
-exhaustive search ($n < 10^{17}$, Primaboinca) no evidence has been
-published in either direction. We quantify what the second section costs
-the only known counterexample engine, the Lenstra--Pomerance
-Frobenius-matching mechanism. The mechanism's cost for the single section
-$X - 1$ is governed by an exact \emph{inversion collapse} available
-because the zero $\{1\}$ of $X - 1$ is Galois-stable; we prove the zero
-$-2$ of $X + 2$ has trivial stabilizer --- for every $\gamma \ne 1$ the
-ratio $(\zeta_r^\gamma + 2)/(\zeta_r + 2)$ is not even a unit of
-$\Z[\zeta_r]$ --- so no collapse exists for the second section at any
-depth. Consequently the pair mechanism must make a product of cyclotomic
-torus orders of total dimension $\min\{d : d \mid r-1,\ d \ge 3\} \ge 3$
-simultaneously smooth at every pool prime, for \emph{every} modulus $r$,
-against the single section's optimum of $2$; at Popovych's own $r = 5$
-the burden is $4$ ($p-1$, $p+1$ and $p^2+1$ simultaneously smooth), a
-Dickman tax of $10^{-7}$--$10^{-11}$ at representative parameters that
-empties the measured supply of the corresponding Agrawal-directed
-harvest. The burden lower bounds are unconditional given the collapse
-identities; that they are \emph{attained} (so that no thinner collapsed
-pool rescues the mechanism) is an Artin-type genericity hypothesis,
-stated explicitly and supported by exact-order computations with zero
-exceptions. To our knowledge this is the first quantified evidence
-distinguishing Popovych's conjecture from Agrawal's beyond search ranges.
+congruence $(X+2)^n\equiv X^n+2$ repairs the statement.
+We compare support models for Frobenius-matching constructions. The first
+section has the exact inversion identity
+$(X-1)^{p^{d/2}-1}=-X^{-1}$ for even $d=\ord_r(p)$.
+For the second section, a characteristic-zero ideal argument proves that
+$(\zeta_r^\gamma+2)/(\zeta_r+2)$ is not a unit for $\gamma\ne1$.
+This excludes a global root-of-unity identity, not exceptional finite-field
+collapses or missing order factors.
+
+Under explicit section-specific support-sharpness hypotheses at a fixed
+smoothness threshold, the pair's containing-torus dimension is
+$\min\{d:d\mid r-1,\ d\ge3\}$, versus the single-section model's minimum
+$2$. At $r=5$ the pair model has dimension $4$, requiring smooth
+$p-1$, $p+1$ and $p^2+1$. The lower smoothness requirements are
+\emph{conditional}; upper order bounds alone do not prove them.
+Numerical order checks and parameter-specific Dickman estimates are finite
+evidence and heuristics, not a proof that every feasible harvest is empty.
+We make no priority claim, proof of either conjecture, or general
+algorithmic impossibility claim.
 \end{abstract}
 
 \section{Introduction}
@@ -75,23 +77,25 @@ $T(2, n, r)$ hold, then $n$ is prime or $n^2 \equiv 1 \pmod r$.
 Its evidence base is thin in both directions: a plausibility argument
 that the pair $\{X - 1, X + 2\}$ generates a large unit subgroup
 \cite{Popovych09,Popovych12}, and the Primaboinca exhaustive search
-($10^{10} < n < 10^{17}$, nothing found). This note supplies the first
-quantitative statement: \emph{every known counterexample mechanism pays
-strictly more against the pair than against the single section ---
-at least one extra algebraic-torus dimension of smoothness burden
-globally, and two extra at the canonical modulus $r = 5$.}
+($10^{10}<n<10^{17}$, nothing found). This note provides a conditional
+comparison of containing support products: global model minima $3$ and $2$,
+and dimensions $4$ and $2$ at $r=5$. At some other fixed moduli the two
+models tie; a larger global minimum is not a strict increase in every cell.
 
-The engine behind all published counterexample approaches
-\cite{LPremarks,Popovych09,HD21} is \emph{Frobenius matching}: modulo
-each prime $p \mid n$, the congruence $T(a, n, r)$ holds if $n \equiv
+We consider the \emph{Frobenius-matching} family containing the original
+L--P sufficient construction \cite{LPremarks}. In the $\Phi_r$ factor
+modulo each prime $p\mid n$, matching holds if $n\equiv
 p^{j} \pmod{\lcm(r, \ord(X + a))}$, where the order is taken in
 $(\F_p[X]/\Phi_r(X))^\times$, because $(X + a)^{p^j} \equiv X^{p^j} + a$
 exactly (Frobenius and Fermat). A construction assembles a squarefree
 $n = p_1 \cdots p_k$ meeting these congruences at every $p_i$
-simultaneously, which requires the controlling orders to be smooth
-enough to fit a common modulus. The cost of the construction is
-therefore governed by the \emph{support} of those orders, and the
-support is where the two sections differ.
+simultaneously. Requiring those orders to be $B$-smooth is the particular
+assembly design analyzed here, not a necessary condition for every
+conceivable construction. Within that design, the
+support is where the two sections differ. On the $X=1$ factor one must also
+impose $(1+a)^n\equiv1+a\pmod p$; matching in the $\Phi_r$ factor alone does
+not imply this. It is automatic for a squarefree Carmichael number, including
+when the base is zero modulo a factor.
 
 \section{The collapse for $X - 1$ and its absence for $X + 2$}
 
@@ -122,16 +126,17 @@ For $r = 5$, $d = 4$ this is V\'a\v{n}a's $\rho_5(p) \mid 10(p^2 - 1)$
 \cite{Vana09}, the fact that makes the L--P construction's cost the
 \emph{double} condition ($p - 1$ and $p + 1$ smooth: dimension
 $1 + 1 = 2$) rather than the full $p^4 - 1$. The collapse exists because
-the zero locus $\{1\}$ of $X - 1$ is stable under the Galois action,
-with root-of-unity cofactor. The second section has no such structure:
+the ratio under inversion is torsion,
+with root-of-unity cofactor. For the second section the global conjugate
+ratio has a different property:
 
 \begin{lemma}[trivial stabilizer]\label{lem:nonunit}
 For every $\gamma \in (\Z/r)^\times$ with $\gamma \ne 1$, the element
 $(\zeta^\gamma + 2)/(\zeta + 2)$ is not a unit of $\Z[\zeta_r]$ --- in
-particular not a root of unity. Consequently no identity of the form
-$(X+2)^{p^e - 1} \in \mu_{2r}$ holds for any $e$ with
-$p^e \not\equiv 1 \pmod r$: the collapse of Lemma~\ref{lem:collapse}
-has no analogue for $X + 2$ at any depth.
+particular not a root of unity. There is therefore no characteristic-zero
+torsion-cofactor identity for these conjugate ratios. This does not forbid
+accidental finite-field relations of the form
+$(X+2)^{p^e-1}\in\mu_{2r}$.
 \end{lemma}
 
 \begin{proof}
@@ -147,6 +152,13 @@ $\zeta^\gamma \equiv -2 \equiv \zeta$, so $\zeta^{\gamma - 1} \equiv 1
 $\gamma \ne 1$ the ratio has a pole at $\mathfrak q$ and is not a unit.
 \end{proof}
 
+\begin{remark}[a special reduction]
+For $r=13$ and $p=5$, one has $5^2\not\equiv1\pmod{13}$ but
+$(X+2)^{24}\in\mu_{26}$ in $\F_5[X]/\Phi_{13}(X)$.
+This permitted prime illustrates why the global lemma is not a
+no-exception statement about reductions.
+\end{remark}
+
 \begin{remark}[two structural asides]\label{rem:asides}
 (i) The $X = 1$ component of $T(2, n, r)$ is the base-$3$ Fermat
 condition $3^n \equiv 3 \pmod n$ --- automatic for Carmichael-type $n$,
@@ -160,25 +172,31 @@ excluded.
 \section{The burden jump}
 
 \begin{definition}[sharpness hypothesis]\label{def:sharp}
-Say \emph{generic sharpness} holds at $(r, p)$ for a section $f$ if
-every prime $\ell > 2rd$ dividing $\Phi_e(p)$ for a level $e$ in the
-support permitted by the collapse structure actually divides
-$\ord(f)$. (Failure at $\ell$ requires the image of $f$ to be an
-$\ell$-th power in every component, heuristic probability
-$\le 1/\ell$; in our exact-order computations, $0$ failures occurred in
-$196$ sampled large primes across $67 + 56$ sample primes $p$ and
-moduli $r \le 41$.)
+Fix $B\ge2rd$. For the chosen section $f$ and containing product $P_f(p)$,
+assume that every prime $\ell>B$ dividing $P_f(p)$ also divides $\ord(f)$.
+For $X-1$ take $P_f=p^{d'}-1$, where $d'=d/2$ for even $d$ and $d'=d$
+otherwise; for $X+2$ take $P_f=p^d-1$. These are separate assumptions
+about prime support, not full prime-power divisibility.
+
+In a cyclic group of order $N$ with $a=v_\ell(N)$, missing $\ell$ from
+an element's order is equivalent to being an $\ell^a$-th power, not merely
+an $\ell$-th power when $a>1$. A uniform element misses it with
+probability $\ell^{-a}$; independence and uniformity for the actual
+conjugate values have not been established.
 \end{definition}
 
 \begin{theorem}[Popovych burden]\label{thm:burden}
 Let $n$ be produced by the Frobenius-matching mechanism for the pair:
 for every $p \mid n$ there is $j_p$ with $n \equiv p^{j_p} \pmod{
 \lcm(r, \rho_r(p), \rho'_r(p))}$, and $\ord_r(n) > 2$ (validity).
-Assume generic sharpness for both sections. Then for every $p \mid n$,
+Assume Definition~\ref{def:sharp} for both sections at a common
+$B\ge\max_{p\mid n}2rd_p$. In the design requiring all matching orders
+to be $B$-smooth, for every $p\mid n$,
 writing $d_p = \ord_r(p)$ (and noting validity forces $d_p \ge 3$),
 the quantity $\prod_{e \mid d_p} \Phi_e(p)$ --- a product of cyclotomic
 torus orders of total dimension $\sum_{e \mid d_p}\varphi(e) = d_p$ ---
-must be smooth enough to divide the construction's common modulus. In
+must be $B$-smooth. Prime support alone does not imply that this whole product
+divides the common modulus with its full multiplicities. In
 particular the minimal per-prime burden over admissible cells is
 \[
 \mathrm{burden}_{\mathrm{Pop}}(r) \;=\; \min\{\, d : d \mid r - 1,\
@@ -192,21 +210,19 @@ single section's $2$.
 \end{theorem}
 
 \begin{proof}
-For odd $d_p$ both sections are supported on all levels $e \mid d_p$
-(no involution in $\langle p \rangle$, and Lemma~\ref{lem:nonunit}
-forbids any other collapse); total dimension $d_p$. For even $d_p$ the
-first section collapses to levels $e \mid d_p/2$
-(Lemma~\ref{lem:collapse}) but by Lemma~\ref{lem:nonunit} and
-sharpness, $\rho'_r(p)$ retains the top level $e = d_p$, so
-$\lcm(\rho_r, \rho'_r)$ spans all $e \mid d_p$: the collapse is
-destroyed and the total is again $d_p$. Minimizing $d_p$ over
+For $X+2$, its order divides $p^{d_p}-1$, so smoothness of that product
+is sufficient. Under Definition~\ref{def:sharp} every prime above $B$
+in the product must also divide the section order, proving necessity.
+This uses the support hypothesis, not Lemma~\ref{lem:nonunit} alone.
+The containing product has dimension $d_p$ for both parities.
+Minimizing $d_p$ over
 $d \mid r - 1$, $d \ge 3$ gives the formula; the least such divisor is
 $3$ iff $3 \mid r - 1$, and for $r = 5$ (where $r - 1 = 4$) it is $4$,
 with levels $\{1, 2, 4\}$ and $\Phi_4(p) = p^2 + 1$. The Agrawal
 comparison is Lemma~\ref{lem:collapse} plus the same minimization.
 \end{proof}
 
-\begin{corollary}[cost at representative parameters]\label{cor:cost}
+\begin{remark}[heuristic cost at representative parameters]\label{cor:cost}
 For pool primes of $b$ bits and smoothness bound $B$, the extra
 quadratic level of Theorem~\ref{thm:burden} at $r = 5$ costs a Dickman
 factor $\rho(2b / \log_2 B)$ beyond the double condition. At the
@@ -214,12 +230,11 @@ parameters of the Agrawal-directed harvest study in this repository
 ($b = 51$; $B = 1259$ for the solver base, $B' = 12590$ for the
 enumerated base), this is $\rho(9.9) \approx 3.9\times10^{-11}$,
 respectively $\rho(7.5) \approx 1.8\times10^{-7}$ --- reducing that
-study's measured pool of $2.5\times10^5$ elements to between $10^{-5}$
-and $0.05$: empty at any feasible scale. Unlike $p \mp 1$, where
-partition-first harvesting lets one side be enumerated rather than
-tested, $\Phi_4(p)$ is pinned once $p$ is, so no enumeration trick
-removes the tax.
-\end{corollary}
+study's projected pool of $2.5\times10^5$ elements to an expected size
+between $10^{-5}$ and $0.05$. This assumes suitable polynomial-value
+smoothness and conditional independence. It is neither a proof of emptiness
+at every feasible scale nor an exclusion of other structured harvests.
+\end{remark}
 
 \begin{center}
 \begin{tabular}{@{}rccc@{}}
@@ -247,8 +262,10 @@ Agrawal global optimum ($2$, at any $r \equiv 1 \bmod 4$) is unavailable
 to the pair at every modulus.
 
 \begin{remark}[the constant $2$ is immaterial]\label{rem:constant}
-For any integer $c \notin \{0, \pm 1\}$, Lemma~\ref{lem:nonunit} and
-Theorem~\ref{thm:burden} hold verbatim for the pair $\{X - 1, X + c\}$:
+For any integer $c \notin \{0, \pm 1\}$, the characteristic-zero argument of
+Lemma~\ref{lem:nonunit} applies with the exclusions below. The conditional
+calculation of Theorem~\ref{thm:burden} additionally requires its own
+support-sharpness hypothesis for the pair $\{X-1,X+c\}$:
 the proof needs only that at a prime $\mathfrak q \mid (\zeta + c)$ the
 image of $-c$ has multiplicative order $r$, which holds at the primitive
 prime divisors of $N(\zeta + c) = \Phi_r(-c) = (c^r + 1)/(c + 1)$. The
@@ -283,14 +300,15 @@ single degenerate point $(r, p) = (13, 5)$ of Section~4.
 \begin{proposition}[the $X+1$ variant is mechanism-equivalent to
 Agrawal's conjecture]\label{prop:xplus1}
 Suppose $n \equiv p^{j} \pmod{\lcm(r, \rho_r(p))}$ and $p - 1 \mid n - 1$
-(the mechanism congruence together with the Carmichael condition, both
-imposed by every L--P-style construction). Then $T(1, n, r)$ holds modulo
+(the matching congruence plus the Carmichael condition, as in the original
+L--P sufficient construction). Then $T(1, n, r)$ holds modulo
 $p$ outright. Consequently every counterexample to Agrawal's conjecture
 produced by the mechanism also defeats the variant conjecture whose
 hypothesis is the pair $\{T(-1,n,r),\, T(1,n,r)\}$: that variant, though
 formally stronger-looking, is exactly as resistant as Agrawal's --- the
-second hypothesis is free armor --- whereas $c = 2$ (or any
-$c \notin \{0, \pm 1\}$) genuinely blocks the engine.
+second hypothesis adds no constraint under these assumptions. The section
+$X+2$ generally imposes separate order data, but this is not an exclusion
+of all matching constructions.
 \end{proposition}
 
 \begin{proof}
@@ -314,10 +332,13 @@ mechanism instances pass $T(1, n, r)$, while $0/48$ pass $T(2, n, r)$.
 
 \section{Numerical verification}
 
-All claims were verified by a deterministic script
+Historical finite checks were made by a deterministic script
 (\texttt{code/ag5\_popovych\_check.py} of the repository, with committed
-JSON output), on $56$ sample primes spanning $(r, d) \in \{(5,4), (13,4),
-(41,4), (7,6), (7,3), (11,5), (23,11)\}$: Frobenius matching for $X + 2$
+JSON output), on $56$ sample primes spanning
+\[
+(r,d)\in\{(5,4),(13,4),(41,4),(7,6),(7,3),(11,5),(23,11)\}.
+\]
+Frobenius matching for $X+2$
 ($56/56$); the first section's collapse bound fails to absorb $X + 2$ at
 even $d$ ($35/36$); the top level $e = d$ is present in $\rho'_r(p)$
 ($55/56$); large primes of all levels $e \mid d$ divide $\rho'_r(p)$
@@ -326,25 +347,25 @@ $\gcd(r, 2^r + 1) = 1$ at all tested $r$. The single exception in the
 second and third checks is $r = 13$, $p = 5$, where $\Phi_4(5) = 26 =
 2 \cdot 13$ contains no prime outside $2r$ at all --- a vacuous top
 level at one tiny prime, consistent with (indeed predicted by) the
-generic model, not a collapse event.
+generic model. It is nonetheless an accidental finite-field collapse and
+does not contradict the characteristic-zero statement. These samples do
+not establish the support hypotheses or asymptotic cost estimates.
 
 \section{Scope}
 
 Three boundaries. (i) \emph{Mechanism scope}: the results quantify
-Frobenius-matching constructions, the family containing every published
-counterexample approach \cite{LPremarks,Popovych09,HD21}; ``accidental''
+the Frobenius-matching family containing the original sufficient
+construction; ``accidental''
 solutions of the component equations outside it are not excluded, and no
 way to construct them is known. (ii) \emph{Conditionality}: the burden
 \emph{upper} structure (the collapse identities and support bounds) is
 unconditional; the \emph{lower} bounds use generic sharpness
 (Definition~\ref{def:sharp}), an Artin-type hypothesis --- a construction
-could in principle fish in the thin set of primes whose section orders
-collapse further, of heuristic density $\sim 1/\ell$ per avoided large
-prime, far thinner than the pools in question. (iii) \emph{Direction}:
-this is evidence that the only known counterexample engine is strictly
-more blocked against Conjecture~\ref{conj:pop} than against Agrawal's
-conjecture --- a reason the conjecture has resisted the L--P heuristic
---- not evidence of its truth in any stronger sense.
+could target primes whose section orders collapse further; no asymptotic
+density or economic comparison with smooth-prime pools is proved here.
+(iii) \emph{Direction}: the conditional support-model comparison is not a
+universal algorithmic obstruction, an exclusion of every matching
+construction, or a proof of either conjecture.
 
 \begin{thebibliography}{9}\itemsep1pt\small
 

@@ -1,35 +1,15 @@
 #!/usr/bin/env python3
-"""A8 omega-guided subset-product solver (Loeh-Niebuhr / AGHS method).
+"""A8: simplified top-down omega walk, not the full AGHS algorithm.
 
-A4-A6 wrongly treated the odd part as a wall: generic solvers (MITM, annealing)
-cap ~15 components. But AGHS (arXiv:1203.6664) built Carmichael numbers with
-10^10 prime factors -- subset-product = 1 in (Z/Lambda)* including the odd part
--- via a SUBEXPONENTIAL omega-guided reduction, NOT exact linear algebra:
-  omega(a) = highest CRT component index where a != identity.
-Build the product by zeroing components top-down, exploiting that pool primes
-p with p-1 | Lambda are = 1 (identity) on MANY components (the ones dividing
-p-1), so a move touching component i can be chosen trivial on all j > i.
-
-This tests the method and, crucially, the STRUCTURE it needs: pool elements
-must be identity on many components (density rho of trivial components). Our
-current harvest (m = product of j primes) gives LOW rho (dense vectors); the
-AGHS 'p-1 | Lambda' divisor paradigm gives HIGH rho. We measure solver success
-vs dimension r for high vs low rho -> validates the path and pinpoints the
-harvest redesign.
-
-RESULT (2026-08-08): this SIMPLIFIED omega-reducer (strict top-down, one
-potential) only solves the easy regime (r<=20, high rho). The real AGHS
-algorithm uses TWO potentials (omega and omega-bar), a birthday-combination
-step, and exploits the specific non-uniform distribution of p-1 | Lambda
-primes -- a substantial multi-turn implementation not reproduced here. Value:
-(a) the framework runs; (b) it makes concrete that the pool needs the AGHS
-'p-1 | Lambda' structure (primes = 1 on many components), which our current
-product-of-j-primes harvest does NOT give. This OVERTURNS the A6 'dimension
-wall': AGHS solve exactly this at 10^10-factor scale, so the solver is not a
-fundamental obstruction -- it needs the right algorithm + harvest structure.
+The synthetic model uses forced-zero mixture weight rho. Literal zero
+probability is rho+(1-rho)/order for each component, as in A10, not A12.
+The walk solves group equations but does not enforce odd subset cardinality.
+Historical finite-resource observations remain in data/FINDINGS.md; they do
+not settle the applicability of AGHS to a harvested pool.
 """
 import math, random, sys, time
 from phase1a_calibration import primes_upto
+from a10_wagner_density import identity_probability
 
 def subset_sum_mod(values, target, modulus, rng, cap=18):
     """Find a subset of `values` (list of (idx, val)) summing to target mod
@@ -67,7 +47,8 @@ def omega_solve(pool, orders, target, N, rng, time_budget=4):
     sum); reduce omega = highest mismatched component by adding/removing single
     pool elements, greedily fixing from the top. An element added to fix the
     top mismatch must be = target there and identity on higher (already-fixed)
-    components -- these exist w.p. rho^(#higher). Returns chosen set or None."""
+    components. Returns chosen set or None; cardinality parity is not enforced.
+    """
     D = len(orders)
     # index elements by (highest non-identity component) for fast candidate lookup
     from collections import defaultdict
@@ -111,8 +92,7 @@ def omega_solve(pool, orders, target, N, rng, time_budget=4):
     return None
 
 def make_structured(r, rho, N, planted_k, rng, primes_cap=97):
-    """Synthetic instance with tunable identity-density rho: each element is
-    identity (0) on each component independently w.p. rho, else uniform random.
+    """Synthetic instance with forced-zero mixture weight rho, else uniform.
     Components are cyclic of small odd prime order. Planted solution guaranteed
     by construction: build target as the sum of planted elements."""
     ps = [p for p in primes_upto(primes_cap) if p > 2]
@@ -141,9 +121,10 @@ def verify(chosen, pool, orders, target):
 
 def main():
     rng = random.Random(int(sys.argv[1]) if len(sys.argv) > 1 else 9)
-    print("A8 omega-guided solver: success vs dimension r, at identity-density")
-    print("rho (high rho = AGHS 'p-1|Lambda' structure; low rho = our dense harvest)")
-    print(f"{'rho':>6}{'r (comps)':>10}{'N':>8}{'solved':>8}{'|S|':>6}{'sec':>7}")
+    print("A8 simplified omega walk: forced-zero rho, not literal identity density.")
+    print("Literal P(0) depends on each component order; odd cardinality is not enforced.")
+    print(f"{'rho':>6}{'mean P(0)':>11}{'r (comps)':>10}{'N':>8}"
+          f"{'solved':>8}{'|S|':>6}{'sec':>7}")
     for rho in [0.9, 0.75, 0.5, 0.2]:
         for r in [20, 50, 100, 300, 1000]:
             N = max(2000, 40 * r)
@@ -154,7 +135,8 @@ def main():
             sol = omega_solve(pool, orders, target, N, rng)
             dt = time.time() - t0
             ok = sol is not None and verify(sol, pool, orders, target)
-            print(f"{rho:>6}{r:>10}{N:>8}{str(ok):>8}"
+            mean_zero = sum(identity_probability(rho, o) for o in orders) / r
+            print(f"{rho:>6}{mean_zero:>11.3f}{r:>10}{N:>8}{str(ok):>8}"
                   f"{(len(sol) if sol else 0):>6}{dt:>7.1f}")
 
 if __name__ == "__main__":

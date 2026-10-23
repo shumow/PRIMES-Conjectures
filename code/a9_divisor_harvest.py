@@ -1,22 +1,17 @@
 #!/usr/bin/env python3
-"""N1: prototype the divisor-paradigm harvester (H8) and measure yield +
-identity-density.
+"""N1: finite squarefree-divisor harvest and side-support counts.
 
-The AGHS omega-solver (S6) needs pool primes that are = 1 (identity) on MANY
-components of the group (Z/Lambda-)* x (Z/Lambda+)*. That holds when p-1 |
-Lambda- and p+1 | Lambda+ for FIXED highly-composite moduli (the divisor
-paradigm). This script fixes disjoint factor bases T- (odd primes for Lambda-)
-and T+ (for Lambda+), enumerates squarefree divisors m of prod(T-), and keeps
+This script fixes disjoint factor bases T- and T+, enumerates squarefree
+divisors m of prod(T-), and keeps
 pool primes p = 2m+1 with:
     m = 1 (mod 40)                    [r=5 dictionary]
     2m+1 prime
     (m+1)/2 squarefree over T+        [Lucas side: p+1 | Lambda+]
-For each survivor it records the identity-density = fraction of the
-(|T-|+|T+|) components on which p = 1 (i.e. omega(p) support), since that is the
-quantity the omega-reduction exploits.
-
-Question answered: is the divisor-paradigm pool harvestable at all under the
-DOUBLE (Carmichael + Lucas-Carmichael) condition, and what density does it give?
+The reported support fraction counts prime factors on BOTH sides. Minus-side
+support gives p=1; plus-side support gives p=-1, not identity in the full unit
+group. The latter is identity only after odd-order projection. This statistic
+is not literal identity density across the cyclic prime-power components.
+Finite trials do not prove general unharvestability.
 """
 import math, sys
 from itertools import combinations
@@ -61,15 +56,15 @@ def harvest(Tminus, Tplus, maxbits):
             continue
         if not is_prime(2 * m + 1):
             continue
-        omega_support = len(subset) + len(fp)   # #components where p = 1
+        omega_support = len(subset) + len(fp)
         pool.append((m, len(subset), len(fp), omega_support))
     return pool, scanned
 
 def main():
     ps = primes_upto(2000)
-    print("N1: divisor-paradigm (H8) yield vs identity-density tradeoff")
+    print("N1: finite divisor harvest and side-support fraction (not identity density)")
     print(f"{'T- bnd':>7}{'T+ rng':>12}{'|T-|':>5}{'|T+|':>5}{'maxbit':>7}"
-          f"{'scan':>9}{'pool':>6}{'meanDens':>9}{'maxDens':>8}{'maxSup':>7}")
+          f"{'scan':>9}{'pool':>6}{'meanSupF':>9}{'maxSupF':>8}{'maxSup':>7}")
     configs = [
         (90, (97, 220), 48),
         (90, (97, 220), 60),

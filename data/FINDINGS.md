@@ -1,5 +1,15 @@
 # Phase 0/1a First Results (2026-08-06)
 
+> **Correctness audit, 2026-10-22:** the dated research record below is preserved.
+> A4/A6 elimination, carry, residual-search and parity defects have since been
+> repaired and tested. Their historical timings and failure frontiers do not
+> validate the corrected solvers or prove an algorithmic impossibility.
+> A8/A10 use forced-zero mixture weights, A12 uses literal zero probability,
+> and N1 counts side support rather than full-group identities. A12's
+> minimum-deficit tracker has also been corrected; old floor claims are not
+> measurements of that corrected statistic.
+> See [current audit status](../doc/integration-review-status.md#current-correctness-audit-2026-10-22).
+
 Code: `code/verify_machinery.py`, `code/phase1a_calibration.py`,
 `code/chm_closure.py`. All runs deterministic (fixed seeds).
 

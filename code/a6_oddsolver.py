@@ -7,65 +7,31 @@ This tests whether that regime is actually solvable: subset-sum
 with the odd part supported on small primes, pool N >> dim, |S| odd.
 
 Solver:
-  * 2-part: exact GF(2) linear algebra (scales to any dimension) -> a huge
-    affine family of 0/1 vectors all satisfying the mod-2^k constraints via
-    bit-sliced Hensel rows.
-  * odd part: guided local search / annealing WITHIN the GF(2) solution family
-    (moves = XOR sparse GF(2)-kernel vectors, preserving the 2-part) to zero
-    the odd residual.
+  * GF(2) projection: exact linear algebra plus odd-cardinality parity.
+  * Residual: guided local search within that affine family, checking BOTH odd
+    components and higher 2-powers with carries in the original group.
 
-G3 harness: faithful co-designed synthetic instances (small primes only) with
-a PLANTED solution, at increasing odd dimension; report the success frontier.
+G3 harness: synthetic groups with co-designed component orders and a planted
+solution. Uniform residues do not reproduce harvested prime-vector structure.
 
-RESULT (2026-08-08): G3 NOT passed. The 2-part solves by GF(2) at full scale.
-The odd part is the obstruction, and it is DIMENSION not prime size:
-  * annealing within the GF(2) family stalls at >=19 odd components (dense
-    kernel moves are too disruptive);
-  * exact meet-in-the-middle (mitm_frontier) solves small instances annealing
-    cannot but is exponential in N, capping ~N=40 / ~15 odd components / ~40
-    odd bits.
-Both are 2-3 orders of magnitude below the co-designed spec (~thousands of odd
-components, ~24k odd bits). Co-design capped the max odd prime (6269->97) but
-not the odd dimension. The proven tool for subset-product = 1 in (Z/L)* at this
-scale is the Loeh-Niebuhr / AGP CONSTRUCTIVE Carmichael algorithm (they build
-Carmichael numbers with millions of prime factors); adapting it to our double
-(Carmichael + Lucas-Carmichael) condition is the real next build.
+The 2026-08-08 frontier observations in data/FINDINGS.md predate the 2026-10-22
+elimination, carry and parity corrections. They are preserved historical
+observations, not validated limits of the corrected implementation.
 """
 import math, random, sys, time
 from phase1a_calibration import primes_upto
-
-# ---- GF(2) solve returning particular solution + sparse-ish kernel ----
+from a4_solver import gf2_solve as _gf2_solve, solve_mod2
 
 def gf2_solve(rows, rhs, ncols):
-    piv = {}; reduced = []
-    for mask, b in zip(rows, rhs):
-        m, bb = mask, b
-        for pc in list(piv):
-            if (m >> pc) & 1:
-                pm, pb = piv[pc]; m ^= pm; bb ^= pb
-        if m == 0:
-            if bb:
-                return None
-            continue
-        pc = (m & -m).bit_length() - 1
-        piv[pc] = (m, bb); reduced.append(pc)
-    x0 = 0
-    for pc in reduced:
-        m, bb = piv[pc]
-        if bb:
-            x0 |= (1 << pc)
-    pivcols = set(piv)
-    kernel = []
-    for fc in range(ncols):
-        if fc in pivcols:
-            continue
-        kv = 1 << fc
-        for pc in reduced:
-            m, _ = piv[pc]
-            if (m >> fc) & 1:
-                kv |= (1 << pc)
-        kernel.append(kv)
-    return x0, kernel, sorted(pivcols)
+    """Compatibility entry point returning x0, kernel and sorted pivot columns."""
+    result = _gf2_solve(rows, rhs, ncols)
+    if result is None:
+        return None
+    x0, kernel = result
+    # A4 uses lowest-bit pivots; each kernel vector's highest bit is its free column.
+    free_columns = {vector.bit_length() - 1 for vector in kernel}
+    pivots = [column for column in range(ncols) if column not in free_columns]
+    return x0, kernel, pivots
 
 # ---- faithful co-designed instance ----
 
@@ -108,53 +74,35 @@ def col_bit(pool, i, j):
     return pool[i][j] & 1
 
 def solve(comps, orders, pool, t, N, rng, time_budget):
-    D = len(orders)
-    two_idx = [j for j in range(D) if comps[j][0] == 2]
-    odd_idx = [j for j in range(D) if comps[j][0] != 2]
-    # ---- 2-part: GF(2) on lowest bit of each 2-component + higher bits via
-    # bit-sliced rows; plus parity row ----
-    rows, rhs = [], []
-    for j in two_idx:
-        a = orders[j].bit_length() - 1        # 2^a
-        for bit in range(a):                  # Hensel bit-slices
-            mask = 0
-            for i in range(N):
-                if (pool[i][j] >> bit) & 1:
-                    mask |= (1 << i)
-            rows.append(mask); rhs.append((t[j] >> bit) & 1)
-    rows.append((1 << N) - 1); rhs.append(1)   # parity |S| odd
-    sol = gf2_solve(rows, rhs, N)
+    residual_idx = [j for j, o in enumerate(orders) if o % 2 or o > 2]
+    sol = solve_mod2(pool, orders, t, N)
     if sol is None:
-        return None, "2-part inconsistent"
-    x0, kernel, _ = sol
-    if not odd_idx:
-        return x0, "ok (2-part only)"
-
-    # ---- odd part: local search within the GF(2) solution family ----
-    def odd_resid(xbits):
-        acc = [0] * len(odd_idx)
+        return None, "mod2 inconsistent"
+    x0, kernel = sol
+    def residual(xbits):
+        acc = [0] * len(residual_idx)
         xi, i = xbits, 0
         while xi:
             if xi & 1:
-                for k, j in enumerate(odd_idx):
+                for k, j in enumerate(residual_idx):
                     acc[k] = (acc[k] + pool[i][j]) % orders[j]
             xi >>= 1; i += 1
-        return [(t[odd_idx[k]] - acc[k]) % orders[odd_idx[k]]
-                for k in range(len(odd_idx))]
+        return [(t[j] - acc[k]) % orders[j] for k, j in enumerate(residual_idx)]
     def phi(res):
         return sum(1 for r in res if r != 0)
     x = x0
-    res = odd_resid(x)
+    res = residual(x)
     cur = phi(res)
-    t0 = time.time()
+    if cur and not kernel:
+        return None, "unique mod2 solution misses residual"
+    t0 = time.monotonic()
     K = kernel
     temp = max(2.0, cur / 4)
     best = cur
-    while cur > 0 and time.time() - t0 < time_budget:
+    while cur > 0 and time.monotonic() - t0 < time_budget:
         kv = K[rng.randrange(len(K))]
-        # incremental: XOR kv flips bits; recompute odd residual delta
         nx = x ^ kv
-        nres = odd_resid(nx)     # recompute (dense kv -> full recompute)
+        nres = residual(nx)
         nc = phi(nres)
         if nc <= cur or rng.random() < math.exp(-(nc - cur) / temp):
             x, res, cur = nx, nres, nc
@@ -163,14 +111,15 @@ def solve(comps, orders, pool, t, N, rng, time_budget):
         if temp < 0.05:
             temp = max(1.0, cur / 4)   # reheat
     if cur == 0:
+        assert verify(x, orders, pool, t), "local search returned an invalid solution"
         return x, "ok"
-    return None, f"odd unsolved (phi={cur}/{len(odd_idx)}, best={best})"
+    return None, f"residual search unclosed (phi={cur}/{len(residual_idx)}, best={best})"
 
 def mitm_frontier(orders, pool, t, N, time_budget=15):
     """Exact meet-in-the-middle over the whole pool (feasible only for small N).
-    Establishes the EXACT-method frontier: solves small instances annealing
-    cannot, but is exponential in N so caps ~N=40 regardless of prime size.
-    Returns (solution_bits, msg)."""
+    Includes odd-cardinality parity. Exhausted means no solution in this pool;
+    timeout/resource-limit outcomes are inconclusive. Returns (bits, msg).
+    """
     from itertools import combinations
     D = len(orders)
     if N > 44:
@@ -181,26 +130,30 @@ def mitm_frontier(orders, pool, t, N, time_budget=15):
         for r in range(len(idxs) + 1):
             for c in combinations(idxs, r):
                 yield c
-    t0 = time.time()
+    t0 = time.monotonic()
     left = {}
     for combo in subsets(range(half)):
-        acc = [0] * D
-        for i in combo:
-            for j in range(D):
-                acc[j] = (acc[j] + pool[i][j]) % orders[j]
-        left.setdefault(tuple(acc), combo)
-    for combo in subsets(range(half, N)):
-        if time.time() - t0 > time_budget:
+        if time.monotonic() - t0 > time_budget:
             return None, "timeout"
         acc = [0] * D
         for i in combo:
             for j in range(D):
                 acc[j] = (acc[j] + pool[i][j]) % orders[j]
-        need = tuple((t[j] - acc[j]) % orders[j] for j in range(D))
+        left.setdefault(tuple(acc) + (len(combo) % 2,), combo)
+    for combo in subsets(range(half, N)):
+        if time.monotonic() - t0 > time_budget:
+            return None, "timeout"
+        acc = [0] * D
+        for i in combo:
+            for j in range(D):
+                acc[j] = (acc[j] + pool[i][j]) % orders[j]
+        need = tuple((t[j] - acc[j]) % orders[j] for j in range(D)) \
+            + (1 - len(combo) % 2,)
         if need in left:
             xb = 0
             for i in set(left[need]) | set(combo):
                 xb |= (1 << i)
+            assert verify(xb, orders, pool, t), "MITM returned an invalid solution"
             return xb, "ok"
     return None, "exhausted"
 
@@ -218,22 +171,22 @@ def verify(xbits, orders, pool, t):
 def main():
     rng = random.Random(int(sys.argv[1]) if len(sys.argv) > 1 else 11)
     ps = primes_upto(4000)
-    print("G3 re-attempt: small-prime odd-part solver (t0=97), planted "
-          "faithful instances")
-    print(f"{'#fbprimes':>10}{'D comps':>9}{'odd comps':>10}{'odd bits':>9}"
+    print("G3 re-attempt: residual solver (t0=97), planted synthetic groups")
+    print(f"{'#fbprimes':>10}{'D comps':>9}{'res comps':>10}{'res bits':>9}"
           f"{'N':>7}{'result':>28}{'verif':>7}{'sec':>7}")
     for nfp in [8, 16, 30, 60, 120]:
         comps, orders, pool, t, S = make_codesigned(nfp, 97, N=max(200, 20*nfp),
                                                     planted_k=max(11, nfp//2),
                                                     rng=rng, ps=ps)
         N = len(pool)
-        odd = [j for j in range(len(orders)) if comps[j][0] != 2]
-        oddbits = sum(math.log2(orders[j]) for j in odd)
+        residual = [j for j, o in enumerate(orders) if o % 2 or o > 2]
+        residual_bits = sum(math.log2(orders[j]) - (orders[j] % 2 == 0)
+                            for j in residual)
         t0 = time.time()
         x, msg = solve(comps, orders, pool, t, N, rng, time_budget=20)
         dt = time.time() - t0
         ok = x is not None and verify(x, orders, pool, t)
-        print(f"{nfp:>10}{len(orders):>9}{len(odd):>10}{oddbits:>9.0f}{N:>7}"
+        print(f"{nfp:>10}{len(orders):>9}{len(residual):>10}{residual_bits:>9.0f}{N:>7}"
               f"{msg:>28}{str(ok):>7}{dt:>7.1f}")
 
 if __name__ == "__main__":

@@ -1,5 +1,15 @@
 # A4 solver — G3 phase-1 analysis
 
+> **Audit update, 2026-10-22:** this is a historical analysis. A4/A6 now use
+> corrected elimination and original-group residual checks; the old benchmarks
+> below have not been rerun. Only the projection onto `G/2G` is GF(2)-linear,
+> not the full 2-primary group. Its bit count is one per even-order cyclic
+> component, whereas the old "2-part bits" column sums all 2-primary
+> valuations. Higher 2-powers remain in the nonlinear residual with carries.
+> A4's former additive kernel-MITM has been replaced by bounded exact kernel
+> enumeration. See [current audit status](integration-review-status.md#current-correctness-audit-2026-10-22)
+> and [the regression tests](../code/test_solver_correctness.py).
+
 *2026-08-07. `code/a4_solver.py`. Status: **G3 NOT yet passed** — and the
 reason is the important finding.*
 

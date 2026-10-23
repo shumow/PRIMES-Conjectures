@@ -8,6 +8,187 @@ single reviewer can assess both. **This merge is an integration and
 review-preparation step only. It is not a correctness review and certifies
 nothing.** A clean Git merge is not scientific validation.
 
+## Current correctness audit (2026-10-22)
+
+The preparation record below remains unchanged in substance. Follow-up work is
+on `audit/joint-correctness`, based on merged main commit
+`1e65eec822380c7d3a17d78b4fd1824a265f929f`. This is the current status, not a
+claim that the entire R1-R8 queue has been resolved.
+
+- **R1, written reduction:** corrected the two modulus definitions in the
+  working-paper and background sources. Completed the local proof for both
+  `k = 1 mod 4` and `k = 3 mod 4`, with Frobenius exponent `j = 1` and `j = 3`,
+  respectively, and corrected the AG document's description of this original
+  mechanism to include both cases. Explicitly distinguished CRT-compatible targets from subset
+  reachability and restricted discrete logs to units. The full harvested-vector
+  implementation and quantitative feasibility estimates remain to be audited.
+- **R2/R3, solver algebra:** independently reproduced the elimination and carry
+  defects, then corrected back-substitution for both particular solutions and
+  kernel vectors. A6 now reuses A4's exact mod-2 projection and searches the
+  original residual group, including higher 2-powers with carries. Its public
+  `gf2_solve` compatibility entry point retains the original three-value return
+  (particular solution, kernel, sorted pivot columns).
+- **Additional coupled defects:** A4's residual closer had the target sign
+  reversed and treated overlapping XOR moves as additive. Its historical
+  `mitm_close` entry point now uses bounded, exact Gray-code enumeration of a
+  sampled kernel subspace. This is a correctness baseline, not a scalable
+  algorithmic improvement. A6's direct MITM now distinguishes subset parity,
+  and the local solver handles a unique projection solution with no kernel.
+- **Regression evidence:** `code/test_solver_correctness.py` initially ran
+  13 tests with 11 failures, one error, and one pass against the baseline.
+  All 13 pass after the corrections. The tests compare full affine solution
+  sets for small binary systems and all small-group targets against independent
+  enumeration; returned A4/A6 solutions are checked against original group
+  equations and odd-cardinality parity.
+- **Construction regressions:** three additional tests check normalized moduli,
+  the need to exclude nonunits, and 126 local matching cases across 21 primes
+  below 5,000. Together the 16 tests pass; the solver oracles cover 5,054 binary
+  systems and 336 small-group target cases.
+- **R4, density and benchmark review:** preserved A8/A10's seeded stochastic
+  behavior, but relabeled `rho` as a forced-zero mixture weight. Literal zero
+  probability is `rho + (1-rho)/order`: `0.336`, not `0.004`, for A10's ternary
+  setting. A12 uses literal `rho` and nonzero-only sampling. N1's side-support
+  count is yet a third statistic: plus-side factors give `p = -1`, not identity
+  in the full unit group. No literal H7 component-density measurement has been
+  established by these synthetic tests.
+- **Additional reporting defect:** A12 returned the deficit at the end of a
+  restart rather than the minimum visited deficit. A deterministic two-step
+  regression reached 1, perturbed to 2, and previously reported 2. The minimum
+  tracker now reports 1 and invalid budgets/dimensions raise explicit errors.
+  Old A12 "floor" claims need rerunning with the corrected statistic.
+- **Validation after benchmark corrections:** all 29 small regression tests
+  pass, including A6's helper-return compatibility check.
+  Twelve benchmark tests cover model definitions, preserved A10 random
+  draws, minimum tracking, explicit input errors, and four-sum validity.
+  Bounded A12 demonstrations at `D=30`, `ell=3`, seed 60, a 15-move planted
+  target, `K=200`, 40 steps and two restarts gave initial/minimum deficits
+  `18/9` at literal `rho=0.004` and `19/0` at `rho=0.9`. These are finite
+  demonstrations, not thousand-component frontier estimates.
+
+**Interpretation of the experiments:** no universal solver-density threshold
+or algorithmic closure follows from the implemented methods. A10 filters and
+caps four-element sums (even cardinality), A8 is a simplified walk that does
+not enforce odd cardinality, and A12 is budgeted random filtering rather than
+a number-theoretic pricing oracle. The
+[AGHS paper](https://arxiv.org/html/1203.6664v2) analyzes different algorithms
+with explicit symmetry, independence, pool-size and component assumptions;
+its applicability was not tested by reproducing one four-list diagnostic.
+Pigeonhole collisions do not prove target reachability, and finite harvest or
+coloring experiments do not supply general upper bounds.
+
+Run the focused regression suite from the repository root:
+
+```text
+python -B -m unittest discover -s code -p "*correctness.py" -v
+```
+
+### Arithmetic-geometric first-pass findings
+
+- **R5, fixed-ring dictionary:** replaced the invalid primality converse with
+  the forward implication and the `399001 = 31*61*211`, `r=5` counterexample.
+  The untruncated characterization remains distinct. Scalar CRT checks and
+  sample full-ring identities independently confirm the counterexample.
+- **R6, support:** replaced the purported generic-sharpness proposition by
+  an explicit hypothesis at `B >= 2*r*d`, separately for each section. The
+  smoothness equivalence is valid under that hypothesis; full prime-power
+  divisibility, a failure-density theorem and economic bounds do not follow.
+  The correct cyclic-group criterion uses `ell**v_ell(N)`-th powers.
+  The model's dimension minimization remains an elementary conditional
+  comparison, not an algorithmic lower bound.
+- **R7, global versus local:** retained the characteristic-zero non-unit
+  argument and corrected its finite-field consequence. Independent direct
+  reduction modulo `Phi_13` confirms `(X+2)^24` is in `mu_26` at `p=5`.
+  The inversion identity and the `X+1` matching implication remain sound
+  under their explicit assumptions.
+- **R8, broader claims:** reduced the stabilizer-index theorem to the exact
+  cofactor upper bound `ord(f(T)) | L*(p**k - 1)`. Its index inequality is
+  conditional on a chosen exception model; neither elliptic support
+  saturation nor a mandatory exception clause is proved. Removed the
+  asserted transfer of N1/A10 into elliptic impossibility. The function-field
+  appendix now records an analogy and the missing extensions, asymptotics,
+  uniform errors and joint smoothness arguments; it does not claim that
+  Weil's bounds alone prove the proposed sharpness/existence statements.
+- **Further dictionary corrections:** Howe's definition concerns module
+  generators, not algebra generators. Separate level-1/2 congruences
+  control `(p**2-1)/2`, not necessarily the full depth-2 modulus.
+  At `p=7`, `n=217` passes the even levelwise conditions but is not a power
+  of 7 modulo 48. The sign-split comparison is not a proved
+  constructibility boundary.
+- **References checked:** the
+  [OEIS definition](https://oeis.org/A329223/internal) and
+  [Gurney thesis record](https://arxiv.org/abs/1710.08674) correct the two
+  misdescriptions in the initial queue.
+  [Howe's abstract](https://arxiv.org/abs/math/9812089) confirms the module
+  definition; [Wright's abstract](https://arxiv.org/abs/1609.00231) does
+  explicitly include the infinitude of Lucas-Carmichael numbers, so that
+  contribution has not been withdrawn. This is not a complete bibliography
+  or novelty audit.
+
+Seven independent geometric regression tests use direct cyclotomic
+polynomial reduction and ordinary modular arithmetic, not the AG scripts'
+SymPy helpers. **All 36 correctness tests pass.** The five edited paper
+sources have matching environments, unique labels and resolved local
+references/citations in a structural check. The initial audit did not include
+a TeX compilation because `pdflatex` was unavailable. The PR review follow-up
+below records subsequent successful builds with Tectonic.
+
+**Preservation and limits:** original findings, JSON outputs, datasets, paper
+bylines, and original PDFs are retained unchanged. The same-name PDFs beside
+the corrected sources are historical; current rebuilt versions are separate
+in `doc/audit-pdfs/`. Old solver timings and frontier
+claims are not measurements of the corrected code. Large harvests, private
+corpus validation and real-pool component modeling remain pending: unit checks,
+actual prime-power moduli, target reachability, and measured identity
+frequencies must precede any production benchmark. In particular, a squarefree
+`q-1` component model omits the `q**(e-1)` contribution to
+`phi(q**e)` when a harvested modulus contains prime powers.
+R5-R8 have the first-pass dispositions above, not blanket approval of the AG
+track. Remaining work includes actual harvested-vector assembly/modeling,
+reproduction of legacy output-generating experiments with provenance,
+the rest of the survey/cell-census literature and numerical checks, and
+properly specified proofs for any stronger hypotheses or extensions.
+Older execution plans are historical instructions, not authority for this audit.
+
+### PR #2 review follow-up (2026-10-22)
+
+Feedback: [review comment 6353782287](https://github.com/shumow/PRIMES-Conjectures/pull/2#issuecomment-6353782287).
+The compatibility and stale-PDF concerns are accepted and addressed:
+
+- **Python:** independently reproduced all ten `AttributeError` errors in
+  the 14 solver tests on Python 3.9.13. Replaced `int.bit_count()` in A4 and
+  its independent test oracles with portable binary population counts.
+  The entire 36-test audit suite now passes on **3.9.13 and 3.14.5**.
+  README documents the suite's Python 3.9+ requirement (`math.lcm`) rather
+  than silently imposing Python 3.10.
+- **PDFs:** all five revised sources now compile with **Tectonic 0.17.0**.
+  Rebuilt outputs are in [audit-pdfs/](audit-pdfs/), linked from README;
+  the original source-side PDFs remain byte-identical to the preserved
+  baseline. Audit notices identify both sets unambiguously.
+  The PDFs have 7, 3, 16, 3 and 5 pages respectively (working paper,
+  background, AG analysis, memo and Popovych note). PDF parsing confirmed
+  readable, nonempty pages, font resources and current audit/correction text.
+  Compiler exits were zero, with no undefined references/citations or missing
+  characters. Long tables, formulas and paths were wrapped to avoid major
+  overflow; remaining minor typesetting warnings do not constitute proof
+  or publication-readiness certification.
+- **Reference log:** an explicit erratum identifies arXiv:1710.08674 as
+  Lance Gurney's thesis. The original dated "Borger-Gurney" wording is
+  retained as historical evidence, not the current citation.
+- **Gcd clarification:** for a nonempty pool of primes `p = 3 mod 80`,
+  `v2(p-1)=1` and `v2(p+1)=2`. Disjoint odd factor-base supports therefore
+  give `gcd(lcm(p-1), lcm(p+1))=2`. This proves CRT compatibility of the
+  corrected targets, not existence of a subset realizing them.
+
+Source SHA256 values used for the rebuilt audit PDFs:
+
+| Source in `doc/` | SHA256 |
+|---|---|
+| `working-paper.tex` | `9d2585a0d2aa02fb94b22340abc5530c8a85df4e00b245ad2650ec8cb42cd922` |
+| `background.tex` | `749777776a59cbfc7e4abb440781c6966846f4cdc66c10be309a2a7352066f03` |
+| `arith-geom.tex` | `427f809e879f421c11d10ebf11fe173ec51adb90b14272db96cebb76ccd8fe3a` |
+| `arith-geom-memo.tex` | `67a0477f91dce1eeec9e9cfbc03a2dafdcbc5508b8cc3745973e77e891afd8dc` |
+| `popovych-note.tex` | `c14bea48549685b515d3fdc633e87848e59f08cc634cc01faca31e0f9ac06be9` |
+
 ## 1. Captured inputs and result
 
 All SHAs were captured after `git fetch origin` on the preparation date and
@@ -20,7 +201,7 @@ inputs.
 | `origin/arith-geom-interpretation` tip (second parent) | `9a5bd56400e4be9b0aba09c871b799b2cdfdaee2` |
 | Common merge base | `cb7633f20f22f7d340d09437990eae83d3d787a5` |
 | Pure merge commit | `98be6455cd5953b59654553f920269f1f278e3f9` |
-| Review-readiness commit | *(this document; recorded in the handback)* |
+| Review-readiness commit | `7a20e5ce2281473a7906f0e5f4582568a6925f69` |
 
 Divergence at these tips: `main` had **1** unique commit (A12, adaptive
 cultivation); the geometric branch had **19** (AG2–AG5b scripts/outputs,

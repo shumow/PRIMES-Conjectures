@@ -1,38 +1,43 @@
 # Option (b): a low-density high-dimension subset-product solver — research brief
 
+> **Audit revision, 2026-10-22:** this is an exploratory problem, not a proven
+> last remaining escape. The proposed production numbers below are historical
+> projections, not a completed harvested-vector instance. See
+> [current audit status](integration-review-status.md#current-correctness-audit-2026-10-22)
+> for corrected constraints, benchmark definitions and the limits of the evidence.
+
 **For:** a research agent working in a **separate git branch**, with no access
 to the conversation that produced this repo. This is an **open problem**, not an
 execution plan: the solution is unknown and may not exist efficiently. The goal
 is to determine whether a solver exists for the regime below, or to characterize
 rigorously why not. Even a clean hardness/no-go result is a valuable outcome.
 
-**TL;DR.** The twin-smooth / Lenstra–Pomerance route to an Agrawal-conjecture
-counterexample is blocked at exactly one step: solving a **0/1 subset-product =
-target in a high-dimensional abelian group of small smooth exponent, in the
-low-identity-density (dense-vector) regime, with a pool only ~linearly larger
-than log₂|G|.** Every standard method has been tried and quantifiably fails
-(details below). Option (b) asks: is there any algorithm — likely one that
-exploits the *specific algebraic structure* of our vectors — that solves it?
+**TL;DR.** The proposed construction requires a **0/1 subset-product to a
+specified target with odd cardinality**. The repository has promising supply
+projections and unsuccessful finite heuristic experiments, but no validated
+end-to-end production solve and no proof excluding all standard algorithms.
+First establish the actual group and vector distribution; then investigate
+algorithms, including exploitation of their number-theoretic structure.
 
 ---
 
 ## 0. Orientation (read, in order)
 
-1. `data/FINDINGS.md` — the measurement record; the sections **A4, A6, A10, N1,
-   A11** define the walls. Single source of truth for all numbers.
+1. `doc/integration-review-status.md` — current corrections and limitations.
+   `data/FINDINGS.md` preserves the historical A4, A6, A10, N1 and A11 observations.
 2. `doc/working-paper.tex` — Prop 3.1 (the reduction to subset-product) and the
    group definition G = (Z/Λ₋)* × (Z/Λ₊)*.
 3. `doc/registry.md` — the solver menu S1–S7 and the **regression harness**
    (bottom) you will use to test any idea.
 4. `doc/a4-solver-analysis.md` — the 2-part/odd-part decomposition.
-5. Code you will reuse (do not modify): `code/a8_omega_solver.py`
-   (`make_structured` — synthetic instances with tunable density ρ),
+5. Candidate code to reuse: `code/a8_omega_solver.py`
+   (`make_structured` — synthetic instances with forced-zero mixture weight ρ),
    `code/a6_oddsolver.py` (`make_codesigned`, `mitm_frontier` — the exact
    small-scale oracle), `code/a10_wagner_density.py` (the Wagner reach measurement).
 
 ---
 
-## 1. The exact problem
+## 1. The target problem and historical parameter proposal
 
 Given:
 - a finite abelian group **G = ⊕_{i=1}^{D} Z/mᵢ**, each mᵢ a prime power; after
@@ -46,40 +51,47 @@ Find **x ∈ {0,1}ᴺ** with **Σₚ xₚ vₚ = t** in G and **Σₚ xₚ odd**
 constraint = one extra Z/2 coordinate).
 
 Two structural facts that define the regime:
-- **Existence is free.** 2ᴺ ≫ |G| (N ≈ 2.5×10⁵ ≫ log₂|G| ≈ 24k), so solutions
-  are super-abundant by pigeonhole. The difficulty is *finding* one.
-- **Vectors are dense (low identity-density).** Each vₚ is the discrete-log
-  image of p = 2m+1 (m a product of ~4 medium primes); p ≡ 1 (identity, i.e.
-  vₚ = 0) on only ~4 of the D components. So **identity-density ρ ≈ 0.004** —
-  vₚ is nonzero on ~99.6% of coordinates.
+- **Target reachability needs evidence.** `2ᴺ ≫ |G|` guarantees collisions,
+  not coverage of the specified target. Abundant target solutions are a
+  distributional expectation, or can be planted for a synthetic test.
+- **Forced support is not literal identity density.** Prime divisors of
+  `p-1` force zero residues on the minus side; other components can be zero by
+  coincidence. Plus-side `p+1` support gives `p=-1`, which is identity only
+  in odd-order projections. The proposed `0.004` support fraction does not
+  establish `99.6%` nonzero coordinates in the actual group.
 
-The pool/dimension ratio is **only ~linear**: N ≈ 10 × log₂|G|. We cannot make
-it exponentially larger — harvesting more primes grows N and |G| together
-(N1/A11), so the ratio stays ~constant.
+Before production use, construct the full lcms, exclude nonunit pool elements,
+and include prime powers: `phi(qᵉ)=qᵉ⁻¹(q-1)`. The existing squarefree `q-1`
+component models alone do not validate all quoted production dimensions.
+
+The quoted proposal has `N ≈ 10 × log₂|G|`; this is not an asymptotic theorem.
+The group is fixed for a fixed factor base and exponent caps, although changing
+the harvest design can enlarge it.
 
 ---
 
-## 2. Why it is hard — the walls already measured (do not re-derive)
+## 2. Implemented methods and their limitations
 
 - **Exact search (MITM / DP):** exponential in D (or in |G|). Caps at ~15
-  components / ~40 bits (`mitm_frontier`, FINDINGS A6/A10). Our D ≈ thousands.
-- **GF(2) linear algebra:** solves the 2-torsion part *exactly and at full
-  scale*, but that is only **~16% of the bits**; the odd part (~84%) is the
-  wall (FINDINGS A4). The obstruction is that x∈{0,1} makes the mod-ℓ (ℓ odd)
-  constraints non-linear in the GF(2) solution kernel — the NP-hard core.
+  components / ~40 bits in the historical experiments. Direct MITM instead
+  scales exponentially with N; its code cap and timeout are resource limits,
+  not bounds on all exact algorithms.
+- **GF(2) linear algebra:** solves the projection onto `G/2G` plus parity.
+  Higher 2-powers require residual checks with carries, alongside the odd
+  components. The old 16% figure counts the full 2-primary group, not the
+  number of solved projection bits. Elimination and carry defects have been
+  repaired; the old frontier experiments require reassessment.
 - **Generic 0/1 rounding of a linear-algebra solution:** the solution set is a
   lattice coset; rounding to {0,1} is CVP in dimension N ≈ 2.5×10⁵ — out of
   reach for LLL/BKZ without massive dimension reduction.
-- **Wagner / AGHS generalized birthday (the scalable subset-product method):**
-  measured reach **r_max ≈ O(log N)/(1−ρ)** (FINDINGS A10). At ρ ≈ 0.004 it
-  solves ~20 components; it would need **ρ ≳ 0.98** to reach thousand-component
-  groups. Raising ρ needs the divisor-paradigm pool (H8), which is
-  **unharvestable** under the double condition (N1). And **no modulus r** avoids
-  the double condition that forces low ρ (A11).
+- **Four-list diagnostic / simplified omega walk:** neither implements the
+  full AGHS algorithms. A10's parameter 0.004 means literal zero probability
+  0.336 in ternary coordinates; A8 has order-dependent literal probabilities.
+  Four-sum outputs have even cardinality, and A8 does not enforce parity.
+  Finite first-failure frontiers do not prove a universal density threshold.
 
-So: the harvestable pools are low-density, and every known solver needs either
-exponential resources or high density. That is the precise gap option (b) must
-cross.
+The gap is between a proposed real construction and the currently implemented,
+limited synthetic solvers. It is not a proved boundary for every known solver.
 
 ---
 
@@ -90,9 +102,9 @@ cross.
 > N ≈ 2.5×10⁵ **dense** vectors (identity-density ρ ≈ 0.004), running in
 > feasible time/space (say ≤ a few core-days, ≤ ~64 GB)?
 
-A "yes" (with a working implementation that passes the harness at D ≈ 1000,
-ρ ≈ 0.004) reopens the entire construction. A rigorous "no / conditional-no"
-is the honest close of the last live direction.
+Success on a well-specified synthetic instance is useful progress, not
+validation of the real construction. A negative finite-resource result must be
+reported with its model, algorithm and budget, not as a general impossibility.
 
 ---
 
@@ -109,7 +121,7 @@ is the honest close of the last live direction.
    coset/subvariety, or whether products of a *structured* family of pool primes
    collapse the target algebraically.
 2. **Lattice + aggressive dimension reduction (concrete, testable).** Reduce the
-   problem before any lattice step: solve the 2-part exactly by GF(2) (S2) and
+   problem before any lattice step: solve the mod-2 projection by GF(2) (S2) and
    eliminate over each small GF(ℓ) to shrink to a "hard core" of pivot columns;
    then run BKZ on the core coset. **Key measurement:** how small is the core?
    From A4/A6 the odd part has ~thousands of components — likely still far above
@@ -137,7 +149,7 @@ is the honest close of the last live direction.
    in N Boolean variables — a pseudo-Boolean / SMT-over-finite-fields problem,
    NOT clausal SAT (a CNF encoding of a mod-ℓ equation destroys the structure).
    The right tools are CDCL with native linear reasoning: SAT-with-Gaussian-
-   elimination (CryptoMiniSat, XOR handling — covers the 2-part natively),
+   elimination (CryptoMiniSat, XOR handling — covers the mod-2 projection),
    pseudo-Boolean / cutting-planes solvers (RoundingSat), or SMT (Z3) with
    modular arithmetic; the concrete idea is CDCL branching + conflict learning
    *on top of* per-prime GF(ℓ) Gaussian elimination as theory propagators — the
@@ -157,9 +169,9 @@ is the honest close of the last live direction.
    on one). **Falsify fast:** feed a *reduced* synthetic instance
    (`make_structured`, D=50, ρ=0.004) to an off-the-shelf solver — RoundingSat
    or CryptoMiniSat(+XOR) or Z3 — and see if it beats the Wagner reach (Wagner
-   caps ~20 there). If a tuned modern solver cannot clear D=50 at ρ=0.004 in
-   reasonable time, this direction is dead without a bespoke build; if it does,
-   scale toward D=1000 (milestone m3).
+   reported ~20 there, with a different model and constraint set). If a tuned
+   solver fails at D=50, record that model and budget rather than excluding the
+   whole direction; if it succeeds, scale toward D=1000 (milestone m3).
 
 Directions 3–4 most likely bottom out in the same hardness; 1 and 2 are where to
 spend real effort. Report a go/no-go on each with the measured hard-core
@@ -170,15 +182,17 @@ dimension.
 ## 5. Test harness & success criteria
 
 - **Synthetic instances:** `a8_omega_solver.make_structured(r, rho, N, ...)`
-  gives a group with tunable density ρ and a planted solution; sweep ρ from
-  0.5 down to **0.004** and D up from 20 toward **1000**. `make_codesigned`
-  (a6) gives faithful small-prime instances.
-- **Oracle:** `mitm_frontier` (a6) solves small instances exactly — use it to
-  confirm your solver's answers on D ≤ ~15 before scaling.
-- **Milestones:** (m1) beat the Wagner reach — solve ρ=0.004 at D=50 (Wagner
-  caps ~20); (m2) D=200 at ρ=0.004; (m3) D=1000 at ρ=0.004. Hitting **m3**
-  reopens the construction. Failing m1 after honest effort strongly corroborates
-  the wall.
+  uses forced-zero bias, not literal density. For order mᵢ,
+  `P(0)=rho+(1-rho)/mᵢ`; record it for each component. `make_codesigned`
+  (a6) matches co-designed component orders but uses uniform, not harvested,
+  vectors. Include the odd-cardinality target in every solver/oracle comparison.
+- **Oracle:** `mitm_frontier` (a6) checks small pools exactly, including parity;
+  use only completed searches as existence/nonexistence evidence. Independently
+  verify every returned solution in the original group.
+- **Milestones:** try D=50, 200 and 1000 with explicit orders, distribution,
+  N, parity, seed and time/memory budgets. A synthetic success must then be
+  transferred to actual harvested vectors; a failure remains algorithm- and
+  budget-specific.
 - **Falsify fast:** for the lattice route (dir 2), first just *measure the
   hard-core dimension* after GF(2)+GF(ℓ) reduction on a real-scale synthetic
   instance. If it is ≫ 500, dir 2 is dead without running any BKZ — report and
@@ -195,10 +209,10 @@ dimension.
   unless asked. Use the repo's Co-Authored-By trailer.
 - **Done =** a `doc/option-b-findings.md` reporting, per direction: what was
   tried, the measured hard-core dimension / reach, the milestone reached (m1–m3
-  or none), and a clear go/no-go. Plus any solver code that passes the oracle on
-  small instances. If nothing crosses m1, state that plainly — it converts the
-  option-(d) negative result from "no known solver" to "no solver despite a
-  dedicated search across five paradigms."
+  or none), and a budget-specific outcome. Plus any solver code that passes
+  independent small-instance checks. If nothing crosses m1, list precisely
+  the algorithms, models and budgets tested; do not claim all paradigms were
+  implemented or ruled out.
 
 ## 7. Honest expectation
 
@@ -209,11 +223,8 @@ random) and on direction 2 turning out to have a small hard core. Treat a
 rigorous no-go as a success, not a failure — it completes the negative result.
 
 
-**Already tested — do not redo (2026-08-24, FINDINGS A12):** the "merge
-harvest+solve / adaptive cultivation / column-generation" idea (select the next
-pair from the partial-solution deficit) was tested in its most optimistic form
-(`code/a12_adaptive_cultivation.py`, unlimited fresh moves). It stalls at ρ≈0.004
-exactly like the fixed-pool methods (~20 components); a control at ρ≥0.9 solves,
-isolating **low density** (not the two-phase architecture) as the cause. Any new
-proposal here must explain how it obtains a descent gradient from *dense* moves,
-or how it harvests *sparse* moves cheaply (the N1 wall).
+**Historical A12 experiment:** finite-budget synthetic greedy filtering was
+tested, not an unrestricted number-theoretic pricing oracle. The original
+reported minimum actually tracked end-of-restart deficits; that defect has
+been corrected. Reassessment is warranted. Its failure does not exclude all
+adaptive or column-generation methods.

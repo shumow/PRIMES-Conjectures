@@ -17,34 +17,34 @@
 {\LARGE\bfseries Research memo: the arithmetic-geometric direction}\\[3pt]
 {\small PRIMES-Conjectures project --- AG track, branch
 \texttt{arith-geom-interpretation} --- October 21--22, 2026\\
-Full development: \texttt{doc/arith-geom.tex} (v1.0, 16 pp);
-standalone Popovych note: \texttt{doc/popovych-note.tex} (5 pp);
+Full development: \texttt{doc/arith-geom.tex};
+standalone Popovych note: \texttt{doc/popovych-note.tex};\\
+rebuilt audit PDFs: \texttt{doc/audit-pdfs/};
 results log: \texttt{doc/arith-geom-findings.md}}
 \end{center}
 
-\textbf{TL;DR.} Reading Agrawal's conjecture through algebraic groups turned
-the project's empirical dead ends (A11, N1, A10) into theorems, produced the
-first quantified evidence on Popovych's conjecture beyond search ranges,
-closed the elliptic-curve escape route, and gave the negative-result paper
-its structural spine: a single \emph{stabilizer-index theorem} explaining
-why every variant of the attack bottoms out at the same twin-smooth wall.
-Everything is unconditional except one named Artin-type hypothesis ---
-\emph{generic sharpness} (the support bounds are attained; $0$ exceptions
-across $196$ sampled large primes, and a theorem in the function-field
-mirror); the restriction to Frobenius-matching mechanisms is a separate,
-stated scope, not a hypothesis.
+\textbf{Audit revision (22 October 2026).}
+The algebraic-group viewpoint gives useful exact identities and containing
+support bounds, but it does not turn N1/A10 into impossibility theorems.
+Necessary smoothness requirements use section-specific support hypotheses.
+The full development and Popovych note have been corrected accordingly;
+the same-name PDFs beside those sources are historical. Rebuilt versions are
+in \texttt{doc/audit-pdfs/}; current status is in
+\texttt{doc/integration-review-status.md}.
 
 \section*{1. The dictionary}
 
 The AKS congruence $(X-1)^n \equiv X^n - 1 \pmod{n, X^r-1}$ is a
 \emph{Frobenius-lift test}: $\Z[X]/(X^r{-}1)$ is the $\Lambda$-ring of
-$\mu_r$ with Adams operations $\psi^k(X) = X^k$, and $n$ is prime iff
-$\psi^n$ is a Frobenius lift at $n$ (Wilkerson); AKS checks the lift
-condition on the single section $X - 1$. The exception clause
+$\mu_r$ with Adams operations $\psi^k(X)=X^k$. Prime $n$ implies
+$\psi^n(f)\equiv f^n\pmod n$, but the converse fails in a fixed truncated
+ring: $399001=31\cdot61\cdot211$, $r=5$, passes the coincidence on every
+section, inside the exception clause. Wilkerson's criterion does not assert
+that converse. AKS checks one section. The exception clause
 $n^2 \equiv 1 \pmod r$ says exactly that the fake Frobenius $\sigma_n$ lies
 in $\mathrm{Gal}(\Q(\zeta_r)/\Q(\zeta_r)^+) = \{1, \text{conj}\}$ --- the
-\emph{stabilizer} of the section's divisor. This ``clause $=$ stabilizer''
-principle recurs in every result below.
+subgroup $\{1,\text{conj}\}$. Choosing a comparable exception for an elliptic
+test is a modeling decision, not forced by this dictionary.
 
 On the counterexample side, the Lenstra--Pomerance conditions
 $p - 1 \mid n - 1$, $p + 1 \mid n + 1$ say that $n$ \emph{impersonates the
@@ -56,42 +56,47 @@ project's reliance on the Costello--Naehrig corpora was never a coincidence.
 
 \section*{2. The five results}
 
-\textbf{(AG2) The torus dimension-count theorem --- A11 is now a
-corollary.} For $d = \ord_r(p)$, the unique involution of $(\Z/r)^\times$
+\textbf{(AG2) Exact support bound; conditional smoothness model.}
+For $d=\ord_r(p)$, the unique involution of $(\Z/r)^\times$
 being $-1$ forces the exact \emph{inversion collapse}
 $(X-1)^{p^{d/2}-1} = -X^{-1}$ (even $d$), so the control order
 $\rho_r(p)$ lives on cyclotomic levels $e \mid d'$, $d' = d/2$ or $d$, and
-the smoothness burden is the torus dimension
+the containing torus has dimension
 $\sum_{e \mid d'} \varphi(e) = d'$. Validity ($\ord_r(n) > 2$) forces
-$d \ge 3$, so \textbf{burden $\ge 2$ for every AKS modulus $r$, with the
+$d \ge 3$, so \textbf{the containing model has dimension $\ge2$, with the
 minimum $2$ attained exactly at $d = 4$, levels $\{1,2\}$: the double
 (twin-smooth) condition} --- realizable iff $4 \mid r - 1$, and V\'a\v{n}a's
 $\rho_5(p) \mid 10(p^2{-}1)$ is the special case. The burden formula
 reproduces the A11 empirical table at all 11 moduli (value and minimizing
-$d$); verified on 67 sample primes, drawn and implemented independently of
-the A11 scan. ``Pick a friendlier $r$'' is closed
-structurally, not just empirically.
+$d$) in the historical table. Converting the bound into a necessary
+$B$-smoothness condition requires every prime above $B$ in the containing
+product to occur in the actual order. Neither the density of failures nor
+the cost of targeting them is established. No modulus direction is closed.
 
-\textbf{(AG5) Popovych is strictly harder --- first quantified evidence.}
-The collapse above is a property of $X - 1$, whose zero $\{1\}$ is
-Galois-stable. The second Popovych section $X + 2$ has \emph{trivial}
-stabilizer --- $(\zeta^\gamma{+}2)/(\zeta{+}2)$ is not even a unit of
+\textbf{(AG5) Conditional comparison for Popovych's pair.}
+The first section has a torsion cofactor under inversion.
+The second Popovych section $X+2$ has trivial global torsion-ratio
+stabilizer: $(\zeta^\gamma{+}2)/(\zeta{+}2)$ is not even a unit of
 $\Z[\zeta_r]$ for $\gamma \ne 1$ (disjoint ideal supports: norms $r$ vs
-$(2^r{+}1)/3$) --- so no collapse exists at any depth and the pair pays full
+$(2^r{+}1)/3$). This rules out a global torsion-cofactor identity, not
+special reductions: at $(r,p)=(13,5)$, $(X+2)^{24}\in\mu_{26}$.
+With a separate support-sharpness hypothesis the pair has model dimension
 burden $\min\{d : d \mid r{-}1, d \ge 3\} \ge 3$, equal to $4$ at Popovych's
 own $r = 5$: pool primes would need $p-1$, $p+1$ \emph{and} $p^2+1$
 simultaneously smooth. At the frozen harvest spec (pool primes
 ${\approx}51$ bits) that extra ${\approx}102$-bit level is a Dickman tax
 $\rho(102/\log_2 B)$: $3.9\times10^{-11}$ over the solver base $B = 1259$,
-still $1.8\times10^{-7}$ over the generous $B' = 12590$ ---
-emptying the measured pool. Bonus structure: the second congruence's
+still $1.8\times10^{-7}$ over the generous $B' = 12590$ in the
+polynomial-smoothness heuristic, not a universal harvest bound.
+Bonus structure: the second congruence's
 $X{=}1$ component is exactly the base-3 Fermat test $3^n \equiv 3$, and
 mod $3$ the two sections coincide.
 
 \textbf{(AG5b, Oct 22 addendum) Does the ``2'' matter? No --- but ``not
 $1$'' is subtly incomplete.} For any integer $c \notin \{0, \pm 1\}$ the
-trivial-stabilizer argument runs verbatim for $X + c$ and the full burden
-jump holds, with $c$ entering only through the norm
+global argument applies to $X+c$ with the stated exclusions; a necessary
+smoothness jump additionally needs that section's support hypothesis,
+with $c$ entering through the norm
 $\Phi_r(-c) = (c^r{+}1)/(c{+}1)$ (finitely many excluded $p$, with
 $p \mid c(c{+}1)$), the excluded modulus $r \mid c{+}1$, and the level-one
 component --- the base-$(c{+}1)$ Fermat test. What must be avoided is
@@ -108,14 +113,14 @@ $22/22$); worse, $\zeta{+}1 = (\zeta^2{-}1)/(\zeta{-}1)$ with both
 numerator and denominator values of $X - 1$ at primitive roots, whose
 orders divide $\rho_r(p)$ --- so the mechanism congruences plus the
 Carmichael condition imply $T(+1, n, r)$ \emph{automatically} (proved:
-Prop.~8 of the note / Prop.~5.9 of the full document; measured: $48/48$
+the $X+1$ proposition in the note and full document; historical checks: $48/48$
 synthetic mechanism instances pass $T(+1)$, $0/48$ pass $T(+2)$). The
 hypothetical ``$\{X{-}1, X{+}1\}$ conjecture'' --- Popovych's statement
 with $2$ replaced by $1$ --- is therefore \emph{mechanism-equivalent} to
 Agrawal's: formally stronger-looking, but every counterexample the known
 engine could ever build defeats both simultaneously. In stabilizer terms
 $U(X \pm 1) = \{\pm 1\}$ while $U(X + c) = \{1\}$ otherwise: $c = 2$ is
-simply the smallest constant that genuinely blocks the engine ($c = -2$
+simply the smallest positive nondegenerate constant in this comparison ($c = -2$
 works equally, with Mersenne norm $2^r - 1$).
 
 \textbf{(AG3) The impersonation hierarchy --- our targets have a name, and
@@ -128,76 +133,71 @@ the L--P targets $= (\{1,2\}, (0,1))$ are the \emph{Williams numbers}
 $443{,}372{,}888{,}629{,}441 = 17{\cdot}31{\cdot}41{\cdot}43{\cdot}89
 {\cdot}97{\cdot}167{\cdot}331$ occupies the \emph{same level set} with
 all-even parities and exists at $4.4 \times 10^{14}$ (re-verified).
-\textbf{Sign splitting, not depth, is the wall}: rigid cells are one-sided
+\textbf{Sign splitting is a useful distinction, not a proved wall}: rigid cells are one-sided
 AGP problems (single target $1$); the Williams parities $(0,1)$ force
 targets $(+1, -1)$ that conflict on shared prime powers, forcing the
-coprime side-split whose measured collapse is N1/A10. Validity pins Agrawal
-to the sign-split cell; sharp datum: Howe's $n \equiv 1 \pmod 5$ does not
+coprime side-split studied by N1/A10. Those finite experiments do not prove
+unconstructibility. The original full-bound $r=5$ design requires an odd
+matching exponent; sharp datum: Howe's $n \equiv 1 \pmod 5$ does not
 even pass $T(-1,n,5)$ --- rigidity misses the $\mu_{2r}$ torsion the
 mod-80 conditions exist to fix.
 
-\textbf{(AG4) The elliptic axis is closed --- the stabilizer-index
-theorem.} A canonical elliptic analogue of $X \mapsto X^n$ exists only for
-CM curves ($\Lambda$-structure iff CM, Borger--Gurney). There Frobenius
+\textbf{(AG4) A stabilizer-index upper bound, not elliptic closure.}
+The chosen commuting endomorphism-lift formulation restricts to CM curves;
+it does not exclude all other elliptic tests. Gurney's thesis treats CM
+moduli and curves of Shimura type with the relevant base hypotheses.
+On an ordinary split eigenline Frobenius
 acts on an $r$-eigenline by a scalar $\lambda$, curve automorphisms give
 exact collapses (e.g.\ $x([i]S) = -x(S)$ on $y^2 = x^3 - x$), and
 everything unifies:
 \[
-\textbf{burden} \;=\; [\langle\lambda\rangle :
-\langle\lambda\rangle \cap U] \;\ge\; 2 \quad
-\text{for valid } \lambda \notin U,
+\ord(f(T))\mid L(p^{k'}-1),\qquad
+k'=[\langle\lambda\rangle:\langle\lambda\rangle\cap U],
 \]
-$U$ the unit-stabilizer of the section ($\{\pm1\}$ for $X{-}1$ $\to$ AG2;
+$L$ a bound on the cofactor orders, and $U$ the cofactor subgroup
+($\{\pm1\}$ for $X{-}1$ $\to$ AG2;
 $\{1\}$ for $X{+}2$ $\to$ AG5; $\mu_4/\mu_6$ for CM $x$-coordinates). The
-tantalizing elliptic burden-\emph{1} cells ($\lambda \equiv \pm i$, section
-order collapsing to $p - 1$ alone) are exactly the exception clause --- the
-elliptic mirror of rigid Carmichaels --- and valid burden-2 cells demand
-twin-smoothness again, with sign-split targets. Measured on
-$y^2 = x^3 - x$: valid-cell floors $3$ ($r{=}13$) and $2$ ($r{=}17$),
-matching the index formula; elliptic $\ge$ torus burden at all 11 moduli.
-Gate AG-G2 \textbf{not passed}; the negative result extends to the
-CM-elliptic axis.
+tantalizing index-$1$ cells ($\lambda\equiv\pm i$) lie in the chosen
+exception subgroup. Index-$2$ cells have a twin-smooth \emph{containing}
+support; necessity would require the extra saturation hypothesis.
+The historical computations on
+$y^2=x^3-x$ reported model floors $3$ ($r=13$) and $2$ ($r=17$),
+matching the index formula; elliptic $\ge$ torus model dimension at all 11 listed moduli.
+These do not prove support saturation, the necessity of the chosen exception,
+or transfer of a solver obstruction. The elliptic direction remains open.
 
 \section*{3. Epistemic status}
 
-Proved outright: the collapse identities, the support bounds, the
-independence/stabilizer lemmas, the index formula, the burden
-minimizations. One ingredient is heuristic (Artin-type \emph{generic
-sharpness}: the support bounds are attained), empirically supported with
-$0$ exceptions across $196$ sampled large primes --- and it is a
-\emph{theorem} in the function-field mirror via Weil's RH for curves
-(AG6 appendix), locating the residual difficulty over $\Z$ in the
-unconditional-equidistribution gap. All results are mechanism-scoped
-(Frobenius-matching constructions --- every published counterexample
-approach); four deterministic verification scripts
-(\texttt{code/ag\{2,3,4,5\}\_*.py}) with committed JSON back every claim.
+Exact: the torus inversion identity, its order upper bound, the
+characteristic-zero non-unit argument, the stated $X+1$ implication, and
+the cofactor-index upper bound under its explicit assumptions.
+
+Conditional: necessary smoothness requirements, assuming prime support at
+the chosen threshold for each section. A cyclic-group calculation uses
+$\ell^{v_\ell(N)}$-th powers, not just $\ell$-th powers; algebraic dependencies
+prevent assuming independent uniform reductions without proof.
+
+Unestablished: a density theorem for exceptional orders, production-scale
+harvest/solver costs, universal elliptic closure, and the proposed
+function-field sharpness and smooth-order counting theorems. Weil's bounds
+for specified extensions do not establish those counting statements without
+extensions, asymptotic regimes and uniform error estimates.
+Historical committed JSON files are finite checks, not proofs of these claims.
 
 \section*{4. Where this leaves the program}
 
 \begin{itemize}\itemsep1pt
-\item \textbf{Negative-result paper}: written and revised to v1.1 (branch
-\texttt{negative-result-writeup}, 12 pp): \S5 now \emph{leads} with the
-stabilizer-index theorem (with a per-section table: section / $U$ /
-minimum burden / realizability) and derives the modulus, Popovych and
-elliptic results as corollaries; the one conditional ingredient is named
-in the abstract; \S7 adds two constructive reframings --- the index as a
-\emph{design metric} (security parameter) for AKS-style tests, and the
-unconditional function-field floor --- per external review feedback.
-The obstruction is structural, not parametric: no modulus, no second
-section, no CM curve escapes the floor, whose minimum is exactly the
-twin-smooth sign-split cell that N1/A10 measured dead.
-\item \textbf{Standalone Popovych note}: now written
-(\texttt{doc/popovych-note.tex}, 5 pp) --- self-contained, conditionality
-in the abstract, the non-unit lemma, the burden theorem with the $r = 5$
-computation and comparison table, the Dickman estimate with explicit
-parameters, and the AG5b addendum (Prop.~8: the $X{+}1$ variant is
-mechanism-equivalent to Agrawal's). First quantified evidence beyond
-search ranges; ready to circulate.
-\item \textbf{The only live constructive direction} remains option (b): a
-fundamentally new solver for $0/1$ subset-products in ${\sim}24$k-bit
-smooth-exponent groups at identity-density ${\sim}0.004$. The AG results
-sharpen its stakes: a breakthrough would unblock the torus route only ---
-Popovych and elliptic variants stay strictly harder.
+\item \textbf{Historical negative-result paper}: remains on the separate
+\texttt{negative-result-writeup} branch. It is not merged or revised by this
+audit. Its theorem and infeasibility claims require independent correction.
+\item \textbf{Standalone Popovych note}: the current source distinguishes
+global identities, finite-field exceptions, conditional support and heuristic
+cost. It is still a working note, not certified ready for publication.
+\item \textbf{Constructive work}: validate the real pool's units, prime-power
+moduli, target reachability, parity and component distribution before scaling.
+A8/A10 forced-zero parameters are not A12 literal identity probabilities;
+the quoted ${\sim}0.004$ is not a verified full H7 component-density measure.
+No single surviving solver paradigm has been proved to be the only option.
 \item \textbf{Open problems surfaced}: unconditional sharpness
 (equidistribution); existence of Williams numbers at all (independent
 interest; the sign-split lens suggests why the AGP machine hasn't reached

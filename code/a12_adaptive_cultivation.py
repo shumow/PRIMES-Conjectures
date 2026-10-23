@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
-"""A12: test the 'merge harvest + solve' idea (adaptive/on-demand cultivation).
+"""A12: finite-budget synthetic greedy on-demand cultivation.
 
-User proposal: don't fix the pool then solve; instead SELECT the next smooth
-pair based on the characteristics of the current PARTIAL solution -- column
-generation / branch-and-price with a number-theoretic pricing oracle.
+At each step sample K candidate vectors, accept an improving one if present,
+otherwise perturb. This does not implement a number-theoretic pricing oracle
+or exclude other adaptive strategies. Unlike A8/A10, rho is literal P(0);
+nonzero coordinates are sampled uniformly from 1..ell-1.
 
-This tests the most OPTIMISTIC form (assume any density-rho vector is
-harvestable on demand -- ignores the real N1 constraint that low identity-
-support is expensive): at each step generate a large fresh batch of candidate
-moves and greedily add the one that best reduces the deficit, with restarts to
-escape local minima. Question: does adaptive + unlimited-fresh-moves descend to
-the target at low density and rising dimension D, where fixed-pool local search
-(a6, stalled ~19) and non-adaptive Wagner (a10, reach ~20) both cap out?
-
-If it reaches D >> 20 at rho=0.004, the merge idea beats prior methods and is
-worth pursuing. If it stalls near ~20 too, the density-reach wall is intrinsic
-to the whole method class (adaptive or not, fixed or on-demand).
+The returned statistic is the minimum deficit of a visited state, not a
+verified odd-cardinality subset or a counterexample.
 """
 import random, sys, time
 
 def fresh_vec(D, rho, ell, rng):
+    if D < 0 or not 0 <= rho <= 1 or ell < 2:
+        raise ValueError("invalid vector dimension, zero probability or group order")
     return tuple(0 if rng.random() < rho else rng.randrange(1, ell)
                  for _ in range(D))
 
@@ -32,10 +26,15 @@ def add(s, v, ell):
 def cultivate(D, rho, ell, rng, K, target, max_steps, restarts):
     """Adaptive greedy descent with fresh on-demand moves. Returns min deficit
     (nnz) reached; 0 = solved."""
+    if D < 0 or len(target) != D or K < 1 or max_steps < 0 or restarts < 1:
+        raise ValueError("target must match D and sampling/restart budgets must be valid")
+    if not 0 <= rho <= 1 or ell < 2:
+        raise ValueError("rho must be in [0, 1] and the group order at least 2")
     best_overall = D + 1
     for _ in range(restarts):
         s = tuple([0] * D)
         cur = nnz(s, target, ell)
+        best_overall = min(best_overall, cur)
         stalls = 0
         for step in range(max_steps):
             if cur == 0:
@@ -54,9 +53,9 @@ def cultivate(D, rho, ell, rng, K, target, max_steps, restarts):
                 # perturb (simulated-annealing-style escape), then continue
                 v = fresh_vec(D, rho, ell, rng)
                 s = add(s, v, ell); cur = nnz(s, target, ell); stalls += 1
-                if stalls > 30:
-                    break
-        best_overall = min(best_overall, cur)
+            best_overall = min(best_overall, cur)
+            if stalls > 30:
+                break
     return best_overall
 
 def main():
@@ -65,13 +64,13 @@ def main():
     rho = 0.004
     K = 4000          # fresh candidate moves generated per step (on-demand)
     print(f"Adaptive on-demand cultivation over (Z/{ell})^D, rho={rho}, "
-          f"K={K} fresh moves/step. target = identity.")
-    print("Deficit reached (0 = SOLVED). Compare: a6 fixed-pool stalled ~19; "
-          "a10 Wagner reach ~20.")
+          f"K={K} fresh moves/step; 3 restarts; target = planted sum.")
+    print("rho is literal P(0), unlike A8/A10. Minimum visited deficit (0 = hit).")
+    print("Finite synthetic heuristic, not an odd-subset certificate or a no-go theorem.")
     print(f"{'D':>5}{'min deficit':>13}{'solved?':>9}{'sec':>8}")
     for D in [15, 20, 30, 50, 100, 200]:
-        # nonzero planted target = sum of ~D/2 fresh density-rho vectors, so a
-        # real nonempty solution provably exists; start s=0 has deficit ~D.
+        # The target is reachable in the abstract move family, not necessarily
+        # by the finite sequence of candidates sampled during this search.
         target = tuple([0] * D)
         for _ in range(max(3, D // 2)):
             target = add(target, fresh_vec(D, rho, ell, rng), ell)

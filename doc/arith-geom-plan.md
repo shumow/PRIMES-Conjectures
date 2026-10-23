@@ -1,5 +1,13 @@
 # Plan: the arithmetic-geometric interpretation track (AG)
 
+> **Historical plan; correctness audit 2026-10-22:** the "complete" and
+> "closed" statuses below are not current proof certifications. The revised
+> AG sources distinguish exact identities and upper bounds from conditional
+> smoothness, and do not establish universal elliptic closure or
+> function-field sharpness/existence. Use
+> [current audit status](integration-review-status.md#current-correctness-audit-2026-10-22)
+> rather than the historical gates or theorem numbers.
+
 *Created 2026-09-01 on branch `arith-geom-interpretation`. Findings that seed
 this plan: `doc/arith-geom-findings.md`. This track is theory-first; it reuses
 the repo's measurement record (`data/FINDINGS.md`) and component registry

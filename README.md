@@ -1,14 +1,59 @@
 # Literature Survey: Agrawal's Conjecture and Popovych's Conjecture
 
-> **Integration working branch.** The constructive experiments and the
-> arithmetic-geometric analysis have been combined for joint review. Historical
-> claims and outputs are preserved, but neither track is being certified by this
-> merge. See [`doc/integration-review-status.md`](doc/integration-review-status.md)
-> for the known concerns, provenance, and the next review steps.
+> **Joint correctness audit in progress.** The constructive experiments and the
+> arithmetic-geometric analysis have been combined. Initial follow-up work
+> corrects the written modulus reduction, A4/A6 solver algebra, and benchmark
+> definitions/reporting. The AG sources now distinguish proved identities,
+> conditional smoothness and unproved extensions. Small independent regression
+> tests pass; historical claims and outputs are preserved;
+> neither track is certified. See
+> [`doc/integration-review-status.md`](doc/integration-review-status.md)
+> for verified corrections, outstanding concerns, provenance, and test commands.
+> Original PDFs beside the sources remain historical. Use the separately
+> rebuilt [audit PDFs](#current-audit-papers-provisional) below for current statements.
 
 *Compiled 2026-08-05. Status of both conjectures: **open**. Agrawal's is believed false
 (Lenstra–Pomerance heuristic); Popovych's has no known evidence in either direction beyond
 computation.*
+
+## Running the audit checks
+
+The bounded, standard-library audit suite requires **Python 3.9 or newer**
+(it uses `math.lcm`). From the repository root:
+
+```text
+python -B -m unittest discover -s code -p "*correctness.py" -v
+```
+
+The solver and its independent test oracles do not require Python 3.10's
+`int.bit_count()`. This suite does not run production harvests or the
+SymPy-dependent AG experiment scripts. All 36 tests have been run successfully
+with Python **3.9.13** and **3.14.5**.
+
+## Current audit papers (provisional)
+
+These PDFs were compiled from the revised sources with Tectonic **0.17.0**.
+They contain the audit notices and qualified statements; a successful build
+does not certify the research. Original PDFs in `doc/` are retained unchanged.
+
+| Paper | Rebuilt audit PDF | Current source |
+|---|---|---|
+| Construction working paper | [PDF](doc/audit-pdfs/working-paper.pdf) | [LaTeX](doc/working-paper.tex) |
+| Background and strategy | [PDF](doc/audit-pdfs/background.pdf) | [LaTeX](doc/background.tex) |
+| Arithmetic-geometric analysis | [PDF](doc/audit-pdfs/arith-geom.pdf) | [LaTeX](doc/arith-geom.tex) |
+| Arithmetic-geometric memo | [PDF](doc/audit-pdfs/arith-geom-memo.pdf) | [LaTeX](doc/arith-geom-memo.tex) |
+| Popovych note | [PDF](doc/audit-pdfs/popovych-note.pdf) | [LaTeX](doc/popovych-note.tex) |
+
+To rebuild all five with Tectonic from the repository root in PowerShell,
+keeping outputs separate from historical PDFs:
+
+```powershell
+New-Item -ItemType Directory -Force doc\audit-pdfs | Out-Null
+foreach ($name in @('working-paper', 'background', 'arith-geom', 'arith-geom-memo', 'popovych-note')) {
+    tectonic --outdir doc\audit-pdfs "doc\$name.tex"
+    if ($LASTEXITCODE -ne 0) { throw "PDF build failed: $name" }
+}
+```
 
 ## The conjectures
 
@@ -48,10 +93,13 @@ then n is prime or n² ≡ 1 (mod r). If true → deterministic primality in Õ(
   with r = 5. Heuristic count: at least e^{T²(1−5/m)} counterexamples below e^{T²},
   i.e. density ≫ x^{1−ε} for every ε > 0. Note conditions (c),(d) make n simultaneously
   a **Carmichael and Lucas–Carmichael number** — no such number is known to exist.
-- **OEIS [A329223](https://oeis.org/A329223)**: numbers both Carmichael and
-  Lucas–Carmichael (would-be Agrawal counterexamples). No terms known; empty against
-  Pinch's Carmichael tables (complete to 10¹⁸, later to 10²¹ —
-  [Pinch, "The Carmichael numbers up to 10^18"](https://arxiv.org/pdf/math/0604376)).
+- **OEIS [A329223](https://oeis.org/A329223)**: a **nonempty** sequence of
+  base-2 Fermat pseudoprimes congruent to 3 or 27 mod 80, with every prime
+  factor congruent to 3 mod 80. Its entries are not simultaneous
+  Carmichael/Lucas–Carmichael numbers. The entry identifies
+  330468624532072027 as its only Carmichael member below 2⁶⁴ and states that
+  it is not Lucas–Carmichael. This sequence is not an enumeration of the
+  sought counterexamples.
 - **A. Hegde, P. Devaraj, "Heuristics for the Construction of Counterexamples to the
   Agrawal Conjecture,"** in *Mathematical Analysis and Computing* (Springer PROMS,
   2021), [chapter](https://link.springer.com/chapter/10.1007/978-981-33-4646-8_42).
@@ -116,8 +164,9 @@ then n is prime or n² ≡ 1 (mod r). If true → deterministic primality in Õ(
   Math. Bull. 20 (1977), 133–143.** Asked whether a Carmichael number can
   also satisfy p+1 | n+1 for all p | n; showed such n need ≥ 4 prime
   factors. These are now called **Williams numbers** (Echi's "1-Williams"),
-  and they are exactly the Carmichael+Lucas–Carmichael objects of the L–P
-  construction (OEIS A329223 is this cell plus Agrawal's local refinements).
+  and the L–P construction seeks such Carmichael+Lucas–Carmichael objects
+  with additional local residue conditions. OEIS A329223 instead lists a
+  related nonempty base-2 pseudoprime sequence, not this cell.
 - **R. J. McIntosh, D. Mitra, "Carmichael numbers with p+1 | n+1," J. Number
   Theory 147 (2015), 81–91.** The modern search floor: **no Williams number
   below 2^64 ≈ 1.8·10^19**; only finitely many exist with any given set of
@@ -130,7 +179,9 @@ then n is prime or n² ≡ 1 (mod r). If true → deterministic primality in Õ(
   separately, while their conjunction (Williams) has no known example.
 - **E. W. Howe, "Higher-order Carmichael numbers," Math. Comp. 69 (2000),
   1711–1719.** Defines order-m Carmichael numbers (x ↦ x^n an endomorphism
-  of every Z/n-algebra on m generators); Korselt-type criterion: for each
+  of every Z/n-algebra generated by at most m elements **as a Z/n-module**);
+  this is not a condition on the number of algebra generators.
+  Korselt-type criterion: for each
   p | n and r ≤ m, n ≡ p^i (mod p^r − 1) for some i. Constructed the
   explicit **rigid order-2 example 443372888629441 = 17·31·41·43·89·97·167·
   331** (p²−1 | n−1 for all p; re-verified in code/ag3_hierarchy_check.py);
