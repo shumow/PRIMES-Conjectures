@@ -139,17 +139,16 @@ def residual_after(x_bits, pool, orders, t, N):
     return [(j, orders[j], (t[j] - acc[j]) % orders[j])
             for j in range(len(orders)) if (t[j] - acc[j]) % orders[j] != 0]
 
-def mitm_close(x0, kernel, pool, orders, t, N, odd_idx, rng, budget=200000):
+def mitm_close(x0, kernel, pool, orders, t, N, odd_idx, rng, budget=200000,
+               min_size=1):
     """Bounded exact enumeration of a sampled GF(2)-kernel subspace.
 
     Historical MITM entry point: overlapping XOR moves are not additive in the
     residual group. Gray-code updates account for every bit flip. None means
     this subspace or budget was exhausted, not that the target is infeasible.
     """
-    if budget < 1:
-        raise ValueError("kernel search budget must be positive")
-    if not odd_idx:
-        return x0
+    if budget < 1 or min_size < 1:
+        raise ValueError("kernel search budget and minimum size must be positive")
     K = kernel[:]
     rng.shuffle(K)
     use = K[:26]
@@ -157,7 +156,7 @@ def mitm_close(x0, kernel, pool, orders, t, N, odd_idx, rng, budget=200000):
            for j in odd_idx]
     target = [t[j] % orders[j] for j in odd_idx]
     x, previous = x0, 0
-    if acc == target:
+    if acc == target and bin(x).count("1") >= min_size:
         return x
     for step in range(1, min(1 << len(use), budget)):
         gray = step ^ (step >> 1)
@@ -172,21 +171,28 @@ def mitm_close(x0, kernel, pool, orders, t, N, odd_idx, rng, budget=200000):
             flips ^= bit
         x ^= kv
         previous = gray
-        if acc == target:
+        if acc == target and bin(x).count("1") >= min_size:
             return x
     return None
 
-def full_solve(pool, orders, t, N, rng):
+def full_solve(pool, orders, t, N, rng, *, budget=200000, min_size=1):
+    """Generic odd-subset solver; L-P callers must explicitly use min_size=3."""
+    if min_size < 1 or budget < 1:
+        raise ValueError("search budget and minimum size must be positive")
+    if min_size > N:
+        return None, "cardinality infeasible"
     r = solve_mod2(pool, orders, t, N)
     if r is None:
         return None, "mod2 inconsistent"
     x0, kernel = r
     odd_idx = [j for j, o in enumerate(orders)
                if o % 2 == 1 or o > 2]           # odd primes + higher 2-powers
-    xb = mitm_close(x0, kernel, pool, orders, t, N, odd_idx, rng)
+    xb = mitm_close(x0, kernel, pool, orders, t, N, odd_idx, rng,
+                    budget=budget, min_size=min_size)
     if xb is None:
         return None, "residual search unclosed"
     assert verify(xb, pool, orders, t), "kernel search returned an invalid solution"
+    assert bin(xb).count("1") >= min_size, "kernel search ignored minimum size"
     return xb, "ok"
 
 def verify(x_bits, pool, orders, t):

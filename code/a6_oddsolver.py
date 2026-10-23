@@ -73,7 +73,12 @@ def make_codesigned(n_factor_primes, t0, N, planted_k, rng, ps):
 def col_bit(pool, i, j):
     return pool[i][j] & 1
 
-def solve(comps, orders, pool, t, N, rng, time_budget):
+def solve(comps, orders, pool, t, N, rng, time_budget, *, min_size=1,
+          move_budget=None):
+    if min_size < 1 or time_budget < 0 or (move_budget is not None and move_budget < 0):
+        raise ValueError("invalid cardinality or search budget")
+    if min_size > N:
+        return None, "cardinality infeasible"
     residual_idx = [j for j, o in enumerate(orders) if o % 2 or o > 2]
     sol = solve_mod2(pool, orders, t, N)
     if sol is None:
@@ -88,22 +93,25 @@ def solve(comps, orders, pool, t, N, rng, time_budget):
                     acc[k] = (acc[k] + pool[i][j]) % orders[j]
             xi >>= 1; i += 1
         return [(t[j] - acc[k]) % orders[j] for k, j in enumerate(residual_idx)]
-    def phi(res):
-        return sum(1 for r in res if r != 0)
+    def phi(res, bits):
+        return sum(1 for r in res if r != 0) + (bin(bits).count("1") < min_size)
     x = x0
     res = residual(x)
-    cur = phi(res)
+    cur = phi(res, x)
     if cur and not kernel:
         return None, "unique mod2 solution misses residual"
     t0 = time.monotonic()
     K = kernel
     temp = max(2.0, cur / 4)
     best = cur
-    while cur > 0 and time.monotonic() - t0 < time_budget:
+    moves = 0
+    while (cur > 0 and time.monotonic() - t0 < time_budget
+           and (move_budget is None or moves < move_budget)):
         kv = K[rng.randrange(len(K))]
         nx = x ^ kv
         nres = residual(nx)
-        nc = phi(nres)
+        nc = phi(nres, nx)
+        moves += 1
         if nc <= cur or rng.random() < math.exp(-(nc - cur) / temp):
             x, res, cur = nx, nres, nc
             best = min(best, cur)
@@ -112,15 +120,20 @@ def solve(comps, orders, pool, t, N, rng, time_budget):
             temp = max(1.0, cur / 4)   # reheat
     if cur == 0:
         assert verify(x, orders, pool, t), "local search returned an invalid solution"
+        assert bin(x).count("1") >= min_size, "local search ignored minimum size"
         return x, "ok"
-    return None, f"residual search unclosed (phi={cur}/{len(residual_idx)}, best={best})"
+    return None, f"residual search unclosed (phi={cur}, best={best}, moves={moves})"
 
-def mitm_frontier(orders, pool, t, N, time_budget=15):
+def mitm_frontier(orders, pool, t, N, time_budget=15, *, min_size=1):
     """Exact meet-in-the-middle over the whole pool (feasible only for small N).
     Includes odd-cardinality parity. Exhausted means no solution in this pool;
     timeout/resource-limit outcomes are inconclusive. Returns (bits, msg).
     """
     from itertools import combinations
+    if min_size < 1 or time_budget < 0:
+        raise ValueError("invalid cardinality or search budget")
+    if min_size > N:
+        return None, "cardinality infeasible"
     D = len(orders)
     if N > 44:
         return None, "N too large for direct MITM"
@@ -139,7 +152,10 @@ def mitm_frontier(orders, pool, t, N, time_budget=15):
         for i in combo:
             for j in range(D):
                 acc[j] = (acc[j] + pool[i][j]) % orders[j]
-        left.setdefault(tuple(acc) + (len(combo) % 2,), combo)
+        key = tuple(acc) + (len(combo) % 2,)
+        previous = left.get(key)
+        if previous is None or len(combo) > len(previous):
+            left[key] = combo
     for combo in subsets(range(half, N)):
         if time.monotonic() - t0 > time_budget:
             return None, "timeout"
@@ -149,11 +165,12 @@ def mitm_frontier(orders, pool, t, N, time_budget=15):
                 acc[j] = (acc[j] + pool[i][j]) % orders[j]
         need = tuple((t[j] - acc[j]) % orders[j] for j in range(D)) \
             + (1 - len(combo) % 2,)
-        if need in left:
+        if need in left and len(left[need]) + len(combo) >= min_size:
             xb = 0
             for i in set(left[need]) | set(combo):
                 xb |= (1 << i)
             assert verify(xb, orders, pool, t), "MITM returned an invalid solution"
+            assert bin(xb).count("1") >= min_size, "MITM ignored minimum size"
             return xb, "ok"
     return None, "exhausted"
 

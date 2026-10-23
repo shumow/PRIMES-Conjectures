@@ -27,8 +27,29 @@ python -B -m unittest discover -s code -p "*correctness.py" -v
 
 The solver and its independent test oracles do not require Python 3.10's
 `int.bit_count()`. This suite does not run production harvests or the
-SymPy-dependent AG experiment scripts. All 36 tests have been run successfully
-with Python **3.9.13** and **3.14.5**.
+SymPy-dependent AG experiment scripts. The initial audit's 36 tests were run
+with Python **3.9.13** and **3.14.5**. The real-pool pilot extends the suite
+to **65 passing tests on both runtimes**, adding actual-prime encoding,
+minimum-cardinality and independent-verifier checks.
+
+## Real-pool construction and validation pilot
+
+The [pilot report](doc/real-pool-pilot.md) replaces synthetic-vector assumptions
+with deterministic actual-prime pools, full prime-power moduli, explicit
+target obstructions and bounded solver comparisons. The complete medium
+family supplies **483 certified primes**, with a nontrivial binary kernel;
+its real target remains unresolved, not disproved.
+
+```powershell
+python -B code\real_pool_pilot.py
+python -B code\real_pool_verify.py data\generated\real_pool_pilot.json.gz
+```
+
+The [compressed dataset](data/generated/real_pool_pilot.json.gz) is committed.
+The generator refuses to overwrite it without `--replace`; use a different
+`--output` for a comparison run. The standalone verifier checks source hashes,
+prime certificates, exact encodings/statistics, obstruction witnesses and
+reported outcomes. Planted controls are explicitly separate from real L-P targets.
 
 ## Current audit papers (provisional)
 
