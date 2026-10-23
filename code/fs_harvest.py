@@ -95,12 +95,48 @@ def wilson_interval(successes: int, trials: int, z: float = 1.959964) -> tuple[f
     return (max(0.0, center - half), min(1.0, center + half))
 
 
+def per_draw_stats(accepted: int, duplicates: int, draws: int, sampled: bool,
+                   stop_reason: str) -> dict:
+    """Per-draw statistics with the correct Bernoulli numerator.
+
+    A with-replacement draw is a certified success when it passes every filter
+    and certifies, whether or not the prime was already in the pool — so the
+    i.i.d. per-draw numerator is accepted + duplicates. The distinct-discovery
+    rate (accepted/draws) is a depleting process, NOT identically distributed,
+    and carries no binomial interval. Intervals are only attached when the
+    trial count was fixed in advance (the run did not stop at the pool cap).
+    """
+    if draws < 1 or min(accepted, duplicates) < 0:
+        raise ValueError("invalid per-draw statistics inputs")
+    certified = accepted + duplicates
+    stats: dict = {
+        "certified_draw_successes": certified,
+        "certified_hit_rate_per_draw": certified / draws,
+        "distinct_discovery_rate": accepted / draws,
+        "distinct_rate_caveat": ("depleting (non-i.i.d.) process; "
+                                 "no binomial interval applies"),
+    }
+    if sampled:
+        if stop_reason == "pool_cap":
+            stats["certified_hit_wilson95"] = None
+            stats["interval_caveat"] = ("trial count truncated by the pool "
+                                        "cap; fixed-n binomial interval "
+                                        "does not apply")
+        else:
+            low, high = wilson_interval(certified, draws)
+            stats["certified_hit_wilson95"] = [low, high]
+            stats["sampling_caveat"] = (
+                "with-replacement per-draw interval for the certified-hit "
+                "rate; not an interval for distinct primes, exact group size "
+                "or target feasibility")
+    return stats
+
+
 def summarize_cell(config: HarvestConfig, info: dict, instance, structure) -> dict:
     counts = info["counts"]
     checks = structure["necessary_target_checks"]
     binary = next(entry for entry in checks["prime_field_checks"] if entry["prime"] == 2)
     retained = structure["pool_size"]
-    acceptance = counts["accepted"] / counts["draws"] if counts["draws"] else 0.0
     summary = {
         "certified_primes": counts["accepted"],
         "retained_units": retained,
@@ -125,14 +161,10 @@ def summarize_cell(config: HarvestConfig, info: dict, instance, structure) -> di
         "candidate_family_size": info["candidate_family_size"],
         "complete_family_scan": info["complete_family_scan"],
         "stop_reason": info["stop_reason"],
-        "acceptance_per_draw": acceptance,
     }
-    if config.sampled:
-        low, high = wilson_interval(counts["accepted"], counts["draws"])
-        summary["acceptance_wilson95"] = [low, high]
-        summary["sampling_caveat"] = (
-            "with-replacement per-draw interval; not an interval for distinct "
-            "primes, exact group size or target feasibility")
+    summary.update(per_draw_stats(counts["accepted"], counts["duplicates"],
+                                  counts["draws"], config.sampled,
+                                  info["stop_reason"]))
     return summary
 
 
@@ -208,7 +240,11 @@ def run_track_c() -> dict:
                "a4_solver.py", "a6_oddsolver.py", "a7_lohniebuhr.py",
                "phase1a_calibration.py")
     return {
-        "schema": "fs-harvest/v1",
+        "schema": "fs-harvest/v2",
+        "schema_note": ("v2 after PR #4 coordinator review: per-draw "
+                        "statistics use the certified-success numerator "
+                        "(accepted + duplicates); the distinct-discovery "
+                        "rate is reported separately without an interval"),
         "track": "C (harvest-design comparison)",
         "plan": "doc/harvest-solver-feasibility-plan.md section 7",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),

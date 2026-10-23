@@ -55,6 +55,43 @@ class WilsonInterval(unittest.TestCase):
             fs_harvest.wilson_interval(-1, 5)
 
 
+class PerDrawStats(unittest.TestCase):
+    def test_duplicates_count_as_certified_successes(self):
+        """Regression for the PR #4 review: the Bernoulli numerator is
+        accepted + duplicates; values pinned to the reviewer's independently
+        computed corrected intervals for c2 and c4."""
+        c2 = fs_harvest.per_draw_stats(253, 9, 5_000_000, True, "candidate_cap")
+        self.assertEqual(c2["certified_draw_successes"], 262)
+        self.assertAlmostEqual(c2["certified_hit_wilson95"][0], 4.6427700e-5, places=11)
+        self.assertAlmostEqual(c2["certified_hit_wilson95"][1], 5.9140510e-5, places=11)
+        c4 = fs_harvest.per_draw_stats(430, 24, 5_000_000, True, "candidate_cap")
+        self.assertEqual(c4["certified_draw_successes"], 454)
+        self.assertAlmostEqual(c4["certified_hit_wilson95"][0], 8.2823333e-5, places=11)
+        self.assertAlmostEqual(c4["certified_hit_wilson95"][1], 9.9544819e-5, places=11)
+
+    def test_distinct_rate_is_separate_and_uninterval(self):
+        stats = fs_harvest.per_draw_stats(253, 9, 5_000_000, True, "candidate_cap")
+        self.assertAlmostEqual(stats["distinct_discovery_rate"], 253 / 5_000_000)
+        self.assertGreater(stats["certified_hit_rate_per_draw"],
+                           stats["distinct_discovery_rate"])
+        self.assertIn("no binomial interval", stats["distinct_rate_caveat"])
+
+    def test_pool_cap_truncation_voids_the_interval(self):
+        stats = fs_harvest.per_draw_stats(100, 5, 123_456, True, "pool_cap")
+        self.assertIsNone(stats["certified_hit_wilson95"])
+        self.assertIn("pool cap", stats["interval_caveat"])
+
+    def test_complete_scan_has_no_interval(self):
+        stats = fs_harvest.per_draw_stats(483, 0, 4_366_296, False, "family_exhausted")
+        self.assertNotIn("certified_hit_wilson95", stats)
+
+    def test_rejects_invalid_inputs(self):
+        with self.assertRaises(ValueError):
+            fs_harvest.per_draw_stats(1, 0, 0, True, "candidate_cap")
+        with self.assertRaises(ValueError):
+            fs_harvest.per_draw_stats(-1, 0, 10, True, "candidate_cap")
+
+
 class SmallFamilyEndToEnd(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -80,7 +117,9 @@ class SmallFamilyEndToEnd(unittest.TestCase):
                          summary["retained_units"] - summary["binary_rank"])
         self.assertAlmostEqual(summary["pool_per_group_bit"],
                                summary["retained_units"] / summary["group_bits"])
-        self.assertNotIn("acceptance_wilson95", summary)  # complete scan
+        self.assertNotIn("certified_hit_wilson95", summary)  # complete scan
+        self.assertEqual(summary["certified_draw_successes"],
+                         summary["certified_primes"] + summary["duplicates"])
 
     def test_independent_reverification_of_serialized_instance(self):
         instance = instance_from_json(self.cell["instance"])
