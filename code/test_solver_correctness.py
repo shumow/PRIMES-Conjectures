@@ -61,6 +61,17 @@ class BinaryEliminationTests(unittest.TestCase):
 
 
 class ResidualSearchTests(unittest.TestCase):
+    def test_a4_minimum_size_without_a_residual(self):
+        result, _ = a4_solver.full_solve(
+            [[1], [1], [1]], [2], [1], 3, random.Random(1), min_size=3)
+        self.assertEqual(result, 7)
+
+    def test_a6_minimum_size_without_a_residual(self):
+        result, _ = a6_oddsolver.solve(
+            [(2, 2)], [2], [[1], [1], [1]], [1], 3, random.Random(1), 0.1,
+            min_size=3, move_budget=64)
+        self.assertEqual(result, 7)
+
     def test_residual_target_sign(self):
         result = a4_solver.mitm_close(
             1, [6], [[0], [1], [0]], [3], [1], 3, [0], random.Random(1))
@@ -115,6 +126,13 @@ class ResidualSearchTests(unittest.TestCase):
 
 
 class MeetInTheMiddleOracleTests(unittest.TestCase):
+    def test_larger_witness_not_shadowed_when_minimum_size_is_three(self):
+        pool = [[0], [0], [0], [0]]
+        result, _ = a6_oddsolver.mitm_frontier([3], pool, [0], 4, min_size=3)
+        self.assertIsNotNone(result)
+        self.assertGreaterEqual(bin(result).count("1"), 3)
+        self.assertTrue(satisfies_group(result, pool, [3], [0]))
+
     def test_odd_solution_not_shadowed_by_empty_subset(self):
         pool, orders, target = [[0], [1]], [3], [0]
         result, _ = a6_oddsolver.mitm_frontier(orders, pool, target, 2)
