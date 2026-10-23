@@ -51,6 +51,11 @@ The generator refuses to overwrite it without `--replace`; use a different
 prime certificates, exact encodings/statistics, obstruction witnesses and
 reported outcomes. Planted controls are explicitly separate from real L-P targets.
 
+The [next-phase feasibility plan](doc/harvest-solver-feasibility-plan.md)
+defines three parallel agent tracks for solver controls, exact subgroup
+reachability and harvest-design comparison, with separate file ownership,
+bounded experiments and integration gates.
+
 ## Current audit papers (provisional)
 
 These PDFs were compiled from the revised sources with Tectonic **0.17.0**.
