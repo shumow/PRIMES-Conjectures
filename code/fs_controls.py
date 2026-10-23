@@ -7,6 +7,12 @@ corrected A4 kernel search, the A6 local search, the A6 full-pool MITM, and
 the independent residue oracle on small scopes. The real pilot targets are
 kept unchanged and run under the same budgets for contrast.
 
+Every solver call runs in a spawned worker process under a portable enforced
+wall clock (terminated at the deadline) -- one worker at a time, a watchdog,
+not parallelism -- so timeout enforcement behaves identically on POSIX and
+Windows. Worker exceptions are classified as worker_error, never silently
+swallowed. Reported seconds include child-process startup.
+
 Witness indices are stored only in the experiment records, never passed to a
 solver; solver RNG streams are seeded independently of the planting stream.
 Timeout/budget outcomes are inconclusive by contract. This module edits no
@@ -21,9 +27,10 @@ import gzip
 import hashlib
 import json
 import math
+import multiprocessing
 import platform
+import queue as queue_module
 import random
-import signal
 import subprocess
 import time
 from typing import Optional, Sequence
@@ -42,7 +49,7 @@ BASELINE_SOURCES = ("real_pool_pilot.py", "real_pool_verify.py", "a4_solver.py",
                     "a6_oddsolver.py", "a7_lohniebuhr.py", "phase1a_calibration.py")
 
 BUDGETS = {
-    "wall_seconds_per_solver_call": 60.0,       # enforced with SIGALRM
+    "wall_seconds_per_solver_call": 60.0,       # enforced by process watchdog
     "fixed_k_mitm_work_cap": 200_000_000,       # (left+right) enumerations x components
     "fixed_k_mitm_table_cap": 1 << 21,          # stored left combinations
     "a4_kernel_states": 20_000,
@@ -62,29 +69,41 @@ SCOPES = (("small-complete-family", None),
           ("medium-complete-family", None))
 
 
-class _Timeout(Exception):
-    pass
-
-
-def run_limited(seconds: float, fn, *args, **kwargs):
-    """Run fn under an enforced wall clock; returns (value, enforced_timeout, elapsed)."""
-
-    def handler(signum, frame):
-        raise _Timeout()
-
-    old = signal.signal(signal.SIGALRM, handler)
-    signal.setitimer(signal.ITIMER_REAL, seconds)
-    start = time.monotonic()
+def _worker_entry(fn, payload, out_queue):
+    """Child-process entry: run fn(payload), report success or a classified error."""
     try:
-        value = fn(*args, **kwargs)
-        timed_out = False
-    except _Timeout:
-        value = None
-        timed_out = True
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, old)
-    return value, timed_out, time.monotonic() - start
+        out_queue.put(("ok", fn(payload)))
+    except Exception as exc:                      # classified, never silent
+        out_queue.put(("worker_error", f"{type(exc).__name__}: {exc}"))
+
+
+def run_limited(fn, payload, seconds):
+    """Portable enforced wall clock: run a module-level callable in a spawned
+    worker process and terminate it at the deadline. One worker at a time (a
+    watchdog, not parallelism). Returns (kind, value, elapsed) with kind in
+    {"ok", "timeout", "worker_error"}; elapsed includes child startup.
+    """
+    ctx = multiprocessing.get_context("spawn")
+    out_queue = ctx.Queue()
+    process = ctx.Process(target=_worker_entry, args=(fn, payload, out_queue),
+                          daemon=True)
+    start = time.monotonic()
+    process.start()
+    process.join(seconds)
+    if process.is_alive():
+        process.terminate()
+        process.join(5)
+        if process.is_alive():
+            process.kill()
+            process.join()
+        return "timeout", None, time.monotonic() - start
+    elapsed = time.monotonic() - start
+    try:
+        kind, value = out_queue.get(timeout=5)
+    except queue_module.Empty:
+        kind, value = "worker_error", f"no result returned (exit code {process.exitcode})"
+    out_queue.close()
+    return kind, value, elapsed
 
 
 def fixed_k_mitm(orders: Sequence[int], pool: Sequence[Sequence[int]],
@@ -144,12 +163,16 @@ def mod2_rank_nullity(instance: RealInstance, size: int) -> tuple[int, int]:
     return size - nullity, nullity
 
 
-def classify(instance: RealInstance, indices: Optional[Sequence[int]], message: str,
-             target: Sequence[int], residues: tuple[int, int], size: int,
-             timed_out: bool, has_obstruction: bool) -> dict[str, object]:
+def classify(instance: RealInstance, kind: str, indices: Optional[Sequence[int]],
+             message: str, target: Sequence[int], residues: tuple[int, int],
+             size: int, has_obstruction: bool) -> dict[str, object]:
     out: dict[str, object] = {"message": message}
-    if timed_out:
+    if kind == "timeout":
         out["status"] = "timeout_enforced"
+        out["message"] = "enforced wall clock"
+        return out
+    if kind == "worker_error":
+        out["status"] = "worker_error"
         return out
     if indices is not None:
         if any(i >= size for i in indices):
@@ -171,6 +194,49 @@ def classify(instance: RealInstance, indices: Optional[Sequence[int]], message: 
     return out
 
 
+# ---- module-level solver workers (picklable for the spawn watchdog) ----
+
+def _work_fixed_k(payload):
+    orders, rows, target, k, work_cap, table_cap = payload
+    indices, message, counts = fixed_k_mitm(orders, rows, target, k,
+                                            work_cap=work_cap, table_cap=table_cap)
+    return indices, message, {"counts": counts}
+
+
+def _work_a4(payload):
+    rows, orders, target, size, seed, budget, min_size = payload
+    bits, message = a4_solver.full_solve(rows, orders, target, size,
+                                         random.Random(seed), budget=budget,
+                                         min_size=min_size)
+    indices = [i for i in range(size) if bits >> i & 1] if bits is not None else None
+    return indices, message, {}
+
+
+def _work_a6_local(payload):
+    rows, orders, target, size, seed, seconds, min_size = payload
+    comps = [(next(iter(a4_solver.prime_power_factors(order))), order)
+             for order in orders]
+    bits, message = a6_oddsolver.solve(comps, orders, rows, target, size,
+                                       random.Random(seed), seconds,
+                                       min_size=min_size)
+    indices = [i for i in range(size) if bits >> i & 1] if bits is not None else None
+    return indices, message, {}
+
+
+def _work_a6_mitm(payload):
+    rows, orders, target, size, seconds, min_size = payload
+    bits, message = a6_oddsolver.mitm_frontier(orders, rows, target, size,
+                                               seconds, min_size=min_size)
+    indices = [i for i in range(size) if bits >> i & 1] if bits is not None else None
+    return indices, message, {}
+
+
+def _work_oracle(payload):
+    instance, size, residues = payload
+    outcome = residue_oracle(instance, size, residues)
+    return outcome.get("indices"), outcome["status"], {}
+
+
 def run_solvers(instance: RealInstance, size: int, target: Sequence[int],
                 residues: tuple[int, int], support: Optional[int],
                 solver_seed: str, has_obstruction: bool) -> dict[str, object]:
@@ -179,86 +245,55 @@ def run_solvers(instance: RealInstance, size: int, target: Sequence[int],
     wall = BUDGETS["wall_seconds_per_solver_call"]
     results: dict[str, object] = {}
 
-    def record(name: str, value, timed_out: bool, elapsed: float,
-               extra: Optional[dict[str, object]] = None) -> None:
-        indices, message = (None, "timeout") if timed_out else value
-        entry = classify(instance, indices, message, target, residues, size,
-                         timed_out, has_obstruction)
+    def record(name: str, fn, payload,
+               extra: Optional[dict[str, object]] = None) -> dict[str, object]:
+        kind, value, elapsed = run_limited(fn, payload, wall)
+        if kind == "ok":
+            indices, message, more = value
+        else:
+            indices, message, more = None, value if kind == "worker_error" else "", {}
+        entry = classify(instance, kind, indices, str(message), target, residues,
+                         size, has_obstruction)
         entry["seconds"] = round(elapsed, 3)
-        if extra:
-            entry.update(extra)
+        for source in (more, extra or {}):
+            entry.update(source)
         results[name] = entry
+        return entry
 
     for k in sorted({3, support} - {None}):
-        def mitm_call(k=k):
-            indices, message, counts = fixed_k_mitm(
-                orders, rows, target, k, work_cap=BUDGETS["fixed_k_mitm_work_cap"],
-                table_cap=BUDGETS["fixed_k_mitm_table_cap"])
-            return (indices, message), counts
-
-        value, timed_out, elapsed = run_limited(wall, mitm_call)
-        pair, counts = value if value is not None else ((None, "timeout"), {})
-        record(f"fixed_k_mitm_k{k}", pair, timed_out, elapsed,
-               {"exact_cardinality": k, "scope": "size-k subsets of this pool only",
-                "counts": counts})
-        entry = results[f"fixed_k_mitm_k{k}"]
+        entry = record(f"fixed_k_mitm_k{k}", _work_fixed_k,
+                       (orders, rows, target, k, BUDGETS["fixed_k_mitm_work_cap"],
+                        BUDGETS["fixed_k_mitm_table_cap"]),
+                       {"exact_cardinality": k,
+                        "scope": "size-k subsets of this pool only"})
         if entry["status"] == "proved_no_solution":
             entry["status"] = "proved_no_solution_exact_cardinality"
 
-    def a4_call():
-        bits, message = a4_solver.full_solve(
-            rows, orders, target, size, random.Random(f"{solver_seed}/a4"),
-            budget=BUDGETS["a4_kernel_states"], min_size=BUDGETS["minimum_size"])
-        indices = [i for i in range(size) if bits >> i & 1] if bits is not None else None
-        return indices, message
+    record("a4_kernel", _work_a4,
+           (rows, orders, target, size, f"{solver_seed}/a4",
+            BUDGETS["a4_kernel_states"], BUDGETS["minimum_size"]),
+           {"budget_states": BUDGETS["a4_kernel_states"]})
 
-    value, timed_out, elapsed = run_limited(wall, a4_call)
-    record("a4_kernel", value if value is not None else (None, "timeout"),
-           timed_out, elapsed, {"budget_states": BUDGETS["a4_kernel_states"]})
-
-    def a6_call():
-        comps = [(next(iter(a4_solver.prime_power_factors(order))), order)
-                 for order in orders]
-        bits, message = a6_oddsolver.solve(
-            comps, orders, rows, target, size, random.Random(f"{solver_seed}/a6"),
-            BUDGETS["a6_local_seconds"], min_size=BUDGETS["minimum_size"])
-        indices = [i for i in range(size) if bits >> i & 1] if bits is not None else None
-        return indices, message
-
-    value, timed_out, elapsed = run_limited(wall, a6_call)
-    record("a6_local", value if value is not None else (None, "timeout"),
-           timed_out, elapsed, {"time_budget_seconds": BUDGETS["a6_local_seconds"]})
+    record("a6_local", _work_a6_local,
+           (rows, orders, target, size, f"{solver_seed}/a6",
+            BUDGETS["a6_local_seconds"], BUDGETS["minimum_size"]),
+           {"time_budget_seconds": BUDGETS["a6_local_seconds"]})
 
     if size <= BUDGETS["a6_mitm_scope_cap"]:
-        def a6_mitm_call():
-            bits, message = a6_oddsolver.mitm_frontier(
-                orders, rows, target, size, BUDGETS["a6_mitm_seconds"],
-                min_size=BUDGETS["minimum_size"])
-            indices = [i for i in range(size) if bits >> i & 1] if bits is not None else None
-            return indices, message
-
-        value, timed_out, elapsed = run_limited(wall, a6_mitm_call)
-        record("a6_mitm", value if value is not None else (None, "timeout"),
-               timed_out, elapsed)
+        record("a6_mitm", _work_a6_mitm,
+               (rows, orders, target, size, BUDGETS["a6_mitm_seconds"],
+                BUDGETS["minimum_size"]))
     else:
         results["a6_mitm"] = {"status": "resource_limit",
                               "message": "declared scope cap", "seconds": 0.0}
 
     if size <= BUDGETS["oracle_scope_cap"]:
-        def oracle_call():
-            outcome = residue_oracle(instance, size, residues)
-            return outcome.get("indices"), outcome["status"]
-
-        value, timed_out, elapsed = run_limited(wall, oracle_call)
-        indices, status = value if value is not None else (None, "timeout")
-        if indices is not None:
-            verify_group_solution(instance, indices, target, residues)
-        results["independent_residue_oracle"] = {
-            "status": "timeout_enforced" if timed_out else status,
-            "indices": list(indices) if indices is not None else None,
-            "seconds": round(elapsed, 3),
-            "role": "independent oracle; searches any odd cardinality >= 3",
-        }
+        entry = record("independent_residue_oracle", _work_oracle,
+                       (instance, size, residues))
+        if entry["status"] == "inconclusive_budget" and entry["message"] in (
+                "proved_no_solution",):
+            entry["status"] = "proved_no_solution"
+        entry["role"] = "independent oracle; searches any odd cardinality >= 3"
     return results
 
 
@@ -354,7 +389,8 @@ def run_track_a(pilot_path: Path) -> dict[str, object]:
         print(f"{cohort}[:{size}] real target done", flush=True)
     here = Path(__file__).resolve().parent
     return {
-        "schema": "fs-controls/v1",
+        "schema": "fs-controls/v1.1",
+        "schema_changes": "v1.1: portable multiprocessing watchdog (all platforms), worker_error status, timings include child startup; fields otherwise as v1",
         "track": "A: solver controls (research/feasibility-solver-controls)",
         "plan_commit": PLANNING_COMMIT, "pilot_commit": PILOT_COMMIT,
         "working_commit": git_head(),
@@ -367,6 +403,8 @@ def run_track_a(pilot_path: Path) -> dict[str, object]:
         "pilot_verification_summary": verification,
         "budgets": {key: list(value) if isinstance(value, tuple) else value
                     for key, value in BUDGETS.items()},
+        "watchdog": "spawned worker process per solver call, terminated at the "
+                    "deadline; sequential (one worker at a time)",
         "witness_isolation": "witnesses live only in experiment records; solver "
                              "RNG streams are seeded from a separate label",
         "experiments": experiments,
