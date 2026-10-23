@@ -33,8 +33,9 @@ via Twin Smooth Integers\\
 The proof of Theorem~\ref{thm:lp} and the modulus normalization in
 Section~\ref{sec:subset} have been corrected on the joint-correctness branch.
 The remaining feasibility estimates are historical, not validated by this
-correction. The tracked PDF is the original draft; current audit status is
-recorded in \texttt{doc/integration-review-status.md}.
+correction. The same-name PDF beside this source is the original draft;
+the rebuilt audit version is in \texttt{doc/audit-pdfs/}. Current audit status
+is recorded in \texttt{doc/integration-review-status.md}.
 
 \begin{abstract}
 Agrawal's conjecture asserts that for coprime $n$ and prime $r$, the congruence
@@ -183,12 +184,12 @@ and define the \emph{pool}
 \tfrac{p+1}{4} \text{ is } Q_+\text{-smooth} \Bigr\}.
 \]
 For a nonempty pool let
-\[
-\Lambda_-=\lcm\{p-1:p\in\cP\}
-          =2\,\lcm\{(p-1)/2:p\in\cP\},\qquad
-\Lambda_+=\lcm\{p+1:p\in\cP\}
+\begin{align*}
+\Lambda_-&=\lcm\{p-1:p\in\cP\}
+          =2\,\lcm\{(p-1)/2:p\in\cP\},\\
+\Lambda_+&=\lcm\{p+1:p\in\cP\}
           =4\,\lcm\{(p+1)/4:p\in\cP\}.
-\]
+\end{align*}
 The factors $2$ and $4$ belong outside the lcm of the \emph{normalized odd
 parts}, not outside the lcm of $p-1$ and $p+1$.
 

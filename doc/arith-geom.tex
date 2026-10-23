@@ -38,9 +38,10 @@ and the Torus Dimension Count Behind the Double Condition\\
 This source corrects the fixed-ring dictionary, support hypothesis and global
 versus finite-field distinctions. The elliptic section now proves only its
 cofactor upper bound; the function-field appendix is exploratory. Historical
-N1/A10 experiments do not establish an algorithmic no-go theorem. The tracked
-PDF is the original version, not this revision. Current status and unresolved
-modeling questions are in \texttt{doc/integration-review-status.md}.
+N1/A10 experiments do not establish an algorithmic no-go theorem. The
+same-name PDF beside this source is historical; the rebuilt audit version is
+in \texttt{doc/audit-pdfs/}. Current status and unresolved modeling questions
+are in \texttt{doc/integration-review-status.md}.
 
 \begin{abstract}
 We study the cyclotomic support bounds of Frobenius-matching constructions
@@ -426,16 +427,19 @@ exceptional orders is not excluded by this argument.
 \section{Numerical validation}\label{sec:numerics}
 
 \texttt{code/ag2\_torus\_check.py} (deterministic; output in
-\texttt{data/generated/ag2\_torus\_check.json}) verifies, over $67$ sample
-primes spanning $(r,d) \in \{(5,4), (13,4), (41,4), (7,3), (7,6), (19,3),
-(11,5), (23,11)\}$ --- sampled independently of the A11 scan, which drew
+\texttt{data/generated/ag2\_torus\_check.json}) verifies $67$ sample primes
+spanning
+\[
+(r,d)\in\{(5,4),(13,4),(41,4),(7,3),(7,6),(19,3),(11,5),(23,11)\}.
+\]
+These were sampled independently of the A11 scan, which drew
 $p > 1000$ in one fixed residue class per $r$, whereas here $p$ runs from
 $3$ upward over all classes of the given order, and the implementation is
 independent (exact orders by polynomial arithmetic in $\F_p[X]/\Phi_r$
 rather than A11's level attribution):
 
 \begin{center}
-\begin{tabular}{llr}
+\begin{tabular}{@{}lp{0.62\linewidth}r@{}}
 \hline
 check & statement & result \\
 \hline
@@ -453,9 +457,11 @@ V6 & burden formula (Thm.~\ref{thm:dimcount}(d)) vs.\ A11 table & $11/11$ \\
 
 These are historical finite checks; they do not prove support saturation.
 V4's $0$ exceptions were compared to the historical $1/\ell$ model
-($\approx 0.19$ misses expected over this sample). V6 reproduces, for
-$r \in \{5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41\}$, both the burden value
-and the minimizing $d$ of the A11 measurement
+($\approx 0.19$ misses expected over this sample). V6 reproduces both the
+burden value and minimizing $d$ of the A11 measurement for
+\[
+r\in\{5,7,11,13,17,19,23,29,31,37,41\}
+\]
 (\texttt{data/FINDINGS.md}, 2026-08-24).
 
 \section{A quantified heuristic for Popovych's conjecture}\label{sec:popovych}
@@ -702,12 +708,12 @@ mechanism instances pass $T(1, n, r)$, while $0/48$ pass $T(2, n, r)$.
 
 \subsection{Numerical validation}\label{sec:popnumerics}
 
-\texttt{code/ag5\_popovych\_check.py} (deterministic; output in
-\texttt{data/generated/ag5\_popovych\_check.json}) verifies, over $56$
+\path{code/ag5_popovych_check.py} (deterministic; output in
+\path{data/generated/ag5_popovych_check.json}) verifies, over $56$
 sample primes spanning the same $(r,d)$ grid as Section~\ref{sec:numerics}:
 
 \begin{center}
-\begin{tabular}{llr}
+\begin{tabular}{@{}lp{0.62\linewidth}r@{}}
 \hline
 check & statement & result \\
 \hline
@@ -885,11 +891,11 @@ on the Williams cell must engage that contrast, not the depth.
 
 \subsection{Numerical checks}\label{sec:hiernumerics}
 
-\texttt{code/ag3\_hierarchy\_check.py} (deterministic; output in
-\texttt{data/generated/ag3\_hierarchy\_check.json}):
+\path{code/ag3_hierarchy_check.py} (deterministic; output in
+\path{data/generated/ag3_hierarchy_check.json}):
 
 \begin{center}
-\begin{tabular}{llr}
+\begin{tabular}{@{}lp{0.62\linewidth}r@{}}
 \hline
 check & statement & result \\
 \hline
@@ -1041,12 +1047,12 @@ special sequences, as in \cite{GK12,CouveignesLercier}).
 
 \subsection{Numerical validation}\label{sec:ellnumerics}
 
-\texttt{code/ag4\_elliptic\_check.py} (deterministic; output in
-\texttt{data/generated/ag4\_elliptic\_check.json}), on $E : y^2 = x^3 - x$
+\path{code/ag4_elliptic_check.py} (deterministic; output in
+\path{data/generated/ag4_elliptic_check.json}), on $E : y^2 = x^3 - x$
 with $r \in \{13, 17\}$ and ten ordinary primes $p \equiv 1 \pmod 4$ each:
 
 \begin{center}
-\begin{tabular}{llr}
+\begin{tabular}{@{}lp{0.62\linewidth}r@{}}
 \hline
 check & statement & result \\
 \hline

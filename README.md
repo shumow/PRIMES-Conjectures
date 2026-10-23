@@ -9,12 +9,51 @@
 > neither track is certified. See
 > [`doc/integration-review-status.md`](doc/integration-review-status.md)
 > for verified corrections, outstanding concerns, provenance, and test commands.
-> Tracked PDFs are the pre-audit versions; use the revised sources and status
-> document for current statements.
+> Original PDFs beside the sources remain historical. Use the separately
+> rebuilt [audit PDFs](#current-audit-papers-provisional) below for current statements.
 
 *Compiled 2026-08-05. Status of both conjectures: **open**. Agrawal's is believed false
 (Lenstra–Pomerance heuristic); Popovych's has no known evidence in either direction beyond
 computation.*
+
+## Running the audit checks
+
+The bounded, standard-library audit suite requires **Python 3.9 or newer**
+(it uses `math.lcm`). From the repository root:
+
+```text
+python -B -m unittest discover -s code -p "*correctness.py" -v
+```
+
+The solver and its independent test oracles do not require Python 3.10's
+`int.bit_count()`. This suite does not run production harvests or the
+SymPy-dependent AG experiment scripts. All 36 tests have been run successfully
+with Python **3.9.13** and **3.14.5**.
+
+## Current audit papers (provisional)
+
+These PDFs were compiled from the revised sources with Tectonic **0.17.0**.
+They contain the audit notices and qualified statements; a successful build
+does not certify the research. Original PDFs in `doc/` are retained unchanged.
+
+| Paper | Rebuilt audit PDF | Current source |
+|---|---|---|
+| Construction working paper | [PDF](doc/audit-pdfs/working-paper.pdf) | [LaTeX](doc/working-paper.tex) |
+| Background and strategy | [PDF](doc/audit-pdfs/background.pdf) | [LaTeX](doc/background.tex) |
+| Arithmetic-geometric analysis | [PDF](doc/audit-pdfs/arith-geom.pdf) | [LaTeX](doc/arith-geom.tex) |
+| Arithmetic-geometric memo | [PDF](doc/audit-pdfs/arith-geom-memo.pdf) | [LaTeX](doc/arith-geom-memo.tex) |
+| Popovych note | [PDF](doc/audit-pdfs/popovych-note.pdf) | [LaTeX](doc/popovych-note.tex) |
+
+To rebuild all five with Tectonic from the repository root in PowerShell,
+keeping outputs separate from historical PDFs:
+
+```powershell
+New-Item -ItemType Directory -Force doc\audit-pdfs | Out-Null
+foreach ($name in @('working-paper', 'background', 'arith-geom', 'arith-geom-memo', 'popovych-note')) {
+    tectonic --outdir doc\audit-pdfs "doc\$name.tex"
+    if ($LASTEXITCODE -ne 0) { throw "PDF build failed: $name" }
+}
+```
 
 ## The conjectures
 

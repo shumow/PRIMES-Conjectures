@@ -30,8 +30,8 @@ Popovych's Conjecture\\ \large (standalone note --- v0.1)}
 \noindent\textbf{Audit revision (22 October 2026).}
 The support lower bounds below are conditional, not consequences of the
 collapse upper bounds alone. Special finite-field collapses are possible.
-The tracked PDF is historical and has not been rebuilt from this revision.
-See \texttt{doc/integration-review-status.md}.
+The same-name PDF beside this source is historical. The rebuilt audit version
+is in \texttt{doc/audit-pdfs/}; see \texttt{doc/integration-review-status.md}.
 
 \begin{abstract}
 Agrawal's conjecture asserts that for a prime $r \nmid n$ the congruence
@@ -334,8 +334,11 @@ mechanism instances pass $T(1, n, r)$, while $0/48$ pass $T(2, n, r)$.
 
 Historical finite checks were made by a deterministic script
 (\texttt{code/ag5\_popovych\_check.py} of the repository, with committed
-JSON output), on $56$ sample primes spanning $(r, d) \in \{(5,4), (13,4),
-(41,4), (7,6), (7,3), (11,5), (23,11)\}$: Frobenius matching for $X + 2$
+JSON output), on $56$ sample primes spanning
+\[
+(r,d)\in\{(5,4),(13,4),(41,4),(7,6),(7,3),(11,5),(23,11)\}.
+\]
+Frobenius matching for $X+2$
 ($56/56$); the first section's collapse bound fails to absorb $X + 2$ at
 even $d$ ($35/36$); the top level $e = d$ is present in $\rho'_r(p)$
 ($55/56$); large primes of all levels $e \mid d$ divide $\rho'_r(p)$

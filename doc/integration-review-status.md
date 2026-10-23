@@ -128,12 +128,14 @@ Seven independent geometric regression tests use direct cyclotomic
 polynomial reduction and ordinary modular arithmetic, not the AG scripts'
 SymPy helpers. **All 36 correctness tests pass.** The five edited paper
 sources have matching environments, unique labels and resolved local
-references/citations in a structural check. This is not a TeX compilation:
-`pdflatex` is unavailable, and no PDF has been regenerated.
+references/citations in a structural check. The initial audit did not include
+a TeX compilation because `pdflatex` was unavailable. The PR review follow-up
+below records subsequent successful builds with Tectonic.
 
 **Preservation and limits:** original findings, JSON outputs, datasets, paper
-bylines, and PDFs are retained. The PDF versions of the corrected LaTeX sources
-are historical and have not been regenerated. Old solver timings and frontier
+bylines, and original PDFs are retained unchanged. The same-name PDFs beside
+the corrected sources are historical; current rebuilt versions are separate
+in `doc/audit-pdfs/`. Old solver timings and frontier
 claims are not measurements of the corrected code. Large harvests, private
 corpus validation and real-pool component modeling remain pending: unit checks,
 actual prime-power moduli, target reachability, and measured identity
@@ -146,6 +148,46 @@ reproduction of legacy output-generating experiments with provenance,
 the rest of the survey/cell-census literature and numerical checks, and
 properly specified proofs for any stronger hypotheses or extensions.
 Older execution plans are historical instructions, not authority for this audit.
+
+### PR #2 review follow-up (2026-10-22)
+
+Feedback: [review comment 6353782287](https://github.com/shumow/PRIMES-Conjectures/pull/2#issuecomment-6353782287).
+The compatibility and stale-PDF concerns are accepted and addressed:
+
+- **Python:** independently reproduced all ten `AttributeError` errors in
+  the 14 solver tests on Python 3.9.13. Replaced `int.bit_count()` in A4 and
+  its independent test oracles with portable binary population counts.
+  The entire 36-test audit suite now passes on **3.9.13 and 3.14.5**.
+  README documents the suite's Python 3.9+ requirement (`math.lcm`) rather
+  than silently imposing Python 3.10.
+- **PDFs:** all five revised sources now compile with **Tectonic 0.17.0**.
+  Rebuilt outputs are in [audit-pdfs/](audit-pdfs/), linked from README;
+  the original source-side PDFs remain byte-identical to the preserved
+  baseline. Audit notices identify both sets unambiguously.
+  The PDFs have 7, 3, 16, 3 and 5 pages respectively (working paper,
+  background, AG analysis, memo and Popovych note). PDF parsing confirmed
+  readable, nonempty pages, font resources and current audit/correction text.
+  Compiler exits were zero, with no undefined references/citations or missing
+  characters. Long tables, formulas and paths were wrapped to avoid major
+  overflow; remaining minor typesetting warnings do not constitute proof
+  or publication-readiness certification.
+- **Reference log:** an explicit erratum identifies arXiv:1710.08674 as
+  Lance Gurney's thesis. The original dated "Borger-Gurney" wording is
+  retained as historical evidence, not the current citation.
+- **Gcd clarification:** for a nonempty pool of primes `p = 3 mod 80`,
+  `v2(p-1)=1` and `v2(p+1)=2`. Disjoint odd factor-base supports therefore
+  give `gcd(lcm(p-1), lcm(p+1))=2`. This proves CRT compatibility of the
+  corrected targets, not existence of a subset realizing them.
+
+Source SHA256 values used for the rebuilt audit PDFs:
+
+| Source in `doc/` | SHA256 |
+|---|---|
+| `working-paper.tex` | `9d2585a0d2aa02fb94b22340abc5530c8a85df4e00b245ad2650ec8cb42cd922` |
+| `background.tex` | `749777776a59cbfc7e4abb440781c6966846f4cdc66c10be309a2a7352066f03` |
+| `arith-geom.tex` | `427f809e879f421c11d10ebf11fe173ec51adb90b14272db96cebb76ccd8fe3a` |
+| `arith-geom-memo.tex` | `67a0477f91dce1eeec9e9cfbc03a2dafdcbc5508b8cc3745973e77e891afd8dc` |
+| `popovych-note.tex` | `c14bea48549685b515d3fdc633e87848e59f08cc634cc01faca31e0f9ac06be9` |
 
 ## 1. Captured inputs and result
 

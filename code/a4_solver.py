@@ -55,7 +55,7 @@ def gf2_solve(rows, rhs, ncols):
     x0 = 0
     for pc in descending:
         m, bb = pivots[pc]
-        if bb ^ ((m & x0).bit_count() % 2):
+        if bb ^ (bin(m & x0).count("1") % 2):
             x0 |= (1 << pc)
     kernel = []
     for fc in range(ncols):
@@ -64,7 +64,7 @@ def gf2_solve(rows, rhs, ncols):
         kv = 1 << fc
         for pc in descending:
             m, _ = pivots[pc]
-            if (m & kv).bit_count() % 2:
+            if bin(m & kv).count("1") % 2:
                 kv |= (1 << pc)
         kernel.append(kv)
     return x0, kernel
@@ -250,7 +250,7 @@ def study_mod2_scale(rng):
         dt = time.time() - t0
         assert r is not None, "planted instance has an inconsistent projection"
         x0, _ = r
-        assert x0.bit_count() % 2 == 1
+        assert bin(x0).count("1") % 2 == 1
         assert all(sum(pool[i][j] for i in range(N) if x0 >> i & 1) % 2
                    == t[j] % 2 for j, o in enumerate(orders) if o % 2 == 0)
         print(f"{B:>6}{Bp:>9}{len(comps):>7}{dim:>9.0f}{two_bits:>11.0f}"

@@ -11,12 +11,12 @@ import a6_oddsolver
 
 
 def satisfies_binary(mask, rows, rhs):
-    return all((mask & row).bit_count() % 2 == b
+    return all(bin(mask & row).count("1") % 2 == b
                for row, b in zip(rows, rhs))
 
 
 def satisfies_group(mask, pool, orders, target):
-    if mask.bit_count() % 2 != 1:
+    if bin(mask).count("1") % 2 != 1:
         return False
     return all(sum(row[j] for i, row in enumerate(pool) if mask >> i & 1) % order
                == target[j] % order for j, order in enumerate(orders))
