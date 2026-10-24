@@ -25,6 +25,15 @@ the squarefree subset problem, nor does it prove that a Boolean witness does
 not exist. Membership means that no separating group character can rule out
 this particular full-pool target; combinatorial obstacles may remain.
 
+Membership here is not vacuous. In the binary quotient `G / 2G`, the
+483 generators have rank **393 in 394 coordinates**, a codimension-one
+deficit; all **97 odd prime-field quotients** have full row rank. The
+generated subgroup is therefore proper, with **index at least two**.
+There is a nontrivial order-two character annihilating every generator,
+and the real target lies in its kernel. The positive result thus passes a
+genuine necessary constraint. The prime-field ranks alone do not determine
+the exact full prime-power subgroup index or establish Boolean feasibility.
+
 The four smaller real-target cases remain nonmembers with directly verified
 character certificates. All five planted-control cases are members, as
 expected. Their integer certificates do not recover the hidden Boolean
@@ -219,6 +228,17 @@ For the full medium instance:
   coefficients. The nonzero coefficients are not restricted to one.
 - Both full-instance membership computations completed within the stated
   budgets; their representation estimate was approximately 45 MiB.
+
+Separately, the [exact product-size bound](fs-controls-findings.md) for this
+real fixed-LCM target gives `P_91 < Lambda_minus + 1 <= P_92`, where `P_k`
+is the product of the `k` largest eligible primes. With odd cardinality,
+this requires **at least 93 distinct-prime, zero-or-one factors**. That
+bound applies to Boolean subset products, not to unrestricted integer
+coefficients: neither the witness's 483 entries nor its 262 nonzero
+coefficients represent a selected-prime cardinality. The membership
+certificate gives no evidence that the Boolean size floor can be attained,
+or that any larger eligible subset exists. Conversely, the Boolean size
+bound does not constrain or invalidate the integer-coefficient certificate.
 
 The pivot summaries are algorithm diagnostics, not independently certified
 normal forms or subgroup-order calculations. The independently certified
