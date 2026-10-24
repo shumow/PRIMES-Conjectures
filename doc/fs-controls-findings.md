@@ -98,9 +98,12 @@ the frozen pilot is N=483 (rank 393, nullity 90, 2⁹⁰ affine family):
 search is *subsumed by arithmetic*: since $n \equiv -1 \pmod{\Lambda_+}$ and
 $n \equiv 1 \pmod{\Lambda_-}$ force $n \ge \Lambda_- + 1$
 ($\log_2 \Lambda_- \approx 3094.5$), a greedy largest-primes product bound
-already requires **at least 92 selected primes** for the frozen full-483 real
-target (the coordinator's accounting gives 93; either way, far above any
-small support). The size-3 run therefore has value only as an end-to-end
+has raw threshold 92 for the frozen full-483 real target. An exact integer
+check at integration gives
+$P_{91} < \Lambda_- + 1 \le P_{92}$, where $P_k$ is the product of the
+$k$ largest eligible primes. The required odd cardinality therefore gives
+**at least 93 selected primes**, far above any small support. The size-3 run
+has value only as an end-to-end
 exercise of the exact pipeline on the real target, not as new information
 about it — and small-support control recovery is calibration, not evidence
 of approaching that target.
@@ -117,7 +120,7 @@ of approaching that target.
    support 3 and 5 at N = 483.** The binding gap is residual search in the
    2⁹⁰ kernel family — a4's bounded kernel enumeration and a6's annealing
    both fail it at support ≥ 5 within 60 s. Note the real target, by the
-   size bound above, lives at support ≥ 92: closing the 5–17 control gap is
+   size bound above, lives at support ≥ 93: closing the 5–17 control gap is
    a prerequisite capability milestone, not a near-target event.
 3. **Recommendation** (one, per the handback checklist; qualified per the
    coordinator review): before any larger search or budget escalation,
@@ -166,6 +169,7 @@ of approaching that target.
   baseline permits N ≤ 44; and `a6_oddsolver.solve`'s annealing reports
   only φ/best/moves on failure — a per-component residual histogram would
   help future calibration. Neither blocked progress.
-- Integration destination (review note): PR #5 targets the planning branch
-  so the diff is exactly the Track A work; retargeting to `main` is a
-  coordinator decision and merges cleanly either way.
+- Integration destination: PR #5 initially targeted the planning branch
+  to isolate the Track A diff. The coordinator subsequently retargeted and
+  merged it into `research/harvest-solver-feasibility` at `8368e56`, alongside
+  Tracks B and C; landing that combined branch on `main` is a separate gate.
