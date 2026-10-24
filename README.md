@@ -30,7 +30,9 @@ The solver and its independent test oracles do not require Python 3.10's
 SymPy-dependent AG experiment scripts. The initial audit's 36 tests were run
 with Python **3.9.13** and **3.14.5**. The real-pool pilot extends the suite
 to **65 passing tests on both runtimes**, adding actual-prime encoding,
-minimum-cardinality and independent-verifier checks.
+minimum-cardinality and independent-verifier checks. The three first-wave
+feasibility tracks extend the combined suite to **116 passing tests on both
+runtimes**.
 
 ## Real-pool construction and validation pilot
 
@@ -55,6 +57,40 @@ The [next-phase feasibility plan](doc/harvest-solver-feasibility-plan.md)
 defines three parallel agent tracks for solver controls, exact subgroup
 reachability and harvest-design comparison, with separate file ownership,
 bounded experiments and integration gates.
+
+## Combined harvest-and-solver feasibility baseline
+
+The three first-wave tracks are integrated with their original histories,
+reports and datasets preserved:
+
+| Track | Established result | Limitation |
+|---|---|---|
+| [A: solver controls](doc/fs-controls-findings.md) | The full 483-prime pool's support-3 planted controls were recovered by the bounded exact-cardinality solver; all 158 recorded solutions were independently checked. | No tested method recovered the support-5, 9 or 17 controls on that pool within the declared budgets. Nullity-zero control successes do not demonstrate residual-search power. |
+| [B: exact reachability](doc/fs-reachability-findings.md) | The full 483-prime real target belongs to the generated subgroup, with a directly checked integer-coefficient witness. Four smaller real-target scopes have separating-character certificates. | The full-pool witness is not Boolean. Membership neither supplies a squarefree subset nor proves that one does not exist. |
+| [C: harvest designs](doc/fs-harvest-findings.md) | None of the four new measured pools beats the pilot anchor's observed supply-to-group-bit ratio; all four have verified binary target obstructions. | Three new cells are capped samples. Their observed-pool ratios do not establish an ordering of completed families, and extrapolations are not measurements. |
+
+**Combined decision:** keep the 483-prime pool as a membership-positive,
+Boolean-unresolved diagnostic benchmark. Improving recovery of support-5
+through support-17 controls is an algorithm-calibration milestone, not a
+near-counterexample result: an exact largest-primes product bound, together
+with odd cardinality, requires **at least 93 selected primes** for its real
+fixed-LCM target. A larger harvest or search needs a separately stated budget
+and authorization; these results do not justify a production search.
+
+The negative certificates apply to their declared parent-pool LCMs. They do
+not rule out constructions that recompute the LCMs for a selected subset.
+No counterexample has been found, and neither conjecture is settled.
+
+The combined regression suite includes 65 pilot/audit tests, 9 Track A
+tests, 26 Track B tests and 16 Track C tests. Track B's saved proof content
+can also be checked without rerunning membership elimination:
+
+```powershell
+python -B code\fs_reachability.py --verify data\generated\fs_reachability.json.gz
+```
+
+The frozen pilot, shared Python implementations, historical outputs and
+papers remain unchanged by this feasibility integration.
 
 ## Current audit papers (provisional)
 
