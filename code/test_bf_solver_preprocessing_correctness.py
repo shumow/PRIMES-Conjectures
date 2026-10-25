@@ -266,6 +266,22 @@ class FilterRuntimeTests(unittest.TestCase):
                     self.assertRaises((TypeError, ValueError)):
                 pre.solve_filtered(self.problem)
 
+    def test_worker_receives_only_problem_limits_and_deadline(self):
+        def worker(fn, payload, seconds):
+            self.assertIs(fn, pre._work_filtered)
+            self.assertEqual(len(payload), 3)
+            problem, limits, deadline = payload
+            self.assertIs(problem, self.problem)
+            self.assertEqual(set(problem.__dataclass_fields__),
+                             {"orders", "vectors", "target", "min_size", "exact_size"})
+            self.assertIsInstance(limits, pre.SearchLimits)
+            self.assertGreater(deadline, time.monotonic())
+            self.assertLessEqual(seconds, 60)
+            return "ok", pre.SearchResult("solution", (0, 1, 2)), 0
+
+        with patch.object(original, "run_limited", side_effect=worker):
+            self.assertEqual(pre.solve_filtered(self.problem).status, "solution")
+
 
 class ProtocolAndReportTests(unittest.TestCase):
     @classmethod

@@ -4,8 +4,13 @@
 
 **Study baseline:** `0c9f03fb1e00dfd85cb9e2b37e15ed1e727c4915`
 
-**Status:** implementation and oracle validation in progress. The protocol
-below is declared before any Round 2 full-pool control outcome.
+**Status:** the frozen Round 2 is complete. All nine exact-cardinality
+controls were recovered, including all three held-out support-5 targets.
+The first support-5 gate passed; broader Boolean feasibility is still open.
+
+**Frozen Round 2 implementation:** `34e959fada8fde89adfdb03500e7be5423dc2b5f`.
+The protocol and implementation were committed before any full-pool control
+outcome. No source, parameter, target or budget was tuned after the run.
 
 Round 1 remains frozen at implementation `136b00ac` and result commit
 `eca7173`. Its [solver](../code/bf_solver.py), [artifact](../data/generated/bf_solver.json.gz)
@@ -135,5 +140,89 @@ not membership conclusions.
 - Protocol SHA256:
   `47c0ba81d04fd3dd1402c72119664a9f8a984c3b4edda724b0743452e3e92733`.
 
-No Round 2 control outcome has been inspected at this point. Freeze the
-implementation before the single declared pilot; do not tune on its results.
+### Single frozen pilot
+
+| Exact support | Batch/seed | Outcome | Call wall seconds |
+|---|---|---|---:|
+| 3 | development 101 | independently verified solution | 0.699 |
+| 3 | development 202 | independently verified solution | 0.620 |
+| 3 | development 303 | independently verified solution | 0.623 |
+| 5 | development 101 | independently verified solution | 9.296 |
+| 5 | development 202 | independently verified solution | 7.934 |
+| 5 | development 303 | independently verified solution | 0.715 |
+| 5 | holdout 104729 | independently verified solution | 1.317 |
+| 5 | holdout 130363 | independently verified solution | 8.142 |
+| 5 | holdout 155921 | independently verified solution | 3.699 |
+
+Exactly **nine calls, nine solutions**, no timeout/resource/error outcome
+and no unrun case in this nine-call protocol. Every case needed only **one**
+full-group candidate check after binary filtering; table/enumeration work
+totalled 36,327,300 left-plus-right combinations across the nine calls.
+Each returned subset also matched its stored planting witness exactly.
+Completed-worker peak RSS ranged from 32,022,528 to
+68,374,528 bytes (under 66 MiB), measured with Windows `PeakWorkingSetSize`.
+This does not measure aggregate parent-plus-child memory or enforce an OS cap.
+
+Input preparation plus arithmetic-gate certification took 31.627 seconds,
+separately from call wall times. Within that run, generating and checking
+the two arithmetic certificates took 0.423 and 2.474 seconds. Timings are
+observations on this machine, not platform-independent performance claims.
+
+The support-3 gate and the combined three-development/three-holdout support-5
+gate both passed. All targets were frozen before outcomes, the solver never
+received the planting indices, and there were no retries, sweeps, extra
+cases, larger harvests or higher budgets.
+
+### Preserved report and verification
+
+- [Round 2 report](../data/generated/bf_solver_preprocessing.json.gz):
+  schema `bf-solver-preprocessing/v1`, 28,292 bytes.
+- SHA256:
+  `d100e499dfa7c6b3ae5b2cac7ff67e00ed46dea08e6078693cf0671fdfbb2e1a`.
+- Includes nine input/solution scopes and costs, the fixed protocol,
+  implementation commit, normalized source hashes, all input hashes and
+  **275 full-rank-minor certificates** across the two arithmetic instances.
+- The original Round 1 result and source remain byte-identical.
+
+After the run, a worker-payload isolation regression was added without
+changing solver source or parameters. All **28 new-module tests** pass on
+standard-library Python 3.14.5 and 3.9.13 (1.196 and 1.388 seconds).
+Actual saved-report checking passes with search, gate generation and the
+optional CP-SAT solver patched to fail; all 275 minors and all nine
+candidate/residue checks still pass. Python 3.9 standalone verification also
+passes. Both checks read the pinned S3 Git blob, not a temporary input cache.
+
+Verification needs only the standard library and the unchanged pilot/control
+inputs. The reviewed S3 input can be supplied with `--s3-report`; otherwise
+the checker reads its pinned Git blob. That commit must be available locally
+(fetch the S3 branch if needed); the checker does not silently switch to a
+newer S3 artifact. Use `--git` when Git is not on PATH.
+
+```powershell
+python -B code\bf_solver_preprocessing.py --verify data\generated\bf_solver_preprocessing.json.gz
+python -B -m unittest discover -s code -p "test_bf_solver_preprocessing_correctness.py" -v
+python -B code\bf_solver_preprocessing.py --protocol
+```
+
+Do not rerun a pilot to check these reports. Historical execution/timing
+authenticity is not certified by verifying the mathematical witnesses.
+
+## 5. Interpretation and next boundary
+
+The arithmetic gate is complete for these two exact frozen instances:
+index two and integer membership follow without a longer subgroup search.
+The Boolean solver milestone is narrower: **this exact-k configuration
+recovered all six declared support-5 controls**, including the untouched
+holdouts. Six successes do not establish a statistical reliability guarantee.
+
+The gain comes from screening tiny-support combinations in a strong binary
+projection before evaluating their large full-group residuals. It is not a
+CP-SAT improvement, a general odd-subset solver, or evidence that the real
+target is near. The 93- and 191-factor lower bounds remain unchanged.
+The current combination/table guards exclude brute-force extensions to the
+full-483 support-9/17 cases; they were not run.
+
+The next separately frozen investigation should address general-odd recovery
+or a principled higher-support method, with independent controls and exact
+residual handling. Do not extrapolate this low-support success to the real
+targets or expand budgets automatically.
