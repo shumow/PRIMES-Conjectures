@@ -1,0 +1,27 @@
+{
+  "schema": "bf-harvest-membership/v1",
+  "generated_at_utc": "2026-10-25T02:16:03.454367+00:00",
+  "python": "3.11.17",
+  "input_report": "../data/generated/bf_harvest.json.gz",
+  "input_sha256": "f2670b133827d302a85bc0813348d7f76ce548fd39f27f5f1632b3c51f9322a5",
+  "source_sha256": {
+    "bf_harvest.py": "e78d1e1d9e5fbeed0a11ded6d04f5a5bfe5000f91a56d531fe9c448f7340ab1e",
+    "fs_reachability.py": "af1cf4ce60f26351206770fb16068e8eeb981c1e1c3f439ddc56ce218a1c7697",
+    "fs_controls.py": "8a5d440a03ce9a37693288dccdd3213240b77633c5b1d6bfd26dd7707515cf4d"
+  },
+  "stage": {
+    "watchdog": "timeout",
+    "wall_seconds": 300.07,
+    "declared_limits": {
+      "seconds": 290.0,
+      "work_units": 4000000000,
+      "cells": 20000000,
+      "workspace_bytes": 1610612736,
+      "scalar_bits": 4096,
+      "watchdog_wall": 300.0
+    },
+    "scope": "integer-coefficient generated-subgroup membership, not Boolean feasibility",
+    "status": "inconclusive",
+    "reason": "watchdog timeout"
+  }
+}
