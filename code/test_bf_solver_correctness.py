@@ -3,6 +3,8 @@ from dataclasses import replace
 from importlib.util import find_spec
 from itertools import product
 from pathlib import Path
+import copy
+import gzip
 import json
 import random
 import tempfile
@@ -240,6 +242,58 @@ class ProtocolTests(unittest.TestCase):
                 bf.validate_output(output, pilot, controls, False)
             self.assertEqual(output.read_text(encoding="utf-8"), "preserve")
             bf.validate_output(output, pilot, controls, True)
+
+
+@unittest.skipUnless(bf.DEFAULT_INPUT.with_name("bf_solver.json.gz").exists(),
+                     "frozen S1 pilot artifact not generated")
+class FrozenReportTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.report = json.loads(gzip.decompress(
+            bf.DEFAULT_INPUT.with_name("bf_solver.json.gz").read_bytes()))
+        cls.context = bf._context(bf.DEFAULT_INPUT, bf.CONTROL_INPUT)
+
+    def test_saved_report_check_needs_no_solver_or_carry_builder(self):
+        with patch.object(bf, "_context", return_value=self.context), \
+                patch.object(bf, "solve", side_effect=AssertionError("no solver")), \
+                patch.object(bf, "_work_cpsat", side_effect=AssertionError("no backend")), \
+                patch.object(bf, "backend_version", side_effect=AssertionError("no dependency")), \
+                patch.object(bf, "carry_rows", side_effect=AssertionError("no model")):
+            summary = bf.verify_report(self.report)
+        self.assertEqual(summary, {"calls": 3, "solutions": 0, "not_run": 15,
+                                   "support3_gate": False, "support5_gate": False,
+                                   "counterexamples": 0})
+
+    def test_saved_report_tampering_is_rejected(self):
+        changed = []
+        raw = copy.deepcopy(self.report)
+        raw["protocol"]["max_calls"] = 19
+        changed.append(raw)
+        raw = copy.deepcopy(self.report)
+        raw["source_sha256"]["bf_solver.py"] = "0" * 64
+        changed.append(raw)
+        raw = copy.deepcopy(self.report)
+        raw["inputs"]["pilot_sha256"] = "0" * 64
+        changed.append(raw)
+        raw = copy.deepcopy(self.report)
+        raw["cases"][0]["case"]["target_hex"][0] = "0xbad"
+        changed.append(raw)
+        raw = copy.deepcopy(self.report)
+        raw["cases"][0]["result"]["status"] = "backend_reported_infeasible"
+        changed.append(raw)
+        raw = copy.deepcopy(self.report)
+        raw["cases"][3]["result"] = raw["cases"][0]["result"]
+        changed.append(raw)
+        raw = copy.deepcopy(self.report)
+        raw["cases"].pop()
+        changed.append(raw)
+        raw = copy.deepcopy(self.report)
+        raw["cases"][0]["result"].update(status="solution", indices=[0, 0, 0], reason="")
+        changed.append(raw)
+        with patch.object(bf, "_context", return_value=self.context):
+            for corrupt in changed:
+                with self.assertRaises(ValueError):
+                    bf.verify_report(corrupt)
 
 
 @unittest.skipUnless(find_spec("ortools") is not None, "optional S1 backend not installed")
