@@ -123,5 +123,42 @@ class ConfigurationContract(unittest.TestCase):
         self.assertNotEqual(caught.exception.code, 0)
 
 
+class SavedReportStages(unittest.TestCase):
+    """Bounded end-to-end check of the post-scan stages on the small family."""
+
+    @classmethod
+    def setUpClass(cls):
+        import gzip
+        import json
+        import tempfile
+        report = bf_harvest.run_s3(SMALL, shards=3)
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.path = Path(cls.tmp.name) / "bf_small.json.gz"
+        cls.path.write_bytes(gzip.compress(
+            (json.dumps(report) + "\n").encode("utf-8"), mtime=0))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def test_verify_saved_rederives_everything(self):
+        summary = bf_harvest.verify_saved(self.path)
+        self.assertEqual(summary["records_verified"], 6)
+        self.assertTrue(summary["complete_family_scan"])
+        bound = summary["minimum_cardinality"]
+        self.assertIsNotNone(bound.get("odd_minimum_factors"))
+        self.assertEqual(bound["odd_minimum_factors"] % 2, 1)
+        self.assertGreaterEqual(bound["odd_minimum_factors"], 3)
+
+    def test_membership_stage_bounded_and_independently_verified(self):
+        stage = bf_harvest.run_membership_stage(self.path, wall_seconds=55.0)
+        self.assertIn(stage["status"],
+                      ("member", "nonmember", "unresolved", "inconclusive"))
+        if stage["watchdog"] == "ok":
+            self.assertTrue(stage["independently_verified"])
+        self.assertEqual(stage["declared_limits"]["seconds"],
+                         bf_harvest.MEMBERSHIP_LIMITS["seconds"])
+
+
 if __name__ == "__main__":
     unittest.main()
