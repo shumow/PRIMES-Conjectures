@@ -287,15 +287,29 @@ class DeclaredBudgets(unittest.TestCase):
 
 
 class SavedReport(unittest.TestCase):
+    """The frozen inputs are loaded and re-verified once; the tamper tests then reuse
+    them (the loaders are replaced by memoized copies of their own results, nothing else)."""
+
+    @classmethod
+    def setUpClass(cls):
+        if not REPORT.exists():
+            raise AssertionError("S2 report missing")
+        cls.loaded = bf.load_cells()
+        cls.cross = bf.pilot_cross_check(cls.loaded[1])
+
+    def _verify(self, report):
+        with patch.object(bf, "load_cells", return_value=self.loaded), \
+                patch.object(bf, "pilot_cross_check", return_value=self.cross):
+            return bf.verify_report(report)
+
     def test_saved_report_verifies_without_running_the_algorithms(self):
-        self.assertTrue(REPORT.exists(), "S2 report missing")
         report = json.loads(gzip.decompress(REPORT.read_bytes()))
         with patch.object(bf, "howell_form", side_effect=AssertionError("must not run")), \
                 patch.object(bf, "snf_kernel", side_effect=AssertionError("must not run")), \
                 patch.object(bf, "gf2_left_kernel", side_effect=AssertionError("must not run")), \
                 patch.object(bf, "primary_index_certificate", side_effect=AssertionError("must not run")), \
                 patch.object(bf, "analyze", side_effect=AssertionError("must not run")):
-            summary = bf.verify_report(report)
+            summary = self._verify(report)
         self.assertEqual(summary["cells"], 5)
         self.assertEqual(summary["characters_rechecked"], 4)
         self.assertGreaterEqual(summary["index_certificates"], 1)
@@ -311,15 +325,58 @@ class SavedReport(unittest.TestCase):
             self.assertTrue(entry["shadow"]["value"]["forced_relation_in_kernel"])
 
     def test_verifier_rejects_a_tampered_annotation(self):
-        self.assertTrue(REPORT.exists(), "S2 report missing")
         report = json.loads(gzip.decompress(REPORT.read_bytes()))
         report["anchor_full_index"]["total_index"] = 4
         with self.assertRaises(ValueError):
-            bf.verify_report(report)
+            self._verify(report)
         report = json.loads(gzip.decompress(REPORT.read_bytes()))
         report["cells"][1]["recorded_character"]["description"]["weight"] += 1
         with self.assertRaises(ValueError):
-            bf.verify_report(report)
+            self._verify(report)
+
+    def test_full_index_cannot_bypass_the_two_primary_certificate(self):
+        # PR #8 coordinator review: relabelling the anchor's 2-primary entry as unverified
+        # and rewriting its index must not yield an accepted full index of 4.
+        report = json.loads(gzip.decompress(REPORT.read_bytes()))
+        two = report["cells"][0]["index_2primary"]
+        two.update(status="verified_at_generation_only", index_hex="0x4", log2_index=2)
+        report["anchor_full_index"]["total_index"] = 4
+        with self.assertRaises(ValueError):
+            self._verify(report)
+        # Keeping the status but rewriting the index must fail against the certificate.
+        report = json.loads(gzip.decompress(REPORT.read_bytes()))
+        report["cells"][0]["index_2primary"].update(index_hex="0x4", log2_index=2)
+        report["anchor_full_index"]["total_index"] = 4
+        with self.assertRaises(ValueError):
+            self._verify(report)
+
+    def test_odd_certificates_are_bound_to_their_primes(self):
+        # PR #8 coordinator review: filing the 5-primary certificate under key "3" must fail.
+        report = json.loads(gzip.decompress(REPORT.read_bytes()))
+        report["anchor_index_certificates"]["3"] = json.loads(json.dumps(report["anchor_index_certificates"]["5"]))
+        with self.assertRaises(ValueError):
+            self._verify(report)
+        report = json.loads(gzip.decompress(REPORT.read_bytes()))
+        del report["anchor_index_certificates"]["7"]
+        with self.assertRaises(ValueError):
+            self._verify(report)
+
+    def test_two_primary_membership_annotation_is_checked(self):
+        report = json.loads(gzip.decompress(REPORT.read_bytes()))
+        report["cells"][0]["index_2primary"]["target_member_2primary"] = False
+        report["anchor_full_index"]["real_target_member"] = False
+        with self.assertRaises(ValueError):
+            self._verify(report)
+        report = json.loads(gzip.decompress(REPORT.read_bytes()))
+        report["anchor_index_certificates"]["2"]["characters"] = []
+        with self.assertRaises(ValueError):
+            self._verify(report)
+
+    def test_incomplete_full_index_must_not_carry_a_total(self):
+        report = json.loads(gzip.decompress(REPORT.read_bytes()))
+        report["anchor_full_index"]["status"] = "incomplete"
+        with self.assertRaises(ValueError):
+            self._verify(report)
 
 
 if __name__ == "__main__":

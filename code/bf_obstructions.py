@@ -648,11 +648,17 @@ def _order_in(x: int, modulus: int) -> int:
 
 
 def verify_primary_index_certificate(orders: Sequence[int], vectors: Sequence[Sequence[int]],
-                                     target: Sequence[int], certificate: dict) -> dict:
+                                     target: Sequence[int], certificate: dict,
+                                     expected_prime: Optional[int] = None) -> dict:
     """Algorithm-free check: witnesses lie in H and are triangular; characters annihilate
     H and are triangular; the two coset lower bounds multiply to |G_ell|. Then the
-    characters generate H^perp, so target membership is decided by them directly."""
+    characters generate H^perp, so target membership is decided by them directly.
+    `expected_prime` binds the certificate to the primary part it is filed under."""
     ell = certificate["prime"]
+    if not isinstance(ell, int) or isinstance(ell, bool) or ell < 2:
+        raise ValueError("certificate prime must be an integer at least two")
+    if expected_prime is not None and ell != expected_prime:
+        raise ValueError("certificate is filed under a different prime than it certifies")
     coords = list(certificate["coordinates"])
     if coords != primary_coordinates(orders, ell):
         raise ValueError("certificate coordinates differ from the group's primary part")
@@ -915,7 +921,7 @@ def analyze(harvest_path: Path = DEFAULT_HARVEST, pilot_path: Path = DEFAULT_PIL
         if limited["status"] == "ok":
             certificate = limited["value"]
             checked = verify_primary_index_certificate(instance.orders, instance.vectors,
-                                                      instance.target, certificate)
+                                                      instance.target, certificate, expected_prime=2)
             stored = name in BUDGETS["index_certificates_stored_for"]
             summary = {"status": "verified" if stored else "verified_at_generation_only",
                        "seconds": limited["seconds"],
@@ -949,7 +955,8 @@ def analyze(harvest_path: Path = DEFAULT_HARVEST, pilot_path: Path = DEFAULT_PIL
             odd_results.append({"prime": ell, "status": limited["status"], "seconds": limited["seconds"]})
             continue
         checked = verify_primary_index_certificate(anchor_instance.orders, anchor_instance.vectors,
-                                                   anchor_instance.target, limited["value"])
+                                                   anchor_instance.target, limited["value"],
+                                                   expected_prime=ell)
         if anchor_index is not None:
             anchor_index[str(ell)] = limited["value"]
         odd_results.append({"prime": ell, "status": "verified", "index": checked["index"],
@@ -1039,6 +1046,8 @@ def verify_report(report: dict, harvest_path: Path = DEFAULT_HARVEST,
                "min_weight_found_checked": 0, "min_weight_completed_scope": 0}
     if [e["name"] for e in report["cells"]] != list(CELLS):
         raise ValueError("cell list differs")
+    anchor_instance = cells[ANCHOR][1]
+    _verify_index_section(report, anchor_instance, summary)
     for entry in report["cells"]:
         cell, instance = cells[entry["name"]]
         config = cell["harvest"]["config"]
@@ -1103,40 +1112,10 @@ def verify_report(report: dict, harvest_path: Path = DEFAULT_HARVEST,
                     summary["min_weight_completed_scope"] += 1
                 else:
                     raise ValueError("unknown minimum-weight status")
-        index2 = entry["index_2primary"]
-        if index2.get("status") == "verified" and entry["name"] == ANCHOR:
-            certificate = report["anchor_index_certificates"]["2"]
-            checked = verify_primary_index_certificate(instance.orders, instance.vectors,
-                                                       instance.target, certificate)
-            if (checked["index"] != int(index2["index_hex"], 16)
-                    or checked["target_member"] is not index2["target_member_2primary"]):
-                raise ValueError("anchor 2-primary index annotation differs from its certificate")
-            summary["index_certificates"] += 1
+        if entry["name"] != ANCHOR and (entry["index_2primary"].get("status") == "verified"
+                                        or entry["index_2primary"].get("certificate_stored")):
+            raise ValueError("only the anchor stores a verified index certificate")
         summary["cells"] += 1
-    anchor_instance = cells[ANCHOR][1]
-    full = report["anchor_full_index"]
-    if full["status"] == "verified":
-        product = 1
-        member = True
-        for result in full["odd_results"]:
-            if result["status"] != "verified":
-                raise ValueError("odd result not verified yet full status claims verified")
-            certificate = report["anchor_index_certificates"][str(result["prime"])]
-            checked = verify_primary_index_certificate(anchor_instance.orders, anchor_instance.vectors,
-                                                       anchor_instance.target, certificate)
-            if checked["index"] != result["index"] or checked["target_member"] is not result["target_member"]:
-                raise ValueError("odd primary certificate disagrees with its annotation")
-            product *= checked["index"]
-            member = member and checked["target_member"]
-            summary["index_certificates"] += 1
-        odd_primes = sorted({next(iter(trial_factors(o))) for o in anchor_instance.orders} - {2})
-        if [r["prime"] for r in full["odd_results"]] != odd_primes:
-            raise ValueError("odd prime list differs from the group")
-        two = next(e for e in report["cells"] if e["name"] == ANCHOR)["index_2primary"]
-        if full["total_index"] != int(two["index_hex"], 16) * product:
-            raise ValueError("total index annotation differs")
-        if full["real_target_member"] is not (member and two["target_member_2primary"]):
-            raise ValueError("membership annotation differs")
     for union in report["union_probes"]:
         label, cell_name, sources = next(u for u in UNIONS if u[0] == union["label"])
         config = cells[cell_name][0]["harvest"]["config"]
@@ -1161,6 +1140,68 @@ def verify_report(report: dict, harvest_path: Path = DEFAULT_HARVEST,
                                               "all_present_in_complete_c3_pool": all(p in c3_pool for p in eligible)}:
         raise ValueError("completeness cross-check differs")
     return summary
+
+
+def _verify_index_section(report: dict, anchor_instance: RealInstance, summary: dict) -> None:
+    """Anchor index certificates: always required, always checked, never read from annotations."""
+    anchor_entry = next(e for e in report["cells"] if e["name"] == ANCHOR)
+    index2 = anchor_entry["index_2primary"]
+    certificates = report["anchor_index_certificates"]
+    if index2.get("status") != "verified" or index2.get("certificate_stored") is not True:
+        raise ValueError("the anchor's 2-primary index must be a stored, verified certificate")
+    if not isinstance(certificates, dict) or "2" not in certificates:
+        raise ValueError("anchor 2-primary certificate missing")
+    anchor_two = verify_primary_index_certificate(anchor_instance.orders, anchor_instance.vectors,
+                                                  anchor_instance.target, certificates["2"],
+                                                  expected_prime=2)
+    if (anchor_two["index"] != int(index2["index_hex"], 16)
+            or index2["log2_index"] != anchor_two["index"].bit_length() - 1
+            or anchor_two["target_member"] is not index2["target_member_2primary"]
+            or anchor_two["witnesses"] != index2["witnesses"]
+            or anchor_two["characters"] != index2["characters"]):
+        raise ValueError("anchor 2-primary index annotation differs from its certificate")
+    summary["index_certificates"] += 1
+    full = report["anchor_full_index"]
+    odd_primes = sorted({next(iter(trial_factors(o))) for o in anchor_instance.orders} - {2})
+    if full["odd_primes"] != len(odd_primes):
+        raise ValueError("odd prime count differs from the group")
+    if full["status"] == "verified":
+        # Derive the expected primary parts from the group; every one needs a complete,
+        # correctly bound certificate, and the full result is recomputed from the
+        # checked values rather than read from annotations.
+        certificates = report["anchor_index_certificates"]
+        if set(certificates) != {"2"} | {str(ell) for ell in odd_primes}:
+            raise ValueError("certificate set differs from the group's primary parts")
+        if full.get("all_odd_parts_verified") is not True or full.get("certificates_stored") is not True:
+            raise ValueError("full index claims verified without complete stored certificates")
+        results = list(full["odd_results"])
+        if [r["prime"] for r in results] != odd_primes:
+            raise ValueError("odd prime list differs from the group")
+        product = 1
+        member = True
+        for ell, result in zip(odd_primes, results):
+            if result["status"] != "verified":
+                raise ValueError("odd result not verified yet full status claims verified")
+            checked = verify_primary_index_certificate(anchor_instance.orders, anchor_instance.vectors,
+                                                       anchor_instance.target, certificates[str(ell)],
+                                                       expected_prime=ell)
+            if (checked["index"] != result["index"] or checked["target_member"] is not result["target_member"]
+                    or result["coordinates"] != len(certificates[str(ell)]["coordinates"])):
+                raise ValueError("odd primary certificate disagrees with its annotation")
+            product *= checked["index"]
+            member = member and checked["target_member"]
+            summary["index_certificates"] += 1
+        if full["odd_index_product"] != product:
+            raise ValueError("odd index product annotation differs")
+        if full["total_index"] != anchor_two["index"] * product:
+            raise ValueError("total index annotation differs")
+        if full["real_target_member"] is not (member and anchor_two["target_member"]):
+            raise ValueError("membership annotation differs")
+    elif full["status"] == "incomplete":
+        if "total_index" in full or "real_target_member" in full:
+            raise ValueError("an incomplete full-index result must not carry a total or membership")
+    else:
+        raise ValueError("unknown full-index status")
 
 
 def main() -> None:

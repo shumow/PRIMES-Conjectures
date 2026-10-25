@@ -22,6 +22,24 @@ python -B code/bf_obstructions.py --verify data/generated/bf_obstructions.json.g
 python -B code/bf_obstructions.py --output <new path>
 ```
 
+**Revision note (PR #8 coordinator review, 2026-10-25).** The review
+confirmed the mathematics independently (all 727,569 Legendre entries, the
+98 primary certificates, the transfer counts and both union shadows) and
+found one blocking verifier gap: `verify_report` checked the anchor's
+2-primary certificate only when the report labelled it `verified`, trusted
+the annotation otherwise, and did not bind an odd certificate's prime to the
+key it was filed under. The verifier now derives the expected primary parts
+from the group, requires a complete, correctly bound certificate for each
+whenever the full result claims `verified`, recomputes the full index and
+membership from the checked values, rejects contradictory statuses, and an
+incomplete result may not carry a total; regression tests cover both
+reported corruptions and a changed membership annotation. Three wording
+clarifications were also adopted (§1 corollary (ii), §3 twice). Because the
+report embeds the module's source hash, the dataset was regenerated with the
+corrected module; a field-by-field comparison with the reviewed dataset
+(ignoring provenance hash, timestamp and timings) found **zero differences**
+in results or certificates.
+
 ## 0. Declared probes and budgets (fixed before computation)
 
 Eight probes P0–P7 (listed in `bf_obstructions.PROBES`), one worker process,
@@ -63,8 +81,13 @@ value `#{ℓ ∈ T ∩ plus : ℓ ≡ 3 mod 4} + [parity ∈ T]` is *odd*. The t
 only be "seen" through **sign-carrying rows**: plus primes `≡ 3 (mod 4)` and
 the parity row; minus rows and plus rows `≡ 1 (mod 4)` contribute nothing to
 it. (ii) Since the real target is `2`-torsion in `G` (its odd-primary
-components are `0`: `1` and `−1` both have trivial odd part), every character
-that can separate it from the generated subgroup is 2-primary. This is why
+components are `0`: `1` and `−1` both have trivial odd part), the odd-order
+components of any character vanish on it, and the primary components of an
+annihilating character annihilate; hence **the 2-primary component of any
+separating character still separates, so a 2-primary separator always
+suffices**. Mixed-order separators can exist (the coordinator's example: in
+`C₂ × C₉` with `H = ⟨(0,3)⟩` and target `(1,0)`, `χ(a,b) = 3a + 2b mod 6` has
+order 6), but nothing is lost by restricting to 2-primary ones. This is why
 all first-wave certificates have modulus 2 or 8 and why the odd prime-field
 systems are trivially consistent (homogeneous).
 
@@ -138,8 +161,10 @@ is just the parity row in disguise), whereas the target — being `≡ 1` modulo
 every minus prime — is a non-residue modulo none of them. In c3 the mixture
 is 90 minus rows and 21 plus rows, of which 11 are `≡ 3 (mod 4)`, so the
 target's value is 1 through those eleven sign-carrying rows. In every cell the
-only coordinate dependence the obstruction has on the plus side (where the
-target is nonzero) is through sign-carrying rows, as Proposition 1 predicts.
+*target's value* under the character comes only from sign-carrying rows, as
+Proposition 1 predicts; the other plus rows a character uses (c3's ten plus
+rows `≡ 1 mod 4`) contribute nothing to the target but do matter for
+annihilating the generators.
 
 **Are these obstructions sparse/structured?** P4 searched exhaustively for
 the lightest separating character up to weight 4 (`completed_scope`, under
@@ -147,11 +172,13 @@ the lightest separating character up to weight 4 (`completed_scope`, under
 
 | cell | lightest separating character |
 |---|---|
-| c1 | **weight 3**: `{minus 1453, minus 1667, plus 479}` — with 13 primes and `C(96,3) ≈ 1.4·10⁵` triples each annihilating with chance `2⁻¹³`, about 17 such coincidences are expected; this is sampling noise, not structure |
+| c1 | **weight 3**: `{minus 1453, minus 1667, plus 479}` — with 13 primes and `C(96,3) ≈ 1.4·10⁵` triples each annihilating with chance `2⁻¹³` under a uniform model, about 17 such coincidences are expected, so the observation is consistent with chance; this is a heuristic reading, not a proof (c1's sample-dependence remains an unproved hypothesis, §5) |
 | c2, c3, c4 | **none of weight ≤ 4**; the only duplicate row pair is the forced `(plus-3, parity)` pair, which does not separate |
 
-So the obstructions are dense, generic characters of an undersupplied
-system, not short congruence patterns.
+Heuristically, then, the obstructions look like dense, generic characters of
+undersupplied systems rather than short congruence patterns. The
+minimum-weight search does not by itself establish sample-dependence; the
+transfer tests of §4 do that for c2 and c4.
 
 ## 4. Forced by the family, or caused by the capped sample? (P5, P6)
 
@@ -280,13 +307,13 @@ Nothing here authorizes the larger harvest or any search.
 - Branch `research/boolean-obstruction-analysis`, start `0c9f03f`; files
   added: the four S2-owned files only.
 - Tests: `python -B -m unittest discover -s code -p "*correctness.py"` —
-  the S2 suite adds 17 `unittest.TestCase` tests (tiny brute-force oracles
+  the S2 suite adds 21 `unittest.TestCase` tests (tiny brute-force oracles
   for the GF(2), minimum-weight and primary-index machinery; falsified
   certificates rejected; saved report verified with Howell/Smith/kernel
-  routines patched to raise); full repo suite 133/133 green on Python
-  3.11.17 (68 s). `--verify` of the saved report: 5 cells, 4 characters
+  routines patched to raise); full repo suite 137/137 green on Python
+  3.11.17 (56 s). `--verify` of the saved report: 5 cells, 4 characters
   re-checked, 5 + 2 shadow certificates, 5 transfer tests, 98 index
-  certificates, 23 s. The final analysis run took 126 s wall (largest probe:
+  certificates, 30 s. The final analysis run took 126 s wall (largest probe:
   c4's 2-primary index, 30.9 s under the 60 s watchdog).
 - Dataset `bf_obstructions.json.gz`: schema `bf-obstructions/v1`, source
   SHA256s (LF-normalized) of the S2 module and the four baseline files it
