@@ -131,33 +131,155 @@ class SavedReportStages(unittest.TestCase):
         import gzip
         import json
         import tempfile
-        report = bf_harvest.run_s3(SMALL, shards=3)
+        cls.gzip, cls.json = gzip, json
+        cls.report = bf_harvest.run_s3(SMALL, shards=3)
         cls.tmp = tempfile.TemporaryDirectory()
         cls.path = Path(cls.tmp.name) / "bf_small.json.gz"
         cls.path.write_bytes(gzip.compress(
-            (json.dumps(report) + "\n").encode("utf-8"), mtime=0))
+            (json.dumps(cls.report) + "\n").encode("utf-8"), mtime=0))
 
     @classmethod
     def tearDownClass(cls):
         cls.tmp.cleanup()
 
+    def _write_mutated(self, mutate):
+        copy = self.json.loads(self.json.dumps(self.report))
+        mutate(copy)
+        path = Path(self.tmp.name) / "mutated.json.gz"
+        path.write_bytes(self.gzip.compress(
+            (self.json.dumps(copy) + "\n").encode("utf-8"), mtime=0))
+        return path
+
     def test_verify_saved_rederives_everything(self):
         summary = bf_harvest.verify_saved(self.path)
         self.assertEqual(summary["records_verified"], 6)
         self.assertTrue(summary["complete_family_scan"])
+        self.assertTrue(summary["manifest_verified"])
+        self.assertTrue(summary["necessary_checks_reverified"])
+        self.assertEqual(summary["provenance"], "current source")
+        self.assertTrue(summary["has_obstruction"])  # small family's target
         bound = summary["minimum_cardinality"]
         self.assertIsNotNone(bound.get("odd_minimum_factors"))
         self.assertEqual(bound["odd_minimum_factors"] % 2, 1)
         self.assertGreaterEqual(bound["odd_minimum_factors"], 3)
 
+    # --- PR #9 review [P1] corruption regressions -------------------------
+
+    def test_rejects_repeated_shard_coverage(self):
+        def mutate(copy):
+            manifest = copy["run"]["harvest"]["coverage_manifest"]
+            first = manifest[0]
+            for entry in manifest[1:]:
+                entry["range"] = list(first["range"])
+        path = self._write_mutated(mutate)
+        with self.assertRaises(ArithmeticError):
+            bf_harvest.verify_saved(path)
+
+    def test_rejects_schema_zero_hash_and_foreign_family(self):
+        def schema(copy):
+            copy["schema"] = "bf-harvest/v999"
+        def zero_hash(copy):
+            copy["source_sha256"]["bf_harvest.py"] = "0" * 64
+        def foreign_family(copy):
+            config = copy["run"]["harvest"]["config"]
+            config["plus_bound"], config["minus_bound"], config["factors"] = 3, 7, 1
+        for mutate in (schema, zero_hash, foreign_family):
+            with self.assertRaises(ArithmeticError, msg=mutate.__name__):
+                bf_harvest.verify_saved(self._write_mutated(mutate))
+
+    def test_rejects_erased_obstruction_claims(self):
+        def mutate(copy):
+            checks = copy["run"]["structure"]["necessary_target_checks"]
+            checks["has_obstruction"] = False
+            checks["coordinate_obstructions"] = []
+            checks["prime_field_checks"] = []
+        path = self._write_mutated(mutate)
+        with self.assertRaises(ArithmeticError):
+            bf_harvest.verify_saved(path)
+
+    def test_rejects_wrong_candidate_index(self):
+        def mutate(copy):
+            record = copy["run"]["instance"]["records"][0]
+            record["candidate_index"] = record["candidate_index"] + 1
+        path = self._write_mutated(mutate)
+        with self.assertRaises(ArithmeticError):
+            bf_harvest.verify_saved(path)
+
+    # --- PR #9 review [P2] membership-stage regressions -------------------
+
     def test_membership_stage_bounded_and_independently_verified(self):
         stage = bf_harvest.run_membership_stage(self.path, wall_seconds=55.0)
         self.assertIn(stage["status"],
-                      ("member", "nonmember", "unresolved", "inconclusive"))
+                      ("member", "nonmember", "unresolved", "inconclusive",
+                       "worker_error"))
         if stage["watchdog"] == "ok":
             self.assertTrue(stage["independently_verified"])
+            self.assertIn("certificate", stage)  # full certificate persisted
         self.assertEqual(stage["declared_limits"]["seconds"],
                          bf_harvest.MEMBERSHIP_LIMITS["seconds"])
+
+    def test_worker_error_is_classified_not_inconclusive(self):
+        with unittest.mock.patch("fs_controls.run_limited",
+                                 return_value=("worker_error",
+                                               "ValueError: malformed input",
+                                               0.12)):
+            stage = bf_harvest.run_membership_stage(self.path, wall_seconds=5.0)
+        self.assertEqual(stage["status"], "worker_error")
+        self.assertIn("ValueError: malformed input", stage["error_detail"])
+
+    def test_existing_side_report_means_zero_probe_calls(self):
+        side = Path(self.tmp.name) / "bf_harvest_membership.json"
+        side.write_text("{}")
+        try:
+            report_in_same_dir = Path(self.tmp.name) / "bf_small.json.gz"
+            with unittest.mock.patch.object(
+                    bf_harvest, "run_membership_stage",
+                    side_effect=AssertionError("probe must not run")) as probe:
+                with unittest.mock.patch(
+                        "sys.argv", ["bf_harvest.py", "--membership",
+                                     str(report_in_same_dir)]):
+                    with self.assertRaises(SystemExit) as caught:
+                        bf_harvest.main()
+            self.assertNotEqual(caught.exception.code, 0)
+            self.assertEqual(probe.call_count, 0)
+        finally:
+            side.unlink()
+
+
+def _large_result_echo(payload):
+    """Module-level spawn worker: writes a ~1 MB file-backed result and returns
+    a tiny summary — the regression for the large-result queue deadlock."""
+    from pathlib import Path as _Path
+    _Path(payload["result_path"]).write_text("x" * 1_000_000)
+    return {"status": "ok", "result_bytes": 1_000_000}
+
+
+class LargeResultHandoff(unittest.TestCase):
+    def test_large_results_complete_through_file_handoff(self):
+        import tempfile
+
+        import fs_controls
+        with tempfile.TemporaryDirectory() as tmp:
+            result_path = Path(tmp) / "large.json"
+            kind, value, elapsed = fs_controls.run_limited(
+                _large_result_echo, {"result_path": str(result_path)}, 30.0)
+            self.assertEqual(kind, "ok")
+            self.assertEqual(value["result_bytes"], 1_000_000)
+            self.assertEqual(len(result_path.read_text()), 1_000_000)
+
+
+class RankingInverse(unittest.TestCase):
+    def test_rank_is_inverse_of_unrank(self):
+        import math as _math
+        items = list(range(50, 73))
+        k = 3
+        for index in (0, 1, 500, _math.comb(len(items), k) - 1):
+            combo = bf_harvest.combination_unrank(index, items, k)
+            self.assertEqual(bf_harvest.combination_rank(combo, items, k), index)
+
+    def test_rank_rejects_unsorted(self):
+        with self.assertRaises(ValueError):
+            bf_harvest.combination_rank((5, 3, 7), list(range(10)), 3)
 
 
 if __name__ == "__main__":
