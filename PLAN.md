@@ -1,4 +1,295 @@
-# Plan v2: Constructing a Counterexample to Agrawal's Conjecture
+# Research plan: Boolean feasibility and harvest structure
+
+## Current next steps (2026-10-24)
+
+**Baseline main:** `c114e84465495d5e414590393b41eb3dca341821`, the merge of
+[PR #6](https://github.com/shumow/PRIMES-Conjectures/pull/6).
+
+**Planning branch:** `research/boolean-feasibility-plan`.
+
+**Status:** planning and work allocation only. No second-wave implementation
+or experiment has been run by recording this plan. In particular, this
+document does **not** authorize the larger c2 harvest or a production search.
+
+This section is the current operational plan. The original Plan v2 is
+preserved below as historical context, not as a competing set of instructions.
+The earlier [first-wave plan](doc/harvest-solver-feasibility-plan.md) records
+the contracts and ownership of the completed A/B/C work. Use **S1/S2/S3**
+below for the new assignments; do not confuse them with either older
+track-label scheme.
+
+### 1. Verified starting point and objective
+
+The integrated [feasibility baseline](README.md#combined-harvest-and-solver-feasibility-baseline)
+has 116 correctness tests passing on Python 3.9.13 and 3.14.5, plus independent
+review and saved-artifact verification. Its results are:
+
+- [First-wave A: controls](doc/fs-controls-findings.md): the bounded exact-k
+  solver recovers the full 483-prime pool's support-3 controls. No tested
+  method recovers its support-5, 9 or 17 controls within the stated budgets.
+  Nullity-zero control successes are consistency checks, not evidence of
+  residual-search power.
+- [First-wave B: membership](doc/fs-reachability-findings.md): the real
+  483-prime fixed-LCM target belongs to the generated subgroup, with a
+  non-Boolean integer witness. The subgroup is proper, with index at least
+  two; the quotient ranks do not establish its exact full prime-power index.
+  Membership neither solves nor disproves Boolean feasibility.
+- [First-wave C: harvests](doc/fs-harvest-findings.md): the four new measured
+  pools have certified binary target obstructions and lower observed
+  supply/group-bit ratios than the anchor. Three are capped samples, so this
+  does not rank the completed families.
+- For the real full-483 fixed-LCM target, exact products of the largest
+  eligible primes give `P_91 < Lambda_minus + 1 <= P_92`. Odd cardinality
+  therefore requires **at least 93 selected distinct primes**. This bound
+  does not apply to the small-support planted targets or invalidate the
+  unrestricted integer witness.
+
+**Objective:** establish whether better Boolean solving, better supply, or
+an arithmetic redesign is the justified next investment. A small-control
+success is a capability milestone, not a near-counterexample result.
+
+The frozen pilot input is [real_pool_pilot.json.gz](data/generated/real_pool_pilot.json.gz),
+SHA256 `008cf08ce3f0d3a2f987bff26d5abd04bf4c41050f949ae0fdc4f4192b6969de`.
+Use the existing `fs_controls`, `fs_reachability` and `fs_harvest` artifacts
+read-only; retain the parent LCMs when reproducing a recorded case.
+
+### 2. Agent allocation and ownership
+
+| Track | Owner profile | Objective | Proposed branch | Owned prefix |
+|---|---|---|---|---|
+| S1: Boolean model and calibration | This assistant: largest reasoning/context budget | Build one exact Boolean formulation and determine whether it improves interpretable control recovery | `research/boolean-solver-calibration` | `bf_solver` |
+| S2: arithmetic obstructions | Independent agent; bounded cloud batches useful | Explain the observed characters and distinguish structural constraints from sampling effects | `research/boolean-obstruction-analysis` | `bf_obstructions` |
+| S3: c2 supply experiment | Compute-rich cloud agent | Prepare the budget proposal; run one complete family only after approval | `research/boolean-c2-complete` | `bf_harvest` |
+
+**Why this assistant takes S1:** its difficult part is the coupled reasoning:
+correct modular carries, Boolean/parity/cardinality semantics, backend limits,
+oracle agreement, non-leaking controls and honest outcome interpretation.
+A large working context helps maintain those invariants across the model,
+solver, verifier and reports. I also own integration and cross-track review.
+More context or financial headroom is not permission for unbounded process
+memory or computation.
+
+The cloud agents receive narrow, self-contained objectives. S2 can begin
+from existing artifacts independently of S1. S3 can prepare its proposal
+immediately, but its larger run remains blocked on approval. Once S1's
+interface is frozen, an independent cloud worker can also execute a bounded
+holdout-validation batch; that is a follow-up, not a prerequisite for S1.
+
+Each worker starts from the baseline above or the same coordinator-reviewed
+planning commit descended from it, and records its exact starting SHA.
+Use separate branches and worktrees/clones; never switch another agent's
+checkout. Do not start from another worker's unfinished branch.
+
+For each owned prefix `bf_name`, the worker may add only:
+
+- `code/bf_name.py`
+- `code/test_bf_name_correctness.py`
+- `data/generated/bf_name.json.gz`
+- `doc/bf-name-findings.md` (replace underscores by hyphens)
+
+These are ownership boundaries, not requirements to create unnecessary
+files. Shared Python modules, all existing datasets/reports, papers, PDFs,
+README and this plan are read-only for workers. Report a minimal reproduction
+of any shared defect to the coordinator instead of changing shared APIs.
+S1 alone coordinates any justified optional-backend dependency manifest.
+
+### 3. S1: exact Boolean formulation and calibrated solving
+
+Use the actual vectors in [RealInstance](code/real_pool_verify.py), not a
+synthetic replacement. For every original component, model:
+
+```text
+sum_i a[j,i] * x[i] = t[j] + m[j] * z[j]
+x[i] in {0,1}; z[j] integer
+sum_i x[i] = 2*h + 1; h integer >= 1
+```
+
+Normalize `a[j,i]` and `t[j]` modulo the original `m[j]`. Bound the carry
+variables from exact coefficient sums, handle impossible zero rows
+explicitly, and check the backend's integer ranges before encoding.
+Retain all prime powers: no independent bit slices that discard carries,
+and no assumption that overlapping XOR kernel moves have additive residuals.
+
+Execution order:
+
+1. Implement one minimal exact Boolean/integer backend adapter and an
+   independently checked model contract. Do not begin a many-backend shootout.
+   Prefer existing tools; if a new dependency is needed, record its pinned
+   version, license, runtime requirements and isolated installation procedure
+   before installation. Do not silently raise the baseline's Python 3.9 floor.
+2. Compare the model against exhaustive subset oracles on tiny groups and
+   small actual-prime scopes, including satisfiable and infeasible cases,
+   heterogeneous powers, parity, minimum size and cardinality edge cases.
+3. Reproduce support-3 controls, then tackle the full-483 support-5 controls.
+   Declare the development cases/seeds before comparing results. Freeze a
+   separate three-seed holdout batch before inspecting its outcomes.
+4. First substantive gate: recover all three declared development support-5
+   controls and all three held-out support-5 controls within unchanged
+   per-call budgets. This small batch is not a statistical reliability claim.
+   Freeze the implementation before holdout evaluation; do not tune on it.
+5. Extend to supports 9 and 17 only if the first gate passes and the declared
+   initial batch budget permits it. Otherwise report the support-5 failure
+   boundary rather than increasing budgets until a success appears.
+
+Keep two tasks separate: exact-k recovery may impose `sum(x) = k` when the
+experiment declares k; general recovery imposes odd size at least three
+without revealing k. Do not report exact-k success as general-search success.
+Solver inputs must never include the planted witness, planting RNG state,
+or a witness-derived warm start. Solver and planting RNG streams are separate.
+
+Independently verify every returned subset in the original group and
+multiplicative residues. Retain the existing stricter counterexample verifier,
+including the direct polynomial congruence, for any real-target candidate.
+The 93-factor bound is specific to the real full-pool target, not to controls.
+Do not spend the initial round attacking that real target before calibration.
+
+**Stop:** if the model disagrees with an oracle, fix that before benchmarking.
+If recovery does not improve within the fixed batch and budgets, report that
+negative engineering result. Neither a correct formulation nor a timeout
+settles the Boolean problem.
+
+### 4. S2: explain the arithmetic obstructions
+
+Use the five serialized instances in [fs_harvest.json.gz](data/generated/fs_harvest.json.gz)
+and the pilot anchor. Recheck each character directly against original
+generators and target before drawing conclusions.
+
+1. Describe the four new pools' binary characters in arithmetic terms:
+   which local components, prime-power blocks or congruence patterns they
+   depend on, and how the real target violates them.
+2. Compare with the anchor's codimension-one binary quotient constraint,
+   whose kernel contains the real target. Separate this observation from
+   the unknown exact full subgroup index.
+3. Distinguish a constraint forced by a declared harvest family from one
+   caused by a capped sample. Prove a family-wide claim, give a counterexample,
+   or label it an unproved hypothesis; sample agreement is not a proof.
+4. Deliver one justified cheap screening rule or one concrete, falsifiable
+   harvest-design hypothesis. Tiny exhaustive examples and bounded probes
+   are appropriate; another broad harvest grid is not.
+
+Do not resurrect `N > rows`, positive nullity or a supply ratio as a necessary
+or sufficient feasibility theorem. If adding primes changes the ambient
+LCMs, rebuild and declare that new group/target; do not compare characters
+as if the coordinates were unchanged. Fixed-parent-LCM obstructions must not
+be generalized to constructions with selected-subset LCMs.
+
+**Stop:** when no structural explanation has been established within the
+declared probes, return the verified characters, counterexamples and remaining
+hypotheses. Do not substitute a universal rule for an observed pattern.
+
+### 5. S3: complete c2, subject to a separate budget decision
+
+The existing cell is `fs-c2-wider-minus`: plus bound 547, minus bound 5470,
+three distinct minus-side factors, prime-power cap 8192. Its family has
+**39,529,340 combinations**. The old with-replacement sample used 5,000,000
+draws, finding 253 distinct primes and nine duplicate certified draws.
+
+**Proposed experiment, not yet authorized:** enumerate this one family
+completely instead of sampling, with a global accepted-pool cap of 4,096
+instead of 1,024. This is approximately 7.9 times the old candidate cap.
+The 4,096 cap is a resource ceiling, not a prediction of supply.
+
+Before running, submit the exact configuration, deterministic coverage/shard
+scheme, worker count, aggregate CPU/wall/storage limits, process-memory
+limits, and separate encoding/verification cost estimates for approval.
+More cloud compute does not waive those limits. A large retained pool may
+make group construction, not harvesting, the expensive stage.
+
+After approval:
+
+- Preserve the original admissibility tests, exact factorization and prime
+  certificates. Never count probable primes as admitted records.
+- If parallelizing, use disjoint deterministic combination ranges with a
+  coverage manifest and aggregate counters. Parallelism must not multiply
+  the candidate budget or turn a global cap into an independent per-shard
+  allowance. Deduplicate records before group construction.
+- Call the scan complete only with full family coverage and no binding pool
+  cap. If any limit binds, publish the actual partial scope and stop reason.
+- Verify every admitted prime and exact vector encoding, account for nonunit
+  exclusions and parent moduli, then measure the exact assembled group,
+  distinct supply, rank/nullity and necessary target checks.
+- Apply S2's justified screens and, where budgets permit, first-wave B's
+  exact membership checker to the new instance. Do not weaken its frozen-input
+  report schema; use a new report with honest provenance.
+- Compare completed-family results separately from the old sampled pool.
+  Correct per-draw statistics use accepted plus duplicates; distinct discovery
+  and group size are separate measurements, not binomial estimates.
+
+**Gate:** if the new target has a verified obstruction, do not spend a solver
+budget trying to overcome it. If it passes necessary checks, Boolean
+feasibility is still open. No further family expansion follows automatically.
+
+### 6. Shared budgets, outcomes and reproducibility
+
+Unless separately approved, retain one worker process per task, at most
+60 seconds enforced wall time per solver call or computational probe, and a
+512 MiB working-memory target. Distinguish measured RSS, estimates and
+OS-enforced limits; do not describe a target as a hard cap.
+
+For the initial S1 pilot, freeze one configuration and a case list of at most
+18 non-oracle solver calls. Record an aggregate budget before running;
+no unbounded retries or parameter sweeps. S2 likewise declares a finite probe
+list and work caps before computation. The much larger S3 harvest and its
+encoding/verification jobs need their own approved limits, not an assumption
+that all stages fit in a 60-second solver call.
+
+Every report records baseline/implementation SHAs, normalized source hashes,
+input hashes, schema, exact pool ordering and LCM scope, target kind,
+support/cardinality mode, seeds, backend/version, thread count and all limits.
+Record model-build, solve and verification costs separately and include
+startup/build costs in end-to-end comparisons.
+
+Use explicit outcomes: independently verified solution; independently checked
+obstruction/proof or completed exact search of a declared scope; unverified
+backend-reported infeasibility; inconclusive budget/timeout/resource stop;
+and explicit worker/input error. Do not promote an uncertified backend status
+to a mathematical proof. Never turn an error, limit or incomplete shard into
+a negative existence claim.
+
+### 7. Dependencies, handback and integration
+
+```text
+merged baseline + this plan
+     |                 |                    |
+S1 model/controls   S2 characters      S3 budget proposal
+     |                 |                    |
+     |                 |             explicit approval
+     |                 |                    |
+     |                 |             complete c2 or
+     |                 |             documented limit
+     +-----------------+--------------------+
+                       |
+           coordinator cross-track checks
+                       |
+             evidence-based next decision
+```
+
+S1 and S2 do not wait for a larger harvest. S3's preparation does not wait
+for either, but its execution waits for approval. Testing S1 on a new S3 pool
+waits for both a calibrated solver and an independently verified instance.
+
+Each worker returns its branch/start/end SHAs, owned files, test commands and
+versions, schemas and hashes, declared budgets, outcome table, independently
+checked witnesses, unresolved limitations and one recommendation. State
+whether the branch was pushed; push or open a PR only when authorized.
+
+The coordinator integrates on `integration/boolean-feasibility-study`,
+reviews scope and mathematical claims, cross-tests the relevant surfaces,
+then runs the affected suite on Python 3.9 and a current supported runtime.
+Do not weaken existing verifiers, overwrite first-wave artifacts, or merge
+worker branches directly into main. A new phase lands through a reviewed PR.
+
+**Immediate priority:** S1 model correctness and support-5 calibration, in
+parallel with S2 obstruction analysis. S3 supplies a budgeted proposal first.
+No result above is permission to start a production counterexample search.
+
+---
+
+## Historical Plan v2: Constructing a Counterexample to Agrawal's Conjecture
+
+The original roadmap below is retained for provenance. Its dated "next"
+actions, passed gates and strategic conclusions are historical, not the
+current execution plan.
 
 > **Historical plan; audit update 2026-10-22.** The reduction and solver
 > implementations have received correctness repairs. Density definitions and
@@ -15,7 +306,7 @@
 **Component registry** (all harvesters/solvers/validators as reusable,
 combinable options, with status and selection guidance): `doc/registry.md`.
 
-## What we know now (each item measured or proved, see FINDINGS.md)
+### What we know now (each item measured or proved, see FINDINGS.md)
 
 1. **The reduction stands.** Pool primes p = 2m+1 with m ≡ 1 (mod 40),
    (m, m+1) twin smooth over disjoint side-sets Q₋ | Q₊; subset with odd
@@ -39,7 +330,7 @@ combinable options, with status and selection guidance): `doc/registry.md`.
    the mod-80 cell is unreachable by the boost family (working paper
    Prop 6.1). Whether *other* admissible cells exist is open (Question 6.2).
 
-## Track A — partition-first harvester (main line)
+### Track A — partition-first harvester (main line)
 
 **Design.** Asymmetric split. Q₊ = all odd primes ≤ B except 5 (the tested,
 density-critical side). Q₋ = a set of t medium primes in (B, B′] (the
@@ -132,7 +423,7 @@ demand accounting.
   (X+2)ⁿ congruence on the find. Write-up either way — a G1/G2 failure
   becomes a quantified-infeasibility section in the working paper.
 
-## Track B — theory (Phase 0, runs parallel to A1–A2)
+### Track B — theory (Phase 0, runs parallel to A1–A2)
 
 - **B1. Independent re-derivation of Theorem 2.1** (both k mod 4 cases;
   currently trusted from AIM notes + Váňa). Deliverable: complete proof in
@@ -152,7 +443,7 @@ demand accounting.
   the (X+2) congruence require? Even partial analysis makes any eventual
   find doubly informative (kills one conjecture or separates two).
 
-## Track C — supporting/supply (opportunistic)
+### Track C — supporting/supply (opportunistic)
 
 - **C1. Parallel closure runs** (pthreads on chm_closure.c) at B ≈ 250–400:
   denser corpora for validating A1's model out-of-sample, and for
@@ -174,7 +465,7 @@ demand accounting.
   interest from Sterner et al. could parallelize Track A′/A3. Questions
   already prepared in doc/questions-for-craig-michael.md.
 
-## Decision tree
+### Decision tree
 
 ```
 A1 yield measured ──► G1 pass ──► A2 ──► G2 pass ──► A3 ──► A4(G3) ──► A5
@@ -187,7 +478,7 @@ B2 admissible cell?   raise B/B′, retry A1 once with 10× candidates;
 Track A′ (x-level harvest, half size) — re-run A1 economics there
 ```
 
-## Risk register (updated)
+### Risk register (updated)
 
 1. **Yield model wrong (A1 kills it).** ρ(u) with the Q₋-exclusion could
    come in ≥ 10× low. Cost of finding out: ~a day of prototype compute.
@@ -202,7 +493,7 @@ Track A′ (x-level harvest, half size) — re-run A1 economics there
    sources until re-derived.
 5. **Prior art.** Unchanged; C3 due diligence continues.
 
-## Immediate next actions (this week)
+### Immediate next actions (this week)
 
 1. A1 prototype harvester (python, ~200 lines, reuse phase1a machinery);
    first yield grid overnight.
