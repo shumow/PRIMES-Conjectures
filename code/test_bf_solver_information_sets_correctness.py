@@ -6,6 +6,7 @@ from unittest.mock import patch
 from contextlib import redirect_stderr, redirect_stdout
 import copy
 import gzip
+import hashlib
 import io
 import json
 import random
@@ -477,6 +478,51 @@ class PilotRunnerAndChecker(unittest.TestCase):
                 info.main()
             self.assertEqual(caught.exception.code, 1)
             self.assertEqual(self._verify(json.loads(gzip.decompress(path.read_bytes())))["errors"], 1)
+
+
+class FrozenPilotReport(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        payload = info.DEFAULT_OUTPUT.read_bytes()
+        if hashlib.sha256(payload).hexdigest() != \
+                "d62ac9ba58789262180a71589eb0c3ae9e7e42c0272e1e1a8f2dfbb5d8c149e7":
+            raise AssertionError("the once-executed pilot artifact changed")
+        cls.report = json.loads(gzip.decompress(payload))
+        with patch.object(info, "solve", side_effect=AssertionError("no search")), \
+                patch.object(info, "_work", side_effect=AssertionError("no worker")), \
+                patch.object(info, "affine_masks", side_effect=AssertionError("no masks")), \
+                patch.object(a4_solver, "gf2_solve", side_effect=AssertionError("no producer")):
+            cls.context = info._load_context()
+
+    def _verify(self, report):
+        with patch.object(info, "_load_context", return_value=self.context), \
+                patch.object(info, "solve", side_effect=AssertionError("no search")), \
+                patch.object(info, "_work", side_effect=AssertionError("no worker")), \
+                patch.object(info, "affine_masks", side_effect=AssertionError("no masks")), \
+                patch.object(a4_solver, "gf2_solve", side_effect=AssertionError("no producer")):
+            return info.verify_report(report)
+
+    def test_actual_saved_report_checks_without_producers(self):
+        summary = self._verify(self.report)
+        self.assertEqual(summary["run_status"], "completed_protocol")
+        self.assertEqual((summary["calls"], summary["solutions"], summary["not_run"]), (18, 18, 0))
+        self.assertEqual((summary["errors"], summary["solutions_without_rss"]), (0, 0))
+        self.assertTrue(all(summary[f"support{k}_gate"] for k in (3, 5, 9, 17)))
+        self.assertEqual(self.report["implementation_commit"],
+                         "9e5efa8b175e2f4330536141c827790a746156c2")
+
+    def test_actual_report_corruptions_do_not_bypass_verification(self):
+        mutations = [
+            lambda r: r["cases"][-1]["case"]["spec"].update(exact=True),
+            lambda r: r["cases"][0]["result"].update(indices=[0, 0, 0]),
+            lambda r: r["cases"][0].update(result=None, not_run_reason="skip"),
+            lambda r: r["protocol"].update(max_calls=19),
+        ]
+        for mutate in mutations:
+            report = copy.deepcopy(self.report)
+            mutate(report)
+            with self.assertRaises(ValueError):
+                self._verify(report)
 
 
 if __name__ == "__main__":

@@ -4,9 +4,24 @@
 
 **Starting combined S1/study commit:** `6c954e9c5da7d8b71ba1d5eaea60522d0775fbf8`
 
-**Status:** runner/checker preparation and protocol freeze only, as explicitly
+**Current status:** the single explicitly authorized pilot completed with
+18/18 independently verified support-blind control recoveries, including all
+six fresh holdouts. All four phase gates passed. This is bounded recovery
+evidence, not Boolean feasibility of either real fixed-LCM target.
+
+**Published pre-run note and executed implementation:**
+`9e5efa8b175e2f4330536141c827790a746156c2`.
+
+**Historical freeze-only status:** runner/checker preparation and protocol freeze only, as explicitly
 requested by the user. No full-pool control outcome has been inspected for
 this configuration, and no information-set pilot-result artifact exists.
+
+**Reading this record:** the algorithm, declaration, conditional forecast,
+runner contract and freeze-validation body below are preserved from the
+published pre-execution note. Their future-tense and no-output statements
+describe that checkpoint. The new results are appended under
+"Authorized single pilot"; those historical statements do not authorize a
+repeat or describe the current output state.
 
 S2 and S3's reviewed revisions are now on the study integration branch and
 have been merged into S1 without altering either earlier S1 source-hashed
@@ -363,3 +378,102 @@ python -B code\bf_solver_information_sets.py --run-pilot
 Use `--git` if Git is not on PATH, or a new prefixed `--output` for an
 explicitly authorized replication. Neither command was used to evaluate
 full-pool controls during this freeze-only task.
+
+## Authorized single pilot
+
+The user explicitly authorized publication of the pre-run note followed by
+**one execution** on 2026-10-25. The note at `9e5efa8` was pushed and its
+remote SHA verified before the pilot started. The reviewed runtime sources
+remained byte-identical to the `c0329d2` freeze and the protocol hash remained
+`a2ba7c982dc1ea5294a18169cc8a382f41d079163f881ab3fb27cb91f65765b7`.
+
+The invocation receipt records start **2026-10-26 06:18:39 UTC** and finish
+**06:19:24 UTC**. There was exactly one runner invocation, with no tuning,
+retry, case replacement, extra call, larger harvest or budget increase.
+
+### Outcomes
+
+All 18 cases returned `solution`. Every subset passed independent checks in
+all original component orders and in the original prime-product residues.
+Every returned subset also matched its planting witness exactly, although
+the support-blind interface and checker do not require that identity.
+
+| Planted support | Batch/seed | Returned size | Call seconds | Information sets | States | Peak RSS MiB |
+|---:|---|---:|---:|---:|---:|---:|
+| 3 | development 101 | 3 | 0.873 | 1 | 1 | 30.785 |
+| 3 | development 202 | 3 | 0.515 | 1 | 1 | 31.066 |
+| 3 | development 303 | 3 | 0.481 | 1 | 43 | 30.395 |
+| 5 | development 101 | 5 | 0.493 | 1 | 2,827 | 31.195 |
+| 5 | development 202 | 5 | 0.484 | 1 | 67 | 31.078 |
+| 5 | development 303 | 5 | 0.503 | 1 | 40 | 30.984 |
+| 5 | holdout 32452843 | 5 | 0.492 | 1 | 48 | 30.871 |
+| 5 | holdout 49979687 | 5 | 0.532 | 1 | 1 | 31.059 |
+| 5 | holdout 67867967 | 5 | 0.473 | 1 | 1 | 30.633 |
+| 9 | development 101 | 9 | 0.478 | 1 | 2,594 | 31.129 |
+| 9 | development 202 | 9 | 0.523 | 1 | 2,152 | 30.895 |
+| 9 | development 303 | 9 | 0.727 | 2 | 123,705 | 30.863 |
+| 17 | development 101 | 17 | 0.613 | 1 | 83,367 | 31.086 |
+| 17 | development 202 | 17 | 0.617 | 1 | 90,954 | 31.113 |
+| 17 | development 303 | 17 | 0.496 | 1 | 1,458 | 30.746 |
+| 17 | holdout 86028121 | 17 | 0.848 | 2 | 241,372 | 30.957 |
+| 17 | holdout 104395301 | 17 | 0.493 | 1 | 39 | 30.652 |
+| 17 | holdout 122949829 | 17 | 0.778 | 2 | 176,360 | 30.969 |
+
+All four gates passed: support 3 (3/3), support 5 (6/6), support 9 (3/3),
+support 17 (6/6). There were no errors, resource stops, timeouts, missing
+RSS observations, unrun cases or counterexample claims.
+
+### Costs and verification
+
+- Call wall times: **0.473-0.873 seconds**, sum **10.418 seconds**.
+- Input preparation: **15.548 seconds**, separately recorded.
+- Complete invocation: **44.852 seconds**, including startup, preparation
+  and final independent report checking; not just solve time.
+- Completed-worker peak RSS: **30.395-31.195 MiB**, Windows
+  `PeakWorkingSetSize`, not aggregate parent-plus-child memory or an OS cap.
+- Fifteen cases solved in the identity information set; three needed the
+  second set. None exercised the full eight-set worst case.
+- Total states: **725,030** across all calls; maximum **241,372** in one
+  call, below the one-million per-call limit.
+- Exactly **one full-target candidate check per case**, 18 total.
+
+After execution, two frozen-artifact regressions were added without changing
+runtime code. All **39 information-set tests** pass on Python 3.14.5 and
+3.9.13 (25.841 and 22.408 seconds). The real input preparation and saved-report
+checking succeed with the search, worker, affine enumerator and GF(2)
+producer patched to raise. All 18 subsets pass the original component
+equations/residue checks, and all phase/provenance/limit annotations pass
+on both runtimes. These are
+read-only checks, not further pilot calls.
+
+The pre-execution 252-test combined-suite results above remain the frozen
+runtime regression evidence.
+
+### Artifact and interpretation
+
+[Saved pilot report](../data/generated/bf_solver_information_sets.json.gz):
+schema `bf-solver-information-sets/v1`, **28,964 bytes**, SHA256
+`d62ac9ba58789262180a71589eb0c3ae9e7e42c0272e1e1a8f2dfbb5d8c149e7`.
+It preserves all case scopes, source/input hashes, returned subsets, observed
+costs and outcomes. The exclusive local invocation receipt and execution
+log were retained as audit records; neither controls the mathematical proof.
+Earlier S1 artifacts and all ten runtime sources remain unchanged.
+
+The all-pass outcome is consistent with the optimistic conditional forecast,
+but one small batch does not establish its independence/uniformity assumptions
+or calibrate a 99.7% joint-success probability. One checked candidate per
+case also does not prove that the binary system has no other small solutions:
+search stopped at the first valid full-group subset.
+
+This is a completed engineering milestone: the frozen implementation
+recovers these actual-vector controls through planted support 17 **without
+an exact-support hint** and within the declared budgets. It is not an
+unrestricted odd-subset solver, a scaling theorem, a counterexample, or
+evidence that the real 93-/191-factor targets are near.
+
+The S1 full-pool call total is now **30 = 3 + 9 + 18**. This authorization
+has been consumed. These holdout outcomes are now observed; future tuning
+must not describe them as untouched validation data. Any further trial,
+replication, wider support envelope or larger pool requires a separate
+declared scope and explicit authorization. The next gate is independent
+review of this completed bounded result, not an automatic larger search.
