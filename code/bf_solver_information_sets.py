@@ -1,14 +1,37 @@
-"""S1 information-set prototype: bounded odd-subset recovery without a support hint."""
+"""S1 support-blind information-set search, frozen pilot runner and direct checker."""
 from dataclasses import asdict, dataclass, replace
+from datetime import datetime, timezone
 from itertools import combinations
+from pathlib import Path
 from typing import Optional
+import argparse
+import gzip
+import hashlib
+import json
 import math
+import platform
 import random
+import subprocess
 import time
 
 import a4_solver
 import bf_solver as baseline
 import bf_solver_preprocessing as previous
+from real_pool_verify import RealInstance, source_digest, verify_group_solution
+
+SCHEMA = "bf-solver-information-sets/v1"
+STARTING_COMMIT = "e0b946daaa10e5d3d9422b2943e1ccba218eaae6"
+DECLARED_PROTOCOL_SHA256 = "a2ba7c982dc1ea5294a18169cc8a382f41d079163f881ab3fb27cb91f65765b7"
+ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_OUTPUT = baseline.DEFAULT_INPUT.with_name("bf_solver_information_sets.json.gz")
+PHASE_COUNTS = (3, 6, 3, 6)
+CASE_FIELDS = {"phase", "case", "result", "not_run_reason",
+               "residue_verification_seconds", "returned_cardinality",
+               "planted_witness_recovered"}
+RESULT_STATUSES = {"solution", "inconclusive", "projection_inconsistent",
+                   "resource_limit", "timeout_enforced", "worker_error"}
+ABORT_STATUSES = {"worker_error": "aborted_worker_error",
+                  "projection_inconsistent": "aborted_projection_contradiction"}
 
 
 @dataclass(frozen=True)
@@ -204,16 +227,296 @@ def protocol() -> dict[str, object]:
     }
 
 
-if __name__ == "__main__":
-    import argparse
-    import hashlib
-    import json
+def _canonical(value: object) -> str:
+    return json.dumps(value, sort_keys=True)
 
+
+def protocol_hash() -> str:
+    digest = hashlib.sha256(_canonical(protocol()).encode("utf-8")).hexdigest()
+    if digest != DECLARED_PROTOCOL_SHA256:
+        raise ValueError("the previously declared protocol changed")
+    return digest
+
+
+def sources() -> dict[str, str]:
+    return {**previous.sources(),
+            "bf_solver_information_sets.py": source_digest(Path(__file__))}
+
+
+def _load_context() -> tuple[RealInstance, tuple[baseline.Control, ...], dict[str, str]]:
+    instance, prior_controls, prior_inputs = baseline._context(
+        baseline.DEFAULT_INPUT, baseline.CONTROL_INPUT)
+    round1 = baseline.DEFAULT_INPUT.with_name("bf_solver.json.gz").read_bytes()
+    round2 = baseline.DEFAULT_INPUT.with_name("bf_solver_preprocessing.json.gz").read_bytes()
+    if hashlib.sha256(round1).hexdigest() != previous.ROUND1_SHA256 \
+            or hashlib.sha256(round2).hexdigest() != \
+            "d100e499dfa7c6b3ae5b2cac7ff67e00ed46dea08e6078693cf0671fdfbb2e1a":
+        raise ValueError("a frozen earlier S1 artifact changed")
+    expected = json.loads(gzip.decompress(round2))["inputs"]
+    if any(prior_inputs[key] != expected[key] for key in ("pilot_sha256", "controls_sha256")):
+        raise ValueError("pilot/control inputs differ from the frozen preceding round")
+    development = {(c.spec.support, c.spec.seed): c for c in prior_controls if not c.spec.holdout}
+    controls = []
+    for spec in case_specs():
+        if spec.holdout:
+            control = baseline._control(instance, spec)
+        else:
+            control = replace(development[(spec.support, spec.seed)], spec=spec)
+        problem = replace(control.problem, vectors=instance.vectors, exact_size=None)
+        controls.append(replace(control, problem=problem))
+    return instance, tuple(controls), {
+        "pilot_sha256": prior_inputs["pilot_sha256"],
+        "controls_sha256": prior_inputs["controls_sha256"],
+        "round1_sha256": hashlib.sha256(round1).hexdigest(),
+        "round2_sha256": hashlib.sha256(round2).hexdigest(),
+    }
+
+
+def _scope(instance: RealInstance) -> dict[str, object]:
+    return {"cohort": "medium-complete-family", "records": len(instance.records),
+            "components": len(instance.orders),
+            "parent_lcms_hex": [hex(instance.lambda_minus), hex(instance.lambda_plus)],
+            "cardinality_mode": "general_odd_minimum_3_no_exact_hint"}
+
+
+def _frozen_head(git: str) -> str:
+    head = previous._implementation_head(git)
+    name = "code/bf_solver_information_sets.py"
+    committed = subprocess.check_output([git, "-C", str(ROOT), "show", f"{head}:{name}"])
+    if committed.replace(b"\r\n", b"\n") != (ROOT / name).read_bytes().replace(b"\r\n", b"\n"):
+        raise ValueError("commit the information-set runner and protocol before evaluating controls")
+    protocol_hash()
+    return head
+
+
+def _phase_passed(records: list[dict], phase: int) -> bool:
+    selected = [record for record in records if record["phase"] == phase]
+    return len(selected) == PHASE_COUNTS[phase] and all(
+        isinstance(record["result"], dict) and record["result"]["status"] == "solution"
+        for record in selected)
+
+
+def _eligible(records: list[dict], phase: int) -> bool:
+    return all(_phase_passed(records, earlier) for earlier in range(phase))
+
+
+def run_pilot(git: str) -> dict[str, object]:
+    """Run only the preregistered batch; all control metadata stays in this parent."""
+    head = _frozen_head(git)
+    frozen_sources = sources()
+    started = time.monotonic()
+    instance, controls, inputs = _load_context()
+    preparation_seconds = time.monotonic() - started
+    records: list[dict] = []
+    abort = ""
+    for control in controls:
+        entry = {
+            "phase": control.spec.phase, "case": baseline._case_json(control),
+            "result": None, "not_run_reason": "",
+            "residue_verification_seconds": None, "returned_cardinality": None,
+            "planted_witness_recovered": None,
+        }
+        if abort:
+            entry["not_run_reason"] = abort
+        elif not _eligible(records, control.spec.phase):
+            entry["not_run_reason"] = "prior-phase control gate did not pass"
+        else:
+            result = solve(control.problem)
+            if result.status == "solution":
+                check_started = time.monotonic()
+                verify_group_solution(instance, result.indices, control.problem.target,
+                                      control.residues)
+                entry["residue_verification_seconds"] = time.monotonic() - check_started
+                entry["returned_cardinality"] = len(result.indices)
+                entry["planted_witness_recovered"] = tuple(sorted(result.indices)) == control.witness
+            entry["result"] = asdict(result)
+            abort = ABORT_STATUSES.get(result.status, "")
+            print(f"{control.spec.name}: {result.status} ({result.wall_seconds:.3f}s, "
+                  f"{result.states} states, {result.candidates} candidate checks)"
+                  + (f" - {result.reason}" if result.reason else ""), flush=True)
+        records.append(entry)
+    if _frozen_head(git) != head or sources() != frozen_sources:
+        raise ValueError("implementation commit or source changed during the pilot")
+    return {
+        "schema": SCHEMA, "starting_commit": STARTING_COMMIT,
+        "implementation_commit": head,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "python": platform.python_version(), "platform": platform.platform(),
+        "source_hash_normalization": "CRLF-to-LF", "source_sha256": frozen_sources,
+        "protocol": protocol(), "protocol_sha256": protocol_hash(), "inputs": inputs,
+        "scope": _scope(instance), "preparation_seconds": preparation_seconds,
+        "run_status": abort or "completed_protocol", "cases": records,
+        "counterexamples": 0,
+    }
+
+
+def _nonnegative_time(value: object) -> bool:
+    return not isinstance(value, bool) and isinstance(value, (int, float)) \
+        and math.isfinite(value) and value >= 0
+
+
+def _read_result(value: object) -> Result:
+    if not isinstance(value, dict) or set(value) != set(Result.__dataclass_fields__):
+        raise ValueError("malformed information-set result")
+    if value["status"] not in RESULT_STATUSES or not isinstance(value["reason"], str) \
+            or not isinstance(value["memory_measurement"], str):
+        raise ValueError("invalid information-set outcome")
+    indices = value["indices"]
+    if not isinstance(indices, (list, tuple)) or any(not baseline._integer(i) for i in indices):
+        raise ValueError("invalid saved subset indices")
+    limits = Limits()
+    for field, cap in (("permutations", limits.permutations), ("states", limits.states),
+                       ("candidates", limits.candidates)):
+        if not baseline._integer(value[field]) or not 0 <= value[field] <= cap:
+            raise ValueError("invalid or out-of-budget search counters")
+    if value["candidates"] > value["states"] or (value["states"] and not value["permutations"]):
+        raise ValueError("contradictory search counters")
+    for field in ("projection_seconds", "elimination_seconds", "search_seconds",
+                  "wall_seconds", "verification_seconds"):
+        if not _nonnegative_time(value[field]):
+            raise ValueError("invalid saved timing")
+    if sum(value[key] for key in ("projection_seconds", "elimination_seconds", "search_seconds",
+                                 "verification_seconds")) > value["wall_seconds"] + 0.001:
+        raise ValueError("component timings exceed the end-to-end call time")
+    peak = value["peak_rss_bytes"]
+    if peak is not None and (not baseline._integer(peak) or peak < 0):
+        raise ValueError("invalid saved RSS measurement")
+    return Result(**{**value, "indices": tuple(indices)})
+
+
+def verify_report(value: object) -> dict[str, object]:
+    """Check scope, gates and direct witnesses without calling any search producer."""
+    fields = {"schema", "starting_commit", "implementation_commit", "generated_at_utc",
+              "python", "platform", "source_hash_normalization", "source_sha256",
+              "protocol", "protocol_sha256", "inputs", "scope", "preparation_seconds",
+              "run_status", "cases", "counterexamples"}
+    if not isinstance(value, dict) or set(value) != fields:
+        raise ValueError("unknown information-set report shape")
+    if value["schema"] != SCHEMA or value["starting_commit"] != STARTING_COMMIT \
+            or _canonical(value["protocol"]) != _canonical(protocol()) \
+            or value["protocol_sha256"] != protocol_hash() \
+            or value["source_sha256"] != sources() \
+            or value["source_hash_normalization"] != "CRLF-to-LF":
+        raise ValueError("information-set protocol/source provenance differs")
+    head = value["implementation_commit"]
+    if not isinstance(head, str) or len(head) != 40 or any(c not in "0123456789abcdef" for c in head):
+        raise ValueError("invalid implementation commit")
+    if any(not isinstance(value[key], str) or not value[key]
+           for key in ("generated_at_utc", "python", "platform")) \
+            or not _nonnegative_time(value["preparation_seconds"]):
+        raise ValueError("invalid execution metadata")
+    instance, controls, inputs = _load_context()
+    if value["inputs"] != inputs or value["scope"] != _scope(instance) \
+            or type(value["counterexamples"]) is not int or value["counterexamples"] != 0:
+        raise ValueError("information-set input/target scope differs")
+    if not isinstance(value["cases"], list) or len(value["cases"]) != len(controls):
+        raise ValueError("missing or repeated control case")
+    checked: list[dict] = []
+    abort = ""
+    calls = solutions = not_run = errors = without_rss = 0
+    for entry, control in zip(value["cases"], controls):
+        if not isinstance(entry, dict) or set(entry) != CASE_FIELDS \
+                or not baseline._integer(entry["phase"]) or entry["phase"] != control.spec.phase \
+                or not isinstance(entry["not_run_reason"], str) \
+                or _canonical(entry["case"]) != _canonical(baseline._case_json(control)):
+            raise ValueError("control definition, order or cardinality mode differs")
+        if control.problem.exact_size is not None:
+            raise ValueError("validated control leaked an exact-support hint")
+        skipped = abort or ("" if _eligible(checked, control.spec.phase)
+                            else "prior-phase control gate did not pass")
+        if skipped:
+            if entry["result"] is not None or entry["not_run_reason"] != skipped \
+                    or any(entry[key] is not None for key in (
+                        "returned_cardinality", "planted_witness_recovered",
+                        "residue_verification_seconds")):
+                raise ValueError("unrun case violates abort or phase gating")
+            not_run += 1
+        else:
+            if entry["not_run_reason"]:
+                raise ValueError("eligible case was not run")
+            result = _read_result(entry["result"])
+            calls += 1
+            if result.status == "solution":
+                if result.reason or not result.candidates \
+                        or result.wall_seconds >= Limits().seconds \
+                        or len(result.indices) > Limits().selection_cap \
+                        or (result.peak_rss_bytes is not None
+                            and result.peak_rss_bytes > Limits().memory_mib * 1024**2):
+                    raise ValueError("out-of-envelope result classified as a solution")
+                baseline.verify_subset(control.problem, result.indices)
+                verify_group_solution(instance, result.indices, control.problem.target,
+                                      control.residues)
+                if not baseline._integer(entry["returned_cardinality"]) \
+                        or entry["returned_cardinality"] != len(result.indices) \
+                        or entry["planted_witness_recovered"] is not \
+                        (tuple(sorted(result.indices)) == control.witness) \
+                        or not _nonnegative_time(entry["residue_verification_seconds"]):
+                    raise ValueError("candidate verification annotations differ")
+                solutions += 1
+                without_rss += result.peak_rss_bytes is None
+            else:
+                if result.indices or not result.reason or any(entry[key] is not None for key in (
+                        "returned_cardinality", "planted_witness_recovered",
+                        "residue_verification_seconds")):
+                    raise ValueError("non-solution carries a candidate or lacks an explicit reason")
+                abort = ABORT_STATUSES.get(result.status, "")
+                errors += bool(abort)
+        checked.append(entry)
+    status = abort or "completed_protocol"
+    if value["run_status"] != status:
+        raise ValueError("run-status annotation differs from the recorded outcomes")
+    return {
+        "run_status": status, "calls": calls, "solutions": solutions, "not_run": not_run,
+        "errors": errors, "solutions_without_rss": without_rss,
+        "support3_gate": _phase_passed(checked, 0), "support5_gate": _phase_passed(checked, 1),
+        "support9_gate": _phase_passed(checked, 2), "support17_gate": _phase_passed(checked, 3),
+        "counterexamples": 0,
+    }
+
+
+def validate_output(path: Path) -> None:
+    if not path.name.startswith("bf_solver_information_sets") \
+            or not (path.name.endswith(".json") or path.name.endswith(".json.gz")):
+        raise ValueError("use a new bf_solver_information_sets-prefixed JSON report")
+    if path.exists():
+        raise FileExistsError("output exists; verify it instead of automatically repeating the pilot")
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--protocol", action="store_true")
+    modes = parser.add_mutually_exclusive_group(required=True)
+    modes.add_argument("--protocol", action="store_true")
+    modes.add_argument("--run-pilot", action="store_true",
+                       help="explicitly execute the committed, fixed 18-case protocol")
+    modes.add_argument("--verify", type=Path, help="check a saved report without running searches")
+    parser.add_argument("--git", default="git")
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-    if not args.protocol:
-        parser.error("prototype only; use --protocol, not an unregistered full-pool run")
-    declared = protocol()
-    digest = hashlib.sha256(json.dumps(declared, sort_keys=True).encode("utf-8")).hexdigest()
-    print(json.dumps({"protocol": declared, "sha256": digest}, indent=2))
+    if args.protocol:
+        print(json.dumps({"protocol": protocol(), "sha256": protocol_hash()}, indent=2))
+        return
+    if args.verify:
+        raw = args.verify.read_bytes()
+        report = json.loads(gzip.decompress(raw) if args.verify.suffix == ".gz" else raw)
+        summary = verify_report(report)
+    else:
+        try:
+            validate_output(args.output)
+        except (ValueError, FileExistsError) as error:
+            parser.error(str(error))
+        _frozen_head(args.git)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        # Reserve before computation; interruptions remain visible and cannot auto-retry.
+        with args.output.open("xb") as output:
+            report = run_pilot(args.git)
+            summary = verify_report(report)
+            payload = (json.dumps(report, indent=2) + "\n").encode("utf-8")
+            output.write(gzip.compress(payload, mtime=0) if args.output.suffix == ".gz" else payload)
+        print(f"Saved {args.output}", flush=True)
+    print(json.dumps(summary, indent=2), flush=True)
+    if summary["errors"]:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

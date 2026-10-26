@@ -4,8 +4,9 @@
 
 **Starting combined S1/study commit:** `6c954e9c5da7d8b71ba1d5eaea60522d0775fbf8`
 
-**Status:** prototype and correctness tests only. No full-pool control
-outcome has been inspected for this configuration.
+**Status:** runner/checker preparation and protocol freeze only, as explicitly
+requested by the user. No full-pool control outcome has been inspected for
+this configuration, and no information-set pilot-result artifact exists.
 
 S2 and S3's reviewed revisions are now on the study integration branch and
 have been merged into S1 without altering either earlier S1 source-hashed
@@ -69,9 +70,67 @@ budget. No real target, larger pool, harvest, parameter sweep or adaptive
 retry is authorized by this prototype. Failure is inconclusive outside the
 explored affine masks and selection envelope.
 
-Before any full-pool pilot, finish the runner/report verification, freeze
-the source and protocol in a commit, and check it against independent small
-oracles. The declaration above is not a claim that the pilot has run.
+The declared protocol SHA256 remains unchanged:
+`a2ba7c982dc1ea5294a18169cc8a382f41d079163f881ab3fb27cb91f65765b7`.
+The containing freeze commit records the runner, independent checker,
+tests and this declaration before any full-pool outcome. A future pilot
+requires an explicit execution instruction; the declaration is not a claim
+that the pilot has run.
+
+## Runner and independent report contract
+
+The runner has one fixed case list and no runtime target, support, seed or
+budget overrides. Each worker receives only the problem with
+`exact_size=None`, the fixed limits and its absolute deadline. All control
+metadata and prime records remain in the parent. Development cases reproduce
+the frozen first-wave controls; the six new holdouts follow the labels above.
+
+The report schema is `bf-solver-information-sets/v1`. It records:
+
+- The frozen implementation commit, unchanged protocol/hash, LF-normalized
+  source hashes, interpreter/platform and timestamp.
+- Hashes of the frozen pilot, first-wave control dataset and both preceding
+  S1 reports. Inputs are checked against those immutable preceding records.
+- The exact 483-prime scope, original parent LCMs and every declared case,
+  including all cases not run because a gate failed.
+- Separate outcome, elapsed/component times, counters, memory observation,
+  returned subset size, witness comparison and independent residue-check cost.
+
+Every prior phase must pass completely before a later one can run.
+Timeouts/resource stops are inconclusive. A worker error or a projection
+diagnosis contradicting a verified planted target aborts all remaining
+calls, preserves the explicit error and unrun records, and produces a
+nonzero CLI exit rather than a success-shaped fallback.
+
+The independent checker reconstructs the expected input/target definitions,
+recomputes gates and abort policy, checks output shapes and limits, and
+re-verifies candidate cardinality, every original group equation and the
+original prime-product residues. It does **not** invoke the solver, worker,
+affine-mask enumerator or GF(2) producer. A valid recovered subset need not
+equal the planting witness or have the parent's hidden planting size.
+
+Checks include complete case coverage, exact protocol/source/input sets,
+strict numeric types, counter caps, finite/nonnegative timings, component
+timing consistency, late/over-target success rejection, and correct
+verification annotations. Missing RSS measurements are counted explicitly,
+not converted into fabricated memory guarantees. Timings and execution
+authenticity are observations, not mathematical certificates.
+
+### Output and execution safeguards
+
+- Running requires `--run-pilot` explicitly and committed matching solver
+  sources. The implementation/source snapshot is rechecked after the batch.
+- Existing or protected output names fail before computation. Exclusive
+  output reservation prevents concurrent runs from clobbering each other.
+- There is no `--replace` shortcut or automatic retry/resume. An interruption
+  leaves the reservation visible for investigation, not permission to rerun.
+- No report is published until direct verification succeeds. Explicit error
+  reports can be saved for diagnosis but return a nonzero exit.
+
+All per-call successes must fit the 60-second deadline. The 1,080-second
+aggregate is the sum of at most 18 declared call deadlines; OS scheduling,
+watchdog teardown and independent input/report checking may add observed
+elapsed overhead. Overruns never count as successful calls.
 
 ## Prototype validation
 
@@ -90,6 +149,36 @@ oracles. The declaration above is not a claim that the pilot has run.
   No full-483 control, real-target search, membership run or harvest was
   executed while developing this prototype.
 
+## Freeze-only runner/checker validation
+
+- All **37 information-set tests** pass on Python 3.14.5 and 3.9.13
+  (2.378 and 2.775 seconds).
+- The combined **252-test suite** passes on both runtimes (94.495 and
+  124.603 seconds), including the legacy optional-backend tests.
+- Runner tests use a small validated-input-boundary projection and simulated
+  outcomes. They cover all phases, alternate valid returned cardinalities,
+  failed gates, immediate error/contradiction aborts, complete unrun records,
+  report round-trips and source/head changes during a run.
+- The checker succeeds with search, worker, affine enumeration and GF(2)
+  generation patched to raise. Tamper tests reject changed provenance,
+  inputs, targets, support-hint modes, missing cases, false verification
+  annotations, bad counters/timings, over-budget candidates and false gates.
+- CLI regressions verify explicit modes, no default execution, no `--replace`,
+  exclusive output reservation, no-clobber races and nonzero error exits.
+- The 18 declared planting recipes produce the same index-definition checksum
+  on Python 3.14.5 and 3.9.13:
+  `f0bc07e8b891d0ecafabcbeccf97cc2be2dfd82ca693672820a5cdd23b637642`.
+  This hashes the sorted-key JSON list of case names and sorted sampled
+  indices. The check used only seeded index definitions, not matrices,
+  targets, recovery outcomes or solver calls.
+- Editor-side diagnostics were unavailable in this session; validation used
+  the explicit runtimes and independent test oracles above.
+
+**This is not pilot evidence.** No actual 483-prime information-set control
+was evaluated, none of the six full-pool holdout outcomes was inspected, and
+`data/generated/bf_solver_information_sets.json.gz` remains absent. The user
+explicitly requested stopping at the committed freeze checkpoint.
+
 Print the declared candidate protocol without running a study:
 
 ```powershell
@@ -97,6 +186,20 @@ python -B code\bf_solver_information_sets.py --protocol
 python -B -m unittest discover -s code -p "test_bf_solver_information_sets_correctness.py" -v
 ```
 
-The CLI deliberately refuses a default production invocation. The next step
-is the committed runner/report contract and its independent-verifier tests,
-not an unrecorded one-off full-pool trial.
+The CLI deliberately refuses a default production invocation. For a report
+from a **future separately instructed run**, verification is read-only:
+
+```powershell
+python -B code\bf_solver_information_sets.py --verify data\generated\bf_solver_information_sets.json.gz
+```
+
+Only after that execution instruction, and with the frozen source checked
+out, would the explicit run command be:
+
+```powershell
+python -B code\bf_solver_information_sets.py --run-pilot
+```
+
+Use `--git` if Git is not on PATH, or a new prefixed `--output` for an
+explicitly authorized replication. Neither command was used to evaluate
+full-pool controls during this freeze-only task.
