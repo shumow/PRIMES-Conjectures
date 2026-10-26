@@ -1,10 +1,13 @@
 # AGENTS.md — onboarding for agents working in this repository
 
 This file orients an agent picking up work here. Read it before editing.
-The first-wave harvest-and-solver feasibility study was integrated in PR #6.
-For current assignments and budgets, use the current section of
-[PLAN.md](PLAN.md); its preserved historical roadmap is not an execution
-instruction. This file is a map and a set of house rules, not a research claim.
+The first-wave study is on `main`; the declared S1/S2/S3 Boolean Feasibility
+Study is reviewed and combined on `integration/boolean-feasibility-study`.
+The current coordinator gate is its landing on `main`, not another run.
+Read the [study summary](README.md#boolean-feasibility-study-reviewed-integration)
+and current [PLAN.md](PLAN.md); its archived assignments and budgets are
+history, not renewed execution instructions. This file is a map and a set
+of house rules, not a research claim.
 
 ---
 
@@ -34,6 +37,12 @@ before treating dated findings or historical PDFs as current conclusions.
 
 ## 2. Current state (what is done)
 
+- **Boolean Feasibility Study - reviewed integration.** S1, S2 and S3 are
+  combined through [PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10).
+  The [README summary](README.md#boolean-feasibility-study-reviewed-integration)
+  links all current findings, including preserved negative results.
+  The combined 254-test suite passed on Python 3.9.13 and 3.14.5 with the
+  optional native backend and no skips; the baseline remains stdlib-only.
 - **Feasibility study, first wave — merged.** Three tracks on `main`:
   - **A (solver controls)** `code/fs_controls.py`, `doc/fs-controls-findings.md`
   - **B (exact reachability)** `code/fs_reachability.py`, `doc/fs-reachability-findings.md`
@@ -61,11 +70,17 @@ before treating dated findings or historical PDFs as current conclusions.
 - **The real full-483 fixed-LCM target needs ≥ 93 factors.** Exact integers give
   `P₉₁ < Λ₋+1 ≤ P₉₂` (product of largest eligible primes), and odd
   cardinality forces ≥ 93. Small-support control recovery is *calibration*,
-  not nearness to the real target.
-- **The real 483 target is a subgroup *member*** (Track B, integer witness)
-  **but Boolean-unresolved**; the generated subgroup is *proper* (index ≥ 2,
-  codim 1 in `G / 2G`). Membership alone does not establish Boolean feasibility;
-  the quotient ranks do not determine the exact full subgroup index.
+  not nearness to the real target. The completed 2,234-prime c2 target needs
+  **at least 191 factors**. Neither bound applies to planted control targets.
+- **Both real targets are integer subgroup members, but Boolean-unresolved.**
+  The anchor and complete c2 subgroups have **exact index two**, certified
+  using the [split-C2 saturation argument](doc/bf-solver-preprocessing-findings.md)
+  and every primary quotient, not inferred from binary codimension alone.
+  Membership is neither a Boolean subset nor a counterexample.
+- **The support-blind pilot stops at selected size 17.** It cannot reach the
+  real targets above. Its six holdouts are now observed, not fresh data for
+  later tuning. The [frozen rounds](doc/bf-solver-information-sets-findings.md)
+  consumed 30 S1 full-pool calls; no further trial is authorized by that record.
 - **Historical density/solver barriers are not universal theorems.**
   The 0.06 corpus measurements and N1/A10 diagnostics do not prove that
   mining or an algorithm family cannot work. Forced-zero mixture weights,
@@ -132,9 +147,10 @@ before treating dated findings or historical PDFs as current conclusions.
 
 ## 6. Git / attribution conventions
 
-- The new study integrates on `integration/boolean-feasibility-study`.
-  Planning is on `research/boolean-feasibility-plan`; worker branches and
-  exact baselines are recorded in `PLAN.md`. Earlier `research/feasibility-*`
+- The reviewed study is assembled on `integration/boolean-feasibility-study`;
+  its landing on `main` proceeds through a coordinator PR. Original planning,
+  worker branches and exact baselines are retained in the archived study brief
+  in `PLAN.md`. Earlier `research/feasibility-*`
   and `research/harvest-solver-feasibility` branches belong to the first wave.
 - Commit subject: short imperative; body explains *why* and records
   commits/SHAs, tests run, and provenance for data changes.
@@ -144,37 +160,34 @@ before treating dated findings or historical PDFs as current conclusions.
 - Do **not** open a PR, push to a shared branch, or merge to `main` without
   explicit authorization from the user/coordinator.
 
-## 7. Next phase: Boolean Feasibility Study
+## 7. Current coordinator gate: land the reviewed study
 
-The combined first-wave summary is in README. The new plan assigns:
+The declared S1/S2/S3 scopes are complete. Use the current [closeout plan](PLAN.md)
+for documentation and the history-preserving PR to `main`; verify live branch
+ancestry rather than repeat a landing already performed.
 
-1. **S1 — exact Boolean model and calibration**, owned by the large-context
-   coordinator. Preserve modular carries, parity and independent verification;
-   validate tiny oracles, then support-3 and support-5 controls, including
-   held-out seeds. Supports 9/17 are later milestones, not a near-target search.
-2. **S2 — arithmetic obstruction analysis**, suitable for an independent
-   agent using existing artifacts and bounded probes. Separate family-wide
-   proofs from capped-pool patterns; do not assume a geometric explanation
-   before establishing one.
-3. **S3 — c2 supply proposal**, suitable for a compute-rich cloud agent.
-   The proposed complete 39,529,340-combination scan and higher pool cap
-   require separate budget approval before execution.
-
-Read the current plan for ownership, dependencies, exact limits and stop
-conditions. No implementation or experiment is authorized merely by this map.
+Old assignments, unused gated cases and prior approvals do not authorize a
+new run. Further controls, replication, wider support, another harvest or a
+real-target search need a separately declared scope and explicit approval.
+Preserve the original reports and source hashes; verify saved artifacts
+instead of regenerating them.
 
 No single metric or failed solver settles either conjecture.
 
 ## 8. Fast orientation checklist for a new agent
 
-1. Read the current section of `PLAN.md`, then the README's combined
-   feasibility summary. The old roadmap and first-wave plan are provenance,
+1. Read the current section of `PLAN.md`, then the README's
+   [reviewed study summary](README.md#boolean-feasibility-study-reviewed-integration).
+   The archived study brief, old roadmap and first-wave plan are provenance,
    not competing assignments.
-2. Skim `doc/registry.md` for the component vocabulary, and the three
-   `doc/fs-*-findings.md` for the merged results.
+2. Follow the current findings linked there. Use `doc/registry.md` for
+   historical component vocabulary and `doc/fs-*-findings.md` for the
+   preserved first-wave baseline.
 3. For theory, read the correctness audit before dated AG findings, then the
    corrected `.tex` sources or separately rebuilt audit PDFs.
 4. For code changes, run the relevant tests. The combined baseline command is
    `python -B -m unittest discover -s code -p "*correctness.py" -v`.
-5. Verify a saved artifact independently, e.g.
-   `python -B code/fs_reachability.py --verify data/generated/fs_reachability.json.gz`.
+5. Verify saved artifacts independently; do not rerun their pilots. For example:
+   ```powershell
+   python -B code\bf_solver_information_sets.py --verify data\generated\bf_solver_information_sets.json.gz
+   ```

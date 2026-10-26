@@ -1,21 +1,68 @@
 # Research plan: Boolean feasibility and harvest structure
 
-## Current next steps (2026-10-24)
+## Current coordinator closeout (2026-10-26)
 
-**Baseline main:** `c114e84465495d5e414590393b41eb3dca341821`, the merge of
+**Status:** the declared Boolean Feasibility Study is complete and reviewed,
+with S1/S2/S3 combined on `integration/boolean-feasibility-study`. This closes
+the declared study, not the Boolean feasibility question.
+
+**Reviewed study merge:** `fd651caa2fcb0b6e72c2a3e1d7a90210259ce755`
+([PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10)), preserving
+the reviewed implementation tree `1796b994908dfc4286eebbdf8c1e9406543b3a66`.
+S2 and S3 were already accepted in PRs #8 and #9.
+
+**Main at this closeout snapshot:** `0c9f03fb1e00dfd85cb9e2b37e15ed1e727c4915`;
+the study has not yet landed there. The coordinator documentation pass does
+not itself push, open a PR or merge to `main`.
+
+The [combined summary](README.md#boolean-feasibility-study-reviewed-integration)
+links the established results and limitations. The final 254-test suite
+passed on Python 3.9.13 and 3.14.5 with optional CP-SAT 9.15.6755 and no skips.
+Independent review accepted the frozen artifacts and interpretation.
+This documentation-only closeout changes no implementation, dataset or protocol.
+
+### Immediate gates
+
+1. Finish the coordinator documentation and preserve the original briefs,
+   results, certificates, source hashes and failed as well as successful rounds.
+2. With publication authorization, land the documentation with the reviewed
+   study and open `integration/boolean-feasibility-study` into `main`.
+   Check live ancestry first; do not open a duplicate PR or repeat a completed
+   landing. Use a reviewed, history-preserving merge rather than overwrite
+   another branch. No further experiment is needed for this landing.
+3. After landing, propose the next bounded research phase from the existing
+   evidence before executing it. The cap-17 success does not bridge the real
+   93-/191-factor requirements, and integer membership does not resolve Boolean
+   feasibility. A new configuration needs fresh validation cases, declared
+   aggregate budgets and explicit execution approval.
+
+**No remaining execution allowance is created by this closeout.** S1's three
+frozen rounds used **30 full-pool calls (3 + 9 + 18)**; the last once-only
+authorization is consumed and its holdouts are observed. S3's approved complete
+c2 scan is finished, not a standing harvest budget. Unrun gated cases and old
+proposals are not permission to resume, replicate, retune or enlarge a run.
+Use independent saved-report verification instead of regeneration.
+
+---
+
+## Archived Boolean Feasibility Study brief (2026-10-24)
+
+**Original planning baseline:** `c114e84465495d5e414590393b41eb3dca341821`, the merge of
 [PR #6](https://github.com/shumow/PRIMES-Conjectures/pull/6).
 
-**Planning branch:** `research/boolean-feasibility-plan`.
+**Original planning branch:** `research/boolean-feasibility-plan`.
 
-**Status:** planning and work allocation only. No second-wave implementation
-or experiment has been run by recording this plan. In particular, this
-document does **not** authorize the larger c2 harvest or a production search.
+**Status when written:** planning and work allocation only. Recording this
+brief did not authorize the larger c2 harvest or a production search.
+The completed rounds and subsequent approvals are recorded in their findings;
+the closeout above governs the current state.
 
-This section is the current operational plan. The original Plan v2 is
-preserved below as historical context, not as a competing set of instructions.
+The following assignments and original budgets are retained as the study
+contract and history, not renewed execution instructions. The original Plan v2
+is also preserved below as historical context, not a competing plan.
 The earlier [first-wave plan](doc/harvest-solver-feasibility-plan.md) records
 the contracts and ownership of the completed A/B/C work. Use **S1/S2/S3**
-below for the new assignments; do not confuse them with either older
+below for these study assignments; do not confuse them with either older
 track-label scheme.
 
 ### 1. Verified starting point and objective
