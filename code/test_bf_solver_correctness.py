@@ -344,14 +344,15 @@ class NativeBackendTests(unittest.TestCase):
 
     def test_spawned_solver_round_trip(self):
         problem = bf.make_problem((4, 8), ((3, 7),) * 3, (1, 5), exact_size=3)
-        result = bf.solve(problem, limits=bf.Limits(seconds=10))
+        limits = bf.Limits()
+        result = bf.solve(problem, limits=limits)
         self.assertIs(result.status, bf.Outcome.SOLUTION, result)
         self.assertEqual(result.indices, (0, 1, 2))
-        self.assertLess(result.wall_seconds, 10)
+        self.assertLess(result.wall_seconds, limits.seconds)
         self.assertIsNotNone(result.model_seconds)
         self.assertIsNotNone(result.solve_seconds)
         if result.peak_rss_bytes is not None:
-            self.assertLessEqual(result.peak_rss_bytes, 512 * 1024**2)
+            self.assertLessEqual(result.peak_rss_bytes, limits.memory_mib * 1024**2)
 
 
 if __name__ == "__main__":

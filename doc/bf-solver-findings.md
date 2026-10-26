@@ -201,3 +201,22 @@ That is a proposal for a newly frozen configuration, not a claim that such
 preprocessing will work. Do not increase the budget, switch through multiple
 backends, reuse holdouts for tuning, or infer that CP-SAT or Boolean solving
 in general is incapable from this one round.
+
+## Post-run integration test maintenance (2026-10-26)
+
+The final combined regression run exposed a timing-sensitive native
+round-trip smoke test: its separate ten-second limit included cold Windows
+process/backend startup and expired after 10.052 seconds. The unchanged
+test passed in isolation. Its three-variable, two-row functional fixture
+is not a full-pool control or a ten-second performance benchmark.
+
+The smoke test now uses the adapter's existing default limits (60 seconds,
+512 MiB worker memory target) and still checks completion before its
+deadline, the exact returned subset, model/solve measurements and observed
+RSS. The separate zero-budget, deadline, late-result and timeout tests are
+unchanged. This changes only test scheduling tolerance, not the solver's
+runtime, production limits or recorded protocol.
+
+All frozen reports, inputs, runtime source hashes and historical outcomes
+above remain unchanged. No additional full-pool calibration call, retry or
+experiment is part of this maintenance.
