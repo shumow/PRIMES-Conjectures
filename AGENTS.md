@@ -124,6 +124,15 @@ before treating dated findings or historical PDFs as current conclusions.
    increase of the baseline's Python floor. Enforced wall clocks
    use the portable process **watchdog** in `fs_controls.py`
    (`run_limited`), not `signal.SIGALRM` — it must work on Windows too.
+   **Known defect:** `run_limited` currently joins the worker before draining
+   its result queue, so a result larger than the OS pipe buffer (about 64 KiB
+   pickled) deadlocks and is reported as a spurious `timeout`. Until the shared
+   module is fixed, keep worker results small or hand them off through a file,
+   as S2 and S3 did (see
+   [`doc/bf-obstructions-findings.md`](doc/bf-obstructions-findings.md#7-handback-checklist-plan-7)
+   section 7 and
+   [`doc/bf-harvest-findings.md`](doc/bf-harvest-findings.md#5-track-b-membership--resolved-the-target-is-a-subgroup-member)
+   section 5).
 6. **Tests are unittest-discoverable:**
    `python -m unittest discover -s code -p "*correctness.py"`.
    Keep new tests `unittest.TestCase`-based so a combined suite can't skip

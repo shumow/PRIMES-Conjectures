@@ -30,7 +30,13 @@ This documentation-only closeout changes no implementation, dataset or protocol.
    Check live ancestry first; do not open a duplicate PR or repeat a completed
    landing. Use a reviewed, history-preserving merge rather than overwrite
    another branch. No further experiment is needed for this landing.
-3. After landing, propose the next bounded research phase from the existing
+3. Before any next-phase worker relies on the shared watchdog, fix
+   `fs_controls.run_limited` to drain the result queue before `join` (or hand
+   the result off through a file), with a regression test that reproduces the
+   deadlock on a result larger than the OS pipe buffer. This is a
+   shared-baseline code change outside this documentation closeout and needs
+   its own tested commit.
+4. After landing, propose the next bounded research phase from the existing
    evidence before executing it. The cap-17 success does not bridge the real
    93-/191-factor requirements, and integer membership does not resolve Boolean
    feasibility. A new configuration needs fresh validation cases, declared
