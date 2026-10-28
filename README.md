@@ -1,12 +1,12 @@
 # Literature Survey: Agrawal's Conjecture and Popovych's Conjecture
 
-> **Joint correctness audit in progress.** The constructive experiments and the
-> arithmetic-geometric analysis have been combined. Initial follow-up work
-> corrects the written modulus reduction, A4/A6 solver algebra, and benchmark
+> **Correctness-audit background.** The constructive experiments and the
+> arithmetic-geometric analysis have been combined. Follow-up work corrected
+> the written modulus reduction, A4/A6 solver algebra, and benchmark
 > definitions/reporting. The AG sources now distinguish proved identities,
 > conditional smoothness and unproved extensions. Small independent regression
-> tests pass; historical claims and outputs are preserved;
-> neither track is certified. See
+> tests and independent report checks accompany the code; historical claims and
+> outputs are preserved. These checks do not certify the broader research. See
 > [`doc/integration-review-status.md`](doc/integration-review-status.md)
 > for verified corrections, outstanding concerns, provenance, and test commands.
 > Original PDFs beside the sources remain historical. Use the separately
@@ -34,6 +34,13 @@ minimum-cardinality and independent-verifier checks. The three first-wave
 feasibility tracks extend the combined suite to **116 passing tests on both
 runtimes**.
 
+The [reviewed Boolean Feasibility Study](#boolean-feasibility-study-reviewed-integration)
+extends the combined suite to **254 passing tests on Python 3.9.13 and
+3.14.5**, with the optional native backend present and no skips. The
+[pinned OR-Tools backend](requirements-bf-solver.txt) is needed only for the
+three native CP-SAT tests; those tests explicitly skip when it is absent.
+Saved-report checking and the baseline remain standard-library-only.
+
 ## Real-pool construction and validation pilot
 
 The [pilot report](doc/real-pool-pilot.md) replaces synthetic-vector assumptions
@@ -43,25 +50,26 @@ family supplies **483 certified primes**, with a nontrivial binary kernel;
 its real target remains unresolved, not disproved.
 
 ```powershell
-python -B code\real_pool_pilot.py
 python -B code\real_pool_verify.py data\generated\real_pool_pilot.json.gz
 ```
 
 The [compressed dataset](data/generated/real_pool_pilot.json.gz) is committed.
-The generator refuses to overwrite it without `--replace`; use a different
-`--output` for a comparison run. The standalone verifier checks source hashes,
+Use the verifier above for read-only validation, not regeneration or
+`--replace` on a frozen artifact. A new comparison run requires its own
+declared scope, authorization and output. The standalone verifier checks source hashes,
 prime certificates, exact encodings/statistics, obstruction witnesses and
 reported outcomes. Planted controls are explicitly separate from real L-P targets.
 
-The [next-phase feasibility plan](doc/harvest-solver-feasibility-plan.md)
-defines three parallel agent tracks for solver controls, exact subgroup
-reachability and harvest-design comparison, with separate file ownership,
-bounded experiments and integration gates.
+The [first-wave feasibility plan](doc/harvest-solver-feasibility-plan.md)
+records the completed solver-control, subgroup-reachability and harvest-design
+tracks. The current coordinator gates are in [PLAN.md](PLAN.md).
 
 ## Combined harvest-and-solver feasibility baseline
 
 The three first-wave tracks are integrated with their original histories,
-reports and datasets preserved:
+reports and datasets preserved. This is the historical first-wave benchmark,
+not the latest solver-recovery or exact-index conclusion; see the reviewed
+study below.
 
 | Track | Established result | Limitation |
 |---|---|---|
@@ -91,6 +99,38 @@ python -B code\fs_reachability.py --verify data\generated\fs_reachability.json.g
 
 The frozen pilot, shared Python implementations, historical outputs and
 papers remain unchanged by this feasibility integration.
+
+## Boolean Feasibility Study: reviewed integration
+
+**Closeout status (2026-10-26):** the declared S1/S2/S3 work is complete and
+reviewed on `integration/boolean-feasibility-study`. [PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10)
+combined S1 with the already accepted S2/S3 work at `fd651caa`. Landing the
+combined study on `main` is the next coordinator gate, not another experiment.
+
+| Track | Established result | Remaining limitation |
+|---|---|---|
+| S1: [carry model](doc/bf-solver-findings.md), [binary filtering](doc/bf-solver-preprocessing-findings.md), [information sets](doc/bf-solver-information-sets-findings.md) | Preserve the initial CP-SAT 0/3 result; later exact-cardinality filtering recovered 9/9 controls, and the frozen support-blind pilot recovered 18/18 through planted support 17, including six fresh holdouts. Returned subsets were independently checked. | Exact-k and support-blind recovery are distinct. The last pilot has a selection cap of 17 and is not unrestricted odd-subset search. |
+| [S2: arithmetic obstructions](doc/bf-obstructions-findings.md) | Explains the Legendre-symbol constraints, separates structural relations from sampled-pool effects, and certifies exact subgroup index two for the anchor. | Fixed-parent-LCM obstructions retain their declared scope; they are not universal infeasibility theorems. |
+| [S3: complete c2 supply](doc/bf-harvest-findings.md) | The separately approved scan completed all 39,529,340 combinations and retained 2,234 certified primes. The real target passes necessary checks and has a checked integer membership witness. | Neither the larger supply nor integer membership supplies a Boolean subset. The selected-support problem remains open. |
+
+The [split-C2 saturation argument](doc/bf-solver-preprocessing-findings.md)
+also certifies exact subgroup index two and target membership for the
+completed S3 pool. It uses an explicit split order-two relation and checked
+rank certificates for every primary part, not binary codimension alone.
+
+**Boolean feasibility remains unresolved for both real targets.** Exact
+product bounds and odd cardinality require at least **93 selected primes**
+for the anchor and **191** for S3. The cap-17 pilot cannot reach either.
+Its success is a bounded capability milestone, not a scaling result,
+counterexample, statistical reliability estimate or validation of the
+forecast's independence assumptions.
+
+The pre-run forecast, failed and successful rounds, immutable artifacts and
+independent checks remain in the linked findings. All 30 declared S1
+full-pool calls have been consumed; the holdouts are now observed.
+[The closeout plan](PLAN.md) governs publication and any separately proposed
+next phase. Do not rerun a pilot, expand a harvest or reuse old holdouts as
+fresh validation merely because this study has landed.
 
 ## Current audit papers (provisional)
 
