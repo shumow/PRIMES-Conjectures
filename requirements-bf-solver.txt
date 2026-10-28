@@ -1,0 +1,2 @@
+# Optional S1 backend; Python >=3.9, Apache-2.0. The baseline remains stdlib-only.
+ortools==9.15.6755
