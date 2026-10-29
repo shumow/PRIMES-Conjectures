@@ -1,6 +1,21 @@
 # Research plan: Boolean feasibility and harvest structure
 
-## Current coordinator closeout (2026-10-26)
+## Current engineering gate (2026-10-29)
+
+The reviewed study and coordinator documentation have landed on `main` through
+[PR #11](https://github.com/shumow/PRIMES-Conjectures/pull/11) and
+[PR #12](https://github.com/shumow/PRIMES-Conjectures/pull/12), at
+`e6b756c20365ea40245aaa6734f9f3044ac791ed`. The landing gate is complete.
+
+The next task is the [shared watchdog repair](doc/shared-watchdog-repair-plan.md):
+fix the existing large-result delivery path while explicitly preserving frozen
+source-manifest verification. That document records the chosen design,
+synthetic regressions, provenance migration, validation and review gates.
+It is a plan only; implementation and all new experiments remain unstarted.
+After the tested repair, the separately bounded next research proposal remains
+the next scientific gate. No old execution allowance is renewed.
+
+## Reviewed coordinator closeout snapshot (2026-10-26)
 
 **Status:** the declared Boolean Feasibility Study is complete and reviewed,
 with S1/S2/S3 combined on `integration/boolean-feasibility-study`. This closes
