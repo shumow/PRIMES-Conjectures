@@ -1,19 +1,23 @@
 # Research plan: Boolean feasibility and harvest structure
 
-## Current engineering gate (2026-10-29)
+## Current engineering gate (2026-10-30)
 
 The reviewed study and coordinator documentation have landed on `main` through
 [PR #11](https://github.com/shumow/PRIMES-Conjectures/pull/11) and
 [PR #12](https://github.com/shumow/PRIMES-Conjectures/pull/12), at
 `e6b756c20365ea40245aaa6734f9f3044ac791ed`. The landing gate is complete.
 
-The next task is the [shared watchdog repair](doc/shared-watchdog-repair-plan.md):
-fix the existing large-result delivery path while explicitly preserving frozen
-source-manifest verification. That document records the chosen design,
-synthetic regressions, provenance migration, validation and review gates.
-It is a plan only; implementation and all new experiments remain unstarted.
-After the tested repair, the separately bounded next research proposal remains
-the next scientific gate. No old execution allowance is renewed.
+The approved [watchdog repair plan](doc/shared-watchdog-repair-plan.md) landed
+through [PR #13](https://github.com/shumow/PRIMES-Conjectures/pull/13), at
+`08e2417670b61f316b368b2ff3df91a056ad86a0`.
+The repair is implemented on `fix/watchdog-large-result`, not yet merged into
+main. Its [implementation record](doc/shared-watchdog-repair-plan.md#9-implementation-record-2026-10-30)
+reports the red regression, strict provenance migration, 20 focused tests and
+274 combined tests passing on both Windows Python 3.9.13 and 3.14.5.
+
+The next gate is independent review and authorized publication/landing of the
+repair. Only afterward should the separately bounded research proposal
+proceed. No archived report or old execution allowance is changed or renewed.
 
 ## Reviewed coordinator closeout snapshot (2026-10-26)
 

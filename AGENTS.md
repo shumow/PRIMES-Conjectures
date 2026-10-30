@@ -1,9 +1,9 @@
 # AGENTS.md — onboarding for agents working in this repository
 
 This file orients an agent picking up work here. Read it before editing.
-The first-wave study is on `main`; the declared S1/S2/S3 Boolean Feasibility
-Study is reviewed and combined on `integration/boolean-feasibility-study`.
-The current coordinator gate is its landing on `main`, not another run.
+The first-wave and declared S1/S2/S3 studies have landed on `main`.
+This checkout includes the shared watchdog repair; the current coordinator
+gate is independent review and authorized landing of that repair, not another run.
 Read the [study summary](README.md#boolean-feasibility-study-reviewed-integration)
 and current [PLAN.md](PLAN.md); its archived assignments and budgets are
 history, not renewed execution instructions. This file is a map and a set
@@ -37,8 +37,9 @@ before treating dated findings or historical PDFs as current conclusions.
 
 ## 2. Current state (what is done)
 
-- **Boolean Feasibility Study - reviewed integration.** S1, S2 and S3 are
-  combined through [PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10).
+- **Boolean Feasibility Study - on main.** S1, S2 and S3 were combined through
+  [PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10) and landed with
+  coordinator documentation in [PR #12](https://github.com/shumow/PRIMES-Conjectures/pull/12).
   The [README summary](README.md#boolean-feasibility-study-reviewed-integration)
   links all current findings, including preserved negative results.
   The combined 254-test suite passed on Python 3.9.13 and 3.14.5 with the
@@ -118,21 +119,23 @@ before treating dated findings or historical PDFs as current conclusions.
    and per-case outcomes. Do not overwrite or weaken a frozen dataset or its
    verifier to fit a new experiment — use a new schema/report with its own
    provenance.
+   The [watchdog source-version catalog](code/watchdog_source_versions.py)
+   recognizes complete historical producer manifests for archived S1 reports
+   and their controls input. This is not a claim that current files match old
+   producers; mathematical checks still run, and future reports hash actual code.
 5. **Reproducibility.** Deterministic, seeded. The audit/pilot baseline uses
    Python **3.9+ and the standard library**; some separate AG scripts use
    SymPy. No new dependencies without coordinator sign-off, and no silent
    increase of the baseline's Python floor. Enforced wall clocks
    use the portable process **watchdog** in `fs_controls.py`
    (`run_limited`), not `signal.SIGALRM` — it must work on Windows too.
-   **Known defect:** `run_limited` currently joins the worker before draining
-   its result queue, so a result larger than the OS pipe buffer (about 64 KiB
-   pickled) deadlocks and is reported as a spurious `timeout`. Until the shared
-   module is fixed, keep worker results small or hand them off through a file,
-   as S2 and S3 did (see
-   [`doc/bf-obstructions-findings.md`](doc/bf-obstructions-findings.md#7-handback-checklist-plan-7)
-   section 7 and
-   [`doc/bf-harvest-findings.md`](doc/bf-harvest-findings.md#5-track-b-membership--resolved-the-target-is-a-subgroup-member)
-   section 5).
+   **Large results:** the queue-before-join deadlock is repaired in this
+   checkout with a private file-backed result envelope, absolute worker
+   deadline and bounded reap/cleanup. Do not load arbitrary external pickles.
+   S2/S3's existing file workarounds remain as source-hashed historical code;
+   do not remove them just to simplify the new transport. See the
+   [repair record](doc/shared-watchdog-repair-plan.md#9-implementation-record-2026-10-30).
+   Parent-side deserialization/OS I/O and memory are not independently hard-capped.
 6. **Tests are unittest-discoverable:**
    `python -m unittest discover -s code -p "*correctness.py"`.
    Keep new tests `unittest.TestCase`-based so a combined suite can't skip
@@ -156,8 +159,9 @@ before treating dated findings or historical PDFs as current conclusions.
 
 ## 6. Git / attribution conventions
 
-- The reviewed study is assembled on `integration/boolean-feasibility-study`;
-  its landing on `main` proceeds through a coordinator PR. Original planning,
+- The reviewed study has landed on `main`; new infrastructure/research branches
+  start from a recorded main commit and land through authorized coordinator PRs.
+  Original planning,
   worker branches and exact baselines are retained in the archived study brief
   in `PLAN.md`. Earlier `research/feasibility-*`
   and `research/harvest-solver-feasibility` branches belong to the first wave.
@@ -169,11 +173,12 @@ before treating dated findings or historical PDFs as current conclusions.
 - Do **not** open a PR, push to a shared branch, or merge to `main` without
   explicit authorization from the user/coordinator.
 
-## 7. Current coordinator gate: land the reviewed study
+## 7. Current coordinator gate: review the watchdog repair
 
-The declared S1/S2/S3 scopes are complete. Use the current [closeout plan](PLAN.md)
-for documentation and the history-preserving PR to `main`; verify live branch
-ancestry rather than repeat a landing already performed.
+The declared S1/S2/S3 scopes and planning landing are complete. The
+[current plan](PLAN.md) records the tested transport/provenance repair.
+Obtain independent review and explicit publication/merge authorization;
+verify live ancestry rather than repeat a landing already performed.
 
 Old assignments, unused gated cases and prior approvals do not authorize a
 new run. Further controls, replication, wider support, another harvest or a

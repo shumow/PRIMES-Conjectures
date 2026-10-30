@@ -13,6 +13,7 @@ import subprocess
 import time
 
 import bf_solver as baseline
+from watchdog_source_versions import verify_source_manifest
 from real_pool_verify import (
     RealInstance, _rank_mod, instance_from_json, source_digest, trial_factors,
     verify_encoding, verify_group_solution,
@@ -456,9 +457,9 @@ def verify_report(report: dict, git: str, s3_path: Optional[Path]) -> dict[str, 
     """Check every gate/candidate directly; no search or gate-generation calls."""
     if report["schema"] != SCHEMA or report["baseline_commit"] != baseline.BASELINE \
             or report["protocol"] != protocol() or report["protocol_sha256"] != protocol_hash() \
-            or report["source_sha256"] != sources() \
             or report["source_hash_normalization"] != "CRLF-to-LF":
         raise ValueError("Round2 provenance/protocol differs")
+    verify_source_manifest(SCHEMA, report["source_sha256"], sources())
     head = report["implementation_commit"]
     if not isinstance(head, str) or len(head) != 40 \
             or any(c not in "0123456789abcdef" for c in head):
