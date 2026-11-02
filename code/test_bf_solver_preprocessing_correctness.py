@@ -338,7 +338,8 @@ class ProtocolAndReportTests(unittest.TestCase):
             summary = pre.verify_report(self.report, "unused", None)
         self.assertEqual(summary, {"calls": 9, "solutions": 9, "not_run": 0,
                                    "support3_gate": True, "support5_gate": True,
-                                   "arithmetic_instances": 2, "counterexamples": 0})
+                                   "arithmetic_instances": 2, "counterexamples": 0,
+                                   "source_version": "current"})
 
     def test_report_tampering_and_incomplete_primary_coverage_are_rejected(self):
         altered = []

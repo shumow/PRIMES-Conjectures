@@ -50,6 +50,13 @@ before treating dated findings or historical PDFs as current conclusions.
   See the [review record](doc/shared-watchdog-repair-plan.md#10-accepted-post-merge-review-follow-ups).
   Local validation receipts are not repository evidence; use the committed
   tests and linked review. The baseline remains stdlib-only.
+- **Post-review diagnostics - on the working branch.** S1 verifier summaries
+  now expose `source_version` for the report's complete producer manifest,
+  not its controls input. The additive field preserves all earlier summary
+  values and all mathematical/source checks. The 102 affected S1/provenance
+  tests pass on Windows Python 3.9.13 and 3.14.5, with the native backend and
+  no skips; no full-suite rerun is claimed. See the
+  [diagnostics record](doc/shared-watchdog-repair-plan.md#11-source-version-diagnostics-follow-up-2026-11-02).
 - **Feasibility study, first wave — merged.** Three tracks on `main`:
   - **A (solver controls)** `code/fs_controls.py`, `doc/fs-controls-findings.md`
   - **B (exact reachability)** `code/fs_reachability.py`, `doc/fs-reachability-findings.md`
@@ -185,8 +192,8 @@ before treating dated findings or historical PDFs as current conclusions.
 ## 7. Current coordinator gate: finish follow-ups and propose the next study
 
 The declared S1/S2/S3 scopes and reviewed watchdog repair have landed.
-The [current plan](PLAN.md) records the small accepted diagnostics follow-up
-and the separately bounded research proposal. Obtain authorization before
+The [current plan](PLAN.md) records the completed diagnostics follow-up and
+the separately bounded research proposal. Obtain authorization before
 publishing or merging new work; do not repeat the completed repair landing.
 
 Old assignments, unused gated cases and prior approvals do not authorize a

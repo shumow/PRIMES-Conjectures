@@ -550,7 +550,7 @@ def verify_report(value: object, pilot_path: Path = DEFAULT_INPUT,
             or value["requirements_sha256"] != source_digest(REQUIREMENTS) \
             or value["source_hash_normalization"] != "CRLF-to-LF":
         raise ValueError("S1 protocol/source provenance mismatch")
-    verify_source_manifest(SCHEMA, value["source_sha256"], _sources())
+    source_version = verify_source_manifest(SCHEMA, value["source_sha256"], _sources())
     instance, controls, inputs = _context(pilot_path, controls_path)
     if any(value["inputs"][key] != inputs[key] for key in ("pilot_sha256", "controls_sha256")):
         raise ValueError("S1 input provenance mismatch")
@@ -586,7 +586,7 @@ def verify_report(value: object, pilot_path: Path = DEFAULT_INPUT,
         checked.append(record)
     return {"calls": calls, "solutions": solutions, "not_run": not_run,
             "support3_gate": _gate(checked, 0, 3), "support5_gate": _gate(checked, 1, 6),
-            "counterexamples": 0}
+            "counterexamples": 0, "source_version": source_version}
 
 
 def validate_output(path: Path, pilot: Path, controls: Path, replace_existing: bool) -> None:

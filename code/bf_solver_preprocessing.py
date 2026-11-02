@@ -459,7 +459,7 @@ def verify_report(report: dict, git: str, s3_path: Optional[Path]) -> dict[str, 
             or report["protocol"] != protocol() or report["protocol_sha256"] != protocol_hash() \
             or report["source_hash_normalization"] != "CRLF-to-LF":
         raise ValueError("Round2 provenance/protocol differs")
-    verify_source_manifest(SCHEMA, report["source_sha256"], sources())
+    source_version = verify_source_manifest(SCHEMA, report["source_sha256"], sources())
     head = report["implementation_commit"]
     if not isinstance(head, str) or len(head) != 40 \
             or any(c not in "0123456789abcdef" for c in head):
@@ -516,7 +516,7 @@ def verify_report(report: dict, git: str, s3_path: Optional[Path]) -> dict[str, 
     return {"calls": calls, "solutions": solutions, "not_run": not_run,
             "support3_gate": baseline._gate(checked, 0, 3),
             "support5_gate": baseline._gate(checked, 1, 6), "arithmetic_instances": len(gates),
-            "counterexamples": 0}
+            "counterexamples": 0, "source_version": source_version}
 
 
 def validate_output(path: Path, replace_existing: bool) -> None:

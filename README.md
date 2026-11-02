@@ -46,6 +46,17 @@ The [pinned OR-Tools backend](requirements-bf-solver.txt) is needed only for the
 three native CP-SAT tests; those tests explicitly skip when it is absent.
 Saved-report checking and the baseline remain standard-library-only.
 
+The source-version diagnostic follow-up adds four tests; its **102 affected
+S1/provenance tests passed on Windows Python 3.9.13 and 3.14.5**, including
+the optional native tests, with no skips. This is targeted validation, not a
+claim that the newly extended full suite was rerun.
+All three S1 `--verify` summaries now include `source_version`: `current`
+means the complete recorded producer manifest matches actual current sources;
+`frozen-2026-10-study` means a complete approved historical producer manifest.
+The label describes the report, not its controls input or historical timing
+authenticity. The independent mathematical checks still run. See the
+[diagnostics record](doc/shared-watchdog-repair-plan.md#11-source-version-diagnostics-follow-up-2026-11-02).
+
 Watchdog elapsed time includes startup, result transfer and cleanup. An `ok`
 result whose parent-side handling finishes after its deadline is returned as
 `timeout`; cleanup can overrun that deadline, and parent I/O/deserialization

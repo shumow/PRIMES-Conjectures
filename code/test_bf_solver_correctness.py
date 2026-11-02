@@ -262,7 +262,7 @@ class FrozenReportTests(unittest.TestCase):
             summary = bf.verify_report(self.report)
         self.assertEqual(summary, {"calls": 3, "solutions": 0, "not_run": 15,
                                    "support3_gate": False, "support5_gate": False,
-                                   "counterexamples": 0})
+                                   "counterexamples": 0, "source_version": "frozen-2026-10-study"})
 
     def test_saved_report_tampering_is_rejected(self):
         changed = []

@@ -408,6 +408,11 @@ claim appear independently reproducible.
 
 ### B. Expose the matched producer source version
 
+**Execution status (2026-11-02):** completed and tested on
+`work/post-watchdog-followups`; see [section 11](#11-source-version-diagnostics-follow-up-2026-11-02).
+The following requirements remain the acceptance contract, not unfinished
+instructions to implement the same change again.
+
 The [catalog helper](../code/watchdog_source_versions.py) returns `current` or
 `frozen-2026-10-study`, but its four S1 call sites discard that value. Add
 `source_version` to the **verification summary** of all three S1 modules,
@@ -450,8 +455,9 @@ name the commit, interpreter/platform, selector and any skips; do not imply
 that uncommitted receipts are available to a reader.
 
 Complete A as a documentation-only change and B as its own tested code change,
-then obtain the normal authorized review/landing for each. This planning update
-does neither automatically. The reviewer found no blocking correctness issue
+then obtain the normal authorized review/landing for each. The original
+planning update did neither automatically; their execution is recorded above
+and in section 11. The reviewer found no blocking correctness issue
 and the merged transport need not be reimplemented or remerged.
 
 After these small engineering closeouts, the next scientific deliverable is
@@ -460,3 +466,57 @@ It must justify an approach beyond the cap-17 calibration, respect the real
 93-/191-factor requirements, declare fresh validation cases and aggregate
 budgets, and receive explicit approval before execution. The existing 30 S1
 full-pool calls, observed holdouts and completed S3 scan remain historical.
+
+## 11. Source-version diagnostics follow-up (2026-11-02)
+
+The approved reviewer-correction plan `b032524` was published on
+`docs/watchdog-review-followups`. Documentation closeout was completed separately
+at `422a6e2`. This code follow-up is isolated on `work/post-watchdog-followups`;
+no new main merge or experimental execution is part of it.
+
+All three S1 `verify_report` functions retain the string returned by their
+existing complete-report-manifest check and add it as `source_version` to the
+verification summary. Their existing CLI paths serialize the same summary,
+so `--verify` exposes the field without new flags or separate logic:
+
+- `current`: the report's complete producer manifest matches actual current
+  source bytes, including the source-version helper.
+- `frozen-2026-10-study`: the complete manifest matches the explicitly approved
+  historical producer version, not the current filesystem.
+
+The label is not derived from the controls input. A current-manifest test
+fixture can correctly report `current` while using archived controls. No
+version key is written into an archived report or its input dictionary.
+The catalog, accepted source versions, protocol, solver parameters, mathematical
+checks and all pre-existing summary values are unchanged. This is a deliberate
+additive output-contract change; the two exact-summary tests were updated.
+
+The new regression first reproduced the absent field as `KeyError` for all
+three archived S1 summaries. After the change:
+
+| Affected validation | Windows Python 3.14.5 | Windows Python 3.9.13 |
+|---|---:|---:|
+| S1 model/runner/checker/CLI tests plus source-version catalog tests | 102 passed, 0 skips | 102 passed, 0 skips |
+| Runtime | 178.361 seconds | 229.125 seconds |
+
+Both use the existing optional CP-SAT 9.15.6755 environment. The tests include
+all three actual archived reports through library and CLI verification,
+explicitly synthetic current-manifest copies, unchanged old summary values,
+rejected bad sources/inputs/protocols/candidates/status claims, and unmodified
+report/input dictionaries. Search, worker, model and certificate producers are
+patched to fail in the new diagnostic report tests. Synthetic current-manifest
+copies are test fixtures, not claims that a new pilot was run.
+
+The affected-suite command selects the existing S1 modules, the new diagnostics
+module and the unchanged catalog tests in one runner. The successful run did
+not require escalation to a new full-suite run. This follow-up adds four tests;
+the 274-test full Windows/POSIX results above remain evidence for the earlier
+merged repair, not a claim of a new complete run after this change.
+
+All ten raw artifact hashes were checked before/after each run. The validation
+receipts pin the six changed code/test files, remain local audit records and
+are not repository artifacts. Committed tests and the implementation are the
+reproduction route. No new dependency, native search configuration, pilot,
+harvest or full-pool control was introduced. New diagnostic code has not been
+independently exercised on POSIX here; the earlier review covers the earlier
+repair only.

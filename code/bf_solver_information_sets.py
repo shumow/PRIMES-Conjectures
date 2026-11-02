@@ -398,7 +398,7 @@ def verify_report(value: object) -> dict[str, object]:
             or value["protocol_sha256"] != protocol_hash() \
             or value["source_hash_normalization"] != "CRLF-to-LF":
         raise ValueError("information-set protocol/source provenance differs")
-    verify_source_manifest(SCHEMA, value["source_sha256"], sources())
+    source_version = verify_source_manifest(SCHEMA, value["source_sha256"], sources())
     head = value["implementation_commit"]
     if not isinstance(head, str) or len(head) != 40 or any(c not in "0123456789abcdef" for c in head):
         raise ValueError("invalid implementation commit")
@@ -471,7 +471,7 @@ def verify_report(value: object) -> dict[str, object]:
         "errors": errors, "solutions_without_rss": without_rss,
         "support3_gate": _phase_passed(checked, 0), "support5_gate": _phase_passed(checked, 1),
         "support9_gate": _phase_passed(checked, 2), "support17_gate": _phase_passed(checked, 3),
-        "counterexamples": 0,
+        "counterexamples": 0, "source_version": source_version,
     }
 
 

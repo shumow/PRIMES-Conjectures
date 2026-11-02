@@ -38,7 +38,7 @@ give the scope and acceptance checks:
    Record that watchdog elapsed time includes cleanup and that a result whose
    parent-side handling finishes late is a timeout. No rerun is needed just
    to update documentation.
-2. **Small tested diagnostics follow-up.** Expose `source_version` in each S1
+2. **Small tested diagnostics follow-up - completed on the working branch.** Expose `source_version` in each S1
    verifier summary/`--verify` output so a complete current-source match is
    distinguishable from recognized historical producer sources. This is an
    additive code/output-contract change, not documentation-only. Preserve
@@ -53,8 +53,9 @@ give the scope and acceptance checks:
 
 The reviewer-correction plan was published at `b032524` on
 `docs/watchdog-review-followups`. Execution is isolated on
-`work/post-watchdog-followups`; the README/onboarding closeout is complete.
-Diagnostics and the research proposal are the remaining work below. No new
+`work/post-watchdog-followups`; the README/onboarding and
+[tested diagnostics](doc/shared-watchdog-repair-plan.md#11-source-version-diagnostics-follow-up-2026-11-02)
+are complete. The research proposal is the remaining deliverable. No new
 research experiment is authorized or started, and no archived report or old
 execution allowance is changed or renewed.
 
