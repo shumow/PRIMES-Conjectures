@@ -28,11 +28,14 @@ import hashlib
 import json
 import math
 import multiprocessing
+import os
+import pickle
 import platform
-import queue as queue_module
 import random
 import subprocess
+import tempfile
 import time
+import warnings
 from typing import Optional, Sequence
 
 import a4_solver
@@ -69,40 +72,115 @@ SCOPES = (("small-complete-family", None),
           ("medium-complete-family", None))
 
 
-def _worker_entry(fn, payload, out_queue):
+def _write_worker_result(path, kind, value):
+    pending = path.with_suffix(".pending")
+    with pending.open("wb") as stream:
+        pickle.dump((kind, value), stream, protocol=pickle.HIGHEST_PROTOCOL)
+    os.replace(pending, path)
+
+
+def _worker_entry(fn, payload, result_path):
     """Child-process entry: run fn(payload), report success or a classified error."""
     try:
-        out_queue.put(("ok", fn(payload)))
-    except Exception as exc:                      # classified, never silent
-        out_queue.put(("worker_error", f"{type(exc).__name__}: {exc}"))
+        value = fn(payload)
+        kind = "ok"
+    except Exception as exc:
+        kind, value = "worker_error", f"{type(exc).__name__}: {exc}"
+    try:
+        _write_worker_result(Path(result_path), kind, value)
+    except Exception as exc:
+        _write_worker_result(Path(result_path), "worker_error",
+                             f"result delivery failed: {type(exc).__name__}: {exc}")
+
+
+def _cleanup_worker(process, folder):
+    failures = []
+    if process is not None:
+        try:
+            if process.pid is not None:
+                for stop in (process.terminate, process.kill):
+                    if not process.is_alive():
+                        break
+                    try:
+                        stop()
+                        process.join(5)
+                    except Exception as exc:
+                        failures.append(f"worker cleanup: {type(exc).__name__}: {exc}")
+                if process.is_alive():
+                    raise RuntimeError(f"could not reap owned worker {process.pid}")
+                process.join(0)
+            process.close()
+        except Exception as exc:
+            failures.append(f"worker cleanup: {type(exc).__name__}: {exc}")
+    if folder is not None:
+        try:
+            folder.cleanup()
+        except Exception as exc:
+            failures.append(f"temporary-file cleanup: {type(exc).__name__}: {exc}")
+    return failures
 
 
 def run_limited(fn, payload, seconds):
     """Portable enforced wall clock: run a module-level callable in a spawned
     worker process and terminate it at the deadline. One worker at a time (a
     watchdog, not parallelism). Returns (kind, value, elapsed) with kind in
-    {"ok", "timeout", "worker_error"}; elapsed includes child startup.
+    {"ok", "timeout", "worker_error"}; elapsed includes startup, transfer and
+    cleanup. Result files contain only this invocation's trusted worker output.
+    Termination/cleanup can overrun a deadline; this is not a hard parent-I/O
+    or memory cap.
     """
-    ctx = multiprocessing.get_context("spawn")
-    out_queue = ctx.Queue()
-    process = ctx.Process(target=_worker_entry, args=(fn, payload, out_queue),
-                          daemon=True)
-    start = time.monotonic()
-    process.start()
-    process.join(seconds)
-    if process.is_alive():
-        process.terminate()
-        process.join(5)
-        if process.is_alive():
-            process.kill()
-            process.join()
-        return "timeout", None, time.monotonic() - start
-    elapsed = time.monotonic() - start
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)):
+        raise ValueError("watchdog seconds must be a finite nonnegative number")
     try:
-        kind, value = out_queue.get(timeout=5)
-    except queue_module.Empty:
-        kind, value = "worker_error", f"no result returned (exit code {process.exitcode})"
-    out_queue.close()
+        seconds = float(seconds)
+    except OverflowError:
+        raise ValueError("watchdog seconds must be a finite nonnegative number") from None
+    if not math.isfinite(seconds) or seconds < 0:
+        raise ValueError("watchdog seconds must be a finite nonnegative number")
+    start = time.monotonic()
+    if seconds == 0:
+        return "timeout", None, time.monotonic() - start
+    deadline = start + seconds
+    process = folder = None
+    kind, value = "worker_error", "worker did not produce an outcome"
+    try:
+        folder = tempfile.TemporaryDirectory(prefix="fs-watchdog-")
+        result_path = Path(folder.name) / "result.pickle"
+        ctx = multiprocessing.get_context("spawn")
+        process = ctx.Process(target=_worker_entry, args=(fn, payload, str(result_path)),
+                              daemon=True)
+        process.start()
+        process.join(max(0.0, deadline - time.monotonic()))
+        if process.is_alive() or time.monotonic() >= deadline:
+            kind, value = "timeout", None
+        elif process.exitcode != 0:
+            kind, value = "worker_error", f"worker exited with code {process.exitcode}"
+        elif not result_path.is_file():
+            kind, value = "worker_error", f"no result returned (exit code {process.exitcode})"
+        else:
+            with result_path.open("rb") as stream:
+                envelope = pickle.load(stream)
+                if stream.read(1):
+                    raise ValueError("trailing bytes in worker result")
+            if not isinstance(envelope, tuple) or len(envelope) != 2 \
+                    or envelope[0] not in ("ok", "worker_error") \
+                    or (envelope[0] == "worker_error" and not isinstance(envelope[1], str)):
+                raise ValueError("invalid worker result envelope")
+            kind, value = envelope
+    except Exception as exc:
+        kind, value = "worker_error", f"watchdog delivery failed: {type(exc).__name__}: {exc}"
+    except BaseException:
+        with warnings.catch_warnings():
+            warnings.simplefilter("always", RuntimeWarning)
+            for failure in _cleanup_worker(process, folder):
+                warnings.warn(failure, RuntimeWarning)
+        raise
+    failures = _cleanup_worker(process, folder)
+    if failures:
+        kind, value = "worker_error", f"{kind}: {value}; " + "; ".join(failures)
+    elapsed = time.monotonic() - start
+    if kind == "ok" and elapsed >= seconds:
+        kind, value = "timeout", None
     return kind, value, elapsed
 
 

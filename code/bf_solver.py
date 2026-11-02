@@ -23,6 +23,7 @@ from fs_controls import BASELINE_SOURCES, load_pilot, run_limited
 from real_pool_verify import (
     RealInstance, source_digest, subset_residues, verify_group_solution,
 )
+from watchdog_source_versions import SOURCE_FILE, verify_source_manifest
 
 BASELINE = "0c9f03fb1e00dfd85cb9e2b37e15ed1e727c4915"
 BACKEND_VERSION = "9.15.6755"
@@ -384,7 +385,7 @@ def _protocol_hash() -> str:
 
 
 def _sources() -> dict[str, str]:
-    names = BASELINE_SOURCES + ("fs_controls.py", "bf_solver.py")
+    names = BASELINE_SOURCES + ("fs_controls.py", "bf_solver.py", SOURCE_FILE)
     return {name: source_digest(Path(__file__).with_name(name)) for name in names}
 
 
@@ -412,11 +413,12 @@ def _context(pilot_path: Path, controls_path: Path):
     payload = controls_path.read_bytes()
     previous = json.loads(gzip.decompress(payload))
     if previous["schema"] != "fs-controls/v1.1" \
-            or previous["input_artifact"]["sha256"] != pilot_hash:
+            or previous["input_artifact"]["sha256"] != pilot_hash \
+            or previous["source_hash_normalization"] != "CRLF-to-LF":
         raise ValueError("wrong development-control artifact")
-    for filename, digest in previous["source_sha256"].items():
-        if source_digest(Path(__file__).with_name(filename)) != digest:
-            raise ValueError("development-control source mismatch: " + filename)
+    verify_source_manifest("fs-controls/v1.1", previous["source_sha256"],
+                           {name: source_digest(Path(__file__).with_name(name))
+                            for name in BASELINE_SOURCES + ("fs_controls.py",)})
     controls = tuple(_control(instance, spec) for spec in case_specs())
     for control in controls:
         if control.spec.holdout:
@@ -540,15 +542,15 @@ def _read_result(raw: object) -> Result:
 
 def verify_report(value: object, pilot_path: Path = DEFAULT_INPUT,
                   controls_path: Path = CONTROL_INPUT) -> dict[str, object]:
-    """Verify saved subsets/protocol without importing or invoking CP-SAT."""
+    """Verify mathematics and a complete current/frozen producer source version."""
     if not isinstance(value, dict) or value["schema"] != SCHEMA \
             or value["baseline_commit"] != BASELINE:
         raise ValueError("unknown S1 report")
     if value["protocol"] != protocol() or value["protocol_sha256"] != _protocol_hash() \
-            or value["source_sha256"] != _sources() \
             or value["requirements_sha256"] != source_digest(REQUIREMENTS) \
             or value["source_hash_normalization"] != "CRLF-to-LF":
         raise ValueError("S1 protocol/source provenance mismatch")
+    verify_source_manifest(SCHEMA, value["source_sha256"], _sources())
     instance, controls, inputs = _context(pilot_path, controls_path)
     if any(value["inputs"][key] != inputs[key] for key in ("pilot_sha256", "controls_sha256")):
         raise ValueError("S1 input provenance mismatch")

@@ -1,9 +1,11 @@
 # Shared watchdog repair: large-result delivery and frozen provenance
 
-**Status:** implementation plan only; no runtime repair or regression run yet.
+**Original planning status (2026-10-29):** no runtime repair or regression run yet.
 The user selected repairing the existing API with strict historical-source
 compatibility, rather than leaving the old helper defective behind a new API.
 This plan does not authorize a solver pilot, harvest, replication or budget increase.
+The subsequent [implementation record](#9-implementation-record-2026-10-30)
+reports execution of the approved engineering work, separately from this plan.
 
 **Starting main:** `e6b756c20365ea40245aaa6734f9f3044ac791ed`, after
 [PR #11](https://github.com/shumow/PRIMES-Conjectures/pull/11) and
@@ -12,7 +14,8 @@ The study and coordinator documentation are already on main; do not repeat that 
 
 ## 1. Verified problem and constraints
 
-[`fs_controls.run_limited`](../code/fs_controls.py#L80) currently calls
+At the starting baseline,
+[`fs_controls.run_limited`](https://github.com/shumow/PRIMES-Conjectures/blob/e6b756c20365ea40245aaa6734f9f3044ac791ed/code/fs_controls.py#L80) called
 `process.join(seconds)` before `out_queue.get(timeout=5)`. A child returning
 a sufficiently large value can block while its queue feeder flushes the pipe;
 the parent waits for that child to exit without reading the pipe. Completed
@@ -102,7 +105,7 @@ Four frozen source manifests include that exact file:
 | [S1 Round 3](../data/generated/bf_solver_information_sets.json.gz), `bf-solver-information-sets/v1` | 10 | Inherits the prior maps and checks the whole map. |
 
 **Both layers must be handled:** changing only the three saved-report checks
-would still fail [S1's control-input source check](../code/bf_solver.py#L406).
+would still fail [S1's original control-input source check](https://github.com/shumow/PRIMES-Conjectures/blob/e6b756c20365ea40245aaa6734f9f3044ac791ed/code/bf_solver.py#L406).
 Changing those verifier files also changes their own producer-source hashes.
 Do not fix this by rewriting archived JSON, skipping `fs_controls.py`, accepting
 individual old-or-new hashes, or replacing actual source digests with old literals.
@@ -259,7 +262,72 @@ These are raw file SHA256 values, not normalized-code hashes:
 | `bf_solver_preprocessing.json.gz` | `d100e499dfa7c6b3ae5b2cac7ff67e00ed46dea08e6078693cf0671fdfbb2e1a` |
 | `bf_solver_information_sets.json.gz` | `d62ac9ba58789262180a71589eb0c3ae9e7e42c0272e1e1a8f2dfbb5d8c149e7` |
 
-Planning evidence consists of source inspection, existing S2/S3 defect reports
-and workaround tests, and metadata/hash reads. This plan has not executed the
-new reproduction, implemented the repair, rerun mathematical verification or
-performed a new experiment.
+Original planning evidence consists of source inspection, existing S2/S3 defect reports
+and workaround tests, and metadata/hash reads. At that planning stage, the
+new reproduction, repair and mathematical verification had not been executed,
+and no new experiment had been performed.
+
+## 9. Implementation record (2026-10-30)
+
+The approved plan was pushed and normally merged through
+[PR #13](https://github.com/shumow/PRIMES-Conjectures/pull/13), producing main
+`08e2417670b61f316b368b2ff3df91a056ad86a0`. Implementation is isolated on
+`fix/watchdog-large-result` descended from that main commit. The repair itself
+has not been pushed or merged at this record.
+
+### Observed red regression
+
+The direct 4 MiB return failed on the original helper on both Windows runtimes:
+the completion marker existed, but `kind` was `timeout` after 30.049 seconds
+(Python 3.14) and 30.078 seconds (Python 3.9). This distinguishes the completed
+callback/blocked delivery from a slow callback or failed startup.
+The independent subprocess ceiling was 60 seconds; these were synthetic unit
+fixtures, not solver-control calls.
+
+### Implemented changes
+
+- The canonical helper keeps its signature and three-kind tuple contract,
+  but writes a complete trusted-worker envelope to a private per-call file.
+  It no longer creates a result queue. Atomic publication, exit checks,
+  serialization errors, deadline classification and bounded terminate/kill
+  cleanup are covered; interrupts propagate and cleanup errors remain visible.
+- The [source-version helper](../code/watchdog_source_versions.py) accepts
+  complete actual-current or explicitly cataloged historical manifests for
+  the four schema/context pairs in section 3. Missing/extra/unknown hashes,
+  wrong schemas and mixed versions are rejected.
+- Both S1's input-control check and its three report checks use that recognition.
+  Current producers include the helper's actual source digest. All mathematical,
+  input/protocol, gating, budget and candidate checks remain in place; library
+  return dictionaries and CLI JSON contracts are unchanged.
+- S2/S3's source-hashed workaround modules, every original report and every
+  recorded historical outcome remain unchanged. Successful source recognition
+  does not authenticate historical timings or substitute for mathematical proof.
+
+### Validation
+
+| Validation | Windows Python 3.14.5 | Windows Python 3.9.13 |
+|---|---:|---:|
+| Focused transport/source-version tests | 20 passed, 0 skips | 20 passed, 0 skips |
+| Complete suite, including existing CP-SAT 9.15.6755 | 274 passed, 0 skips | 274 passed, 0 skips |
+
+The combined suite took 442.783 seconds and 439.990 seconds respectively
+(unittest timings). Both validation runs rechecked the ten raw artifact hashes
+in section 8 and verified unchanged repair source/test snapshots before/after.
+They include the existing producer-disabled saved-report and tamper regressions.
+
+The new tests exercise exact type/length/bytes for the multi-MiB return, nested
+dataclass/enum/large-integer values, large error messages, unpickleable results,
+startup/output/read errors, abrupt/missing/corrupt results, publish-then-linger,
+timeouts and subsequent calls, late decoding, invalid allowances, interruption,
+cleanup failures and bounded kill fallback. Owned process handles and temporary
+paths are checked. Expected child stderr from a deliberate write failure is
+not counted as a test failure.
+
+POSIX was not exercised here. Pylance syntax requests timed out; the successful
+runtime suites on both interpreters provide parsing/execution evidence, not a
+claim that editor diagnostics passed. No dependency was added and no production
+pilot, harvest, full-pool control or real-target search was run.
+
+**Remaining gate:** independent review of transport lifecycle and complete
+source-version acceptance, followed by explicit publication/merge authorization.
+No new research experiment or renewed allowance follows from these tests.

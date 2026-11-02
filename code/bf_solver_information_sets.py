@@ -18,6 +18,7 @@ import a4_solver
 import bf_solver as baseline
 import bf_solver_preprocessing as previous
 from real_pool_verify import RealInstance, source_digest, verify_group_solution
+from watchdog_source_versions import verify_source_manifest
 
 SCHEMA = "bf-solver-information-sets/v1"
 STARTING_COMMIT = "e0b946daaa10e5d3d9422b2943e1ccba218eaae6"
@@ -395,9 +396,9 @@ def verify_report(value: object) -> dict[str, object]:
     if value["schema"] != SCHEMA or value["starting_commit"] != STARTING_COMMIT \
             or _canonical(value["protocol"]) != _canonical(protocol()) \
             or value["protocol_sha256"] != protocol_hash() \
-            or value["source_sha256"] != sources() \
             or value["source_hash_normalization"] != "CRLF-to-LF":
         raise ValueError("information-set protocol/source provenance differs")
+    verify_source_manifest(SCHEMA, value["source_sha256"], sources())
     head = value["implementation_commit"]
     if not isinstance(head, str) or len(head) != 40 or any(c not in "0123456789abcdef" for c in head):
         raise ValueError("invalid implementation commit")
