@@ -6,6 +6,10 @@ compatibility, rather than leaving the old helper defective behind a new API.
 This plan does not authorize a solver pilot, harvest, replication or budget increase.
 The subsequent [implementation record](#9-implementation-record-2026-10-30)
 reports execution of the approved engineering work, separately from this plan.
+The repair is now merged through
+[PR #14](https://github.com/shumow/PRIMES-Conjectures/pull/14). See the
+[accepted post-merge follow-ups](#10-accepted-post-merge-review-follow-ups)
+for the current documentation, diagnostics and research-planning gates.
 
 **Starting main:** `e6b756c20365ea40245aaa6734f9f3044ac791ed`, after
 [PR #11](https://github.com/shumow/PRIMES-Conjectures/pull/11) and
@@ -269,6 +273,10 @@ and no new experiment had been performed.
 
 ## 9. Implementation record (2026-10-30)
 
+This is the pre-publication implementation snapshot. Section 10 records the
+later independent review and main merge; its remaining-gate text below is
+historical, not an instruction to repeat that landing.
+
 The approved plan was pushed and normally merged through
 [PR #13](https://github.com/shumow/PRIMES-Conjectures/pull/13), producing main
 `08e2417670b61f316b368b2ff3df91a056ad86a0`. Implementation is isolated on
@@ -314,6 +322,9 @@ The combined suite took 442.783 seconds and 439.990 seconds respectively
 (unittest timings). Both validation runs rechecked the ten raw artifact hashes
 in section 8 and verified unchanged repair source/test snapshots before/after.
 They include the existing producer-disabled saved-report and tamper regressions.
+Those source-snapshot receipts and logs are local execution audit records,
+not checked-in repository evidence. The test sources/commands and subsequent
+independent review are the repository-visible reproduction route.
 
 The new tests exercise exact type/length/bytes for the multi-MiB return, nested
 dataclass/enum/large-integer values, large error messages, unpickleable results,
@@ -328,6 +339,118 @@ runtime suites on both interpreters provide parsing/execution evidence, not a
 claim that editor diagnostics passed. No dependency was added and no production
 pilot, harvest, full-pool control or real-target search was run.
 
-**Remaining gate:** independent review of transport lifecycle and complete
+**Remaining gate at this snapshot:** independent review of transport lifecycle and complete
 source-version acceptance, followed by explicit publication/merge authorization.
 No new research experiment or renewed allowance follows from these tests.
+
+## 10. Accepted post-merge review follow-ups
+
+**Review and landing are complete.** The
+[fresh-context review](https://github.com/shumow/PRIMES-Conjectures/pull/14#pullrequestreview-5730974881)
+approved head `36784c289c21d36b08e007a9e557cc9da0ef2bf3`. The normal merge
+`b2d5042f8f6b830f36933b49c9c96be4d9e0d0cc` has parents `08e2417` and
+`36784c2` and preserves reviewed tree `f81c0a810c1280380a93792eb4396c6efdb7593f`.
+The [post-merge comment](https://github.com/shumow/PRIMES-Conjectures/pull/14#issuecomment-6566145113)
+restates the nonblocking follow-ups. All four review observations are accepted;
+the diagnostics addition is a separate code change, not a docs-only correction.
+
+### Independent POSIX evidence
+
+The reviewer reran the direct 4 MiB return on macOS, with this old/new result:
+
+| Python | Original helper at `08e2417` | Reviewed repair at `36784c2` |
+|---|---|---|
+| 3.9.6 | timeout, 30.008 seconds | `ok`, 4,194,304 bytes, 0.062 seconds |
+| 3.13.14 | timeout, 30.008 seconds | `ok`, 4,194,304 bytes, 0.133 seconds |
+
+Both interpreters passed the 20 focused regressions. Each combined run
+discovered 274 tests, with 271 passing and three optional native OR-Tools tests
+skipped (89.6 and 64.4 seconds respectively). The original Windows runs cover
+those native tests. The reviewer independently checked the full frozen source
+catalog against pinned Git objects and confirmed unchanged data and merge tree.
+This closes the missing POSIX review coverage; it is not Linux/WSL coverage or
+a fresh run by this planning update.
+
+### A. Documentation closeout
+
+Update the current [README test summary](../README.md#running-the-audit-checks)
+and [agent onboarding](../AGENTS.md#2-current-state-what-is-done) to identify
+the current 274-test suite (254 previous tests plus 20 watchdog/source-version
+tests). Mark the agent coordinator gate as completed and point to the separately
+bounded research proposal, with the diagnostics follow-up identified explicitly.
+Do not globally replace the historical 254-test study-validation record.
+
+Record macOS/POSIX and Windows evidence separately, including native-test skips.
+Keep the original lack-of-POSIX statement in section 9 as a dated implementation
+snapshot; do not claim that Windows validation itself covered POSIX.
+
+Clarify the public watchdog semantics in current guidance:
+
+- `elapsed` includes result transfer and cleanup, not only callback time.
+- A worker result finishing parent-side handling after the deadline is returned
+  as `timeout`, never counted as a late successful call.
+- S1 already guards late results independently. Do not remove those guards,
+  extend a budget, or retrospectively reinterpret recorded timings.
+- Parent deserialization/OS I/O and memory are not independently hard-capped;
+  cleanup overhead can exceed the deadline and remains visible.
+
+These are documentation corrections to existing behavior, not another transport
+redesign. Link the reviewed commit, commands and review permalink instead of
+claiming that the seven-file validation receipts are in the repository.
+Do not add routine local logs or secrets merely to make the earlier receipt
+claim appear independently reproducible.
+
+### B. Expose the matched producer source version
+
+The [catalog helper](../code/watchdog_source_versions.py) returns `current` or
+`frozen-2026-10-study`, but its four S1 call sites discard that value. Add
+`source_version` to the **verification summary** of all three S1 modules,
+including their JSON `--verify` output. Preserve existing summary values and
+signatures; update exact-summary consumers/tests deliberately for the additive
+field. The label must come from the already enforced complete report-manifest
+match, not a guess based on schema, filename or the controls input.
+
+The controls input has its own manifest check. If its matched version is also
+exposed, label it separately; do not conflate an archived controls input with
+the producer of the report being verified. Keep diagnostic metadata outside
+the source-hashed saved report and its input-provenance dictionary so that
+the frozen input/scope checks and archived bytes remain unchanged.
+
+Required checks before landing this separate change:
+
+1. All three archived S1 summaries and CLI paths identify
+   `frozen-2026-10-study`; synthetic in-memory fixtures with complete
+   actual-current manifests identify `current`. Such fixtures are test data,
+   not evidence of a newly executed historical pilot.
+2. Unknown, mixed, missing/extra or wrong-schema source maps still fail;
+   recognized sources plus a false witness, protocol, input or status still
+   fail. Retain the independent producer-disabled checks.
+3. Future source manifests still hash the actual modified verifier/helper
+   bytes. Do not add intermediate historical versions without a real preserved
+   artifact requiring them, accept hashes piecemeal, or relax the catalog.
+4. Existing summary fields, all protocol/input checks and the ten artifact
+   hashes in section 8 remain intact. No report is regenerated or relabeled.
+5. Run the affected library/CLI/provenance regressions on Python 3.9 and a
+   current supported runtime. Expand the test selector only if a concrete
+   failure shows another affected surface; no full-pool experiment is needed.
+
+### C. Evidence and release boundary
+
+The private validation receipts show what the implementation session measured,
+but cannot serve as independently checkable repository evidence on their own.
+The committed tests, pinned implementation, reproduction commands and linked
+independent review are the public evidence for this landing. New claims must
+name the commit, interpreter/platform, selector and any skips; do not imply
+that uncommitted receipts are available to a reader.
+
+Complete A as a documentation-only change and B as its own tested code change,
+then obtain the normal authorized review/landing for each. This planning update
+does neither automatically. The reviewer found no blocking correctness issue
+and the merged transport need not be reimplemented or remerged.
+
+After these small engineering closeouts, the next scientific deliverable is
+the bounded research proposal described in the current [root plan](../PLAN.md).
+It must justify an approach beyond the cap-17 calibration, respect the real
+93-/191-factor requirements, declare fresh validation cases and aggregate
+budgets, and receive explicit approval before execution. The existing 30 S1
+full-pool calls, observed holdouts and completed S3 scan remain historical.

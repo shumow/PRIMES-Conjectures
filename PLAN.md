@@ -1,6 +1,6 @@
 # Research plan: Boolean feasibility and harvest structure
 
-## Current engineering gate (2026-10-30)
+## Current engineering follow-ups (2026-11-01)
 
 The reviewed study and coordinator documentation have landed on `main` through
 [PR #11](https://github.com/shumow/PRIMES-Conjectures/pull/11) and
@@ -10,14 +10,50 @@ The reviewed study and coordinator documentation have landed on `main` through
 The approved [watchdog repair plan](doc/shared-watchdog-repair-plan.md) landed
 through [PR #13](https://github.com/shumow/PRIMES-Conjectures/pull/13), at
 `08e2417670b61f316b368b2ff3df91a056ad86a0`.
-The repair is implemented on `fix/watchdog-large-result`, not yet merged into
-main. Its [implementation record](doc/shared-watchdog-repair-plan.md#9-implementation-record-2026-10-30)
-reports the red regression, strict provenance migration, 20 focused tests and
-274 combined tests passing on both Windows Python 3.9.13 and 3.14.5.
+The repair has also landed on `main` through
+[PR #14](https://github.com/shumow/PRIMES-Conjectures/pull/14), at
+`b2d5042f8f6b830f36933b49c9c96be4d9e0d0cc` (2026-11-02 00:23:42 UTC).
+Its tree `f81c0a810c1280380a93792eb4396c6efdb7593f` is identical to the
+reviewed head. The repair's implementation, independent review and main-landing
+gates are complete; do not repeat them.
 
-The next gate is independent review and authorized publication/landing of the
-repair. Only afterward should the separately bounded research proposal
-proceed. No archived report or old execution allowance is changed or renewed.
+The [implementation record](doc/shared-watchdog-repair-plan.md#9-implementation-record-2026-10-30)
+records 20 focused and 274 combined tests passing on Windows Python 3.9.13 and
+3.14.5, with the optional native backend and no skips. The
+[independent review](https://github.com/shumow/PRIMES-Conjectures/pull/14#pullrequestreview-5730974881)
+also reproduced the defect and fix on macOS/POSIX: 20 focused tests passed on
+Python 3.9.6 and 3.13.14; each combined run discovered 274 tests, with 271 passing
+and three optional OR-Tools tests skipped. This is macOS evidence, not a Linux
+or WSL test claim.
+
+### Next actions, in order
+
+The [accepted review follow-ups](doc/shared-watchdog-repair-plan.md#10-accepted-post-merge-review-follow-ups)
+give the scope and acceptance checks:
+
+1. **Documentation closeout.** Refresh the current README/onboarding summary
+   from 254 to 274 tests, mark the watchdog review/landing complete, and link
+   the independent POSIX evidence. Keep historical 254-test records intact.
+   Clearly label local validation receipts as local, not repository artifacts.
+   Record that watchdog elapsed time includes cleanup and that a result whose
+   parent-side handling finishes late is a timeout. No rerun is needed just
+   to update documentation.
+2. **Small tested diagnostics follow-up.** Expose `source_version` in each S1
+   verifier summary/`--verify` output so a complete current-source match is
+   distinguishable from recognized historical producer sources. This is an
+   additive code/output-contract change, not documentation-only. Preserve
+   existing summary fields, mathematical checks, complete-manifest validation
+   and every archived artifact. Test the library and CLI paths before landing.
+3. **Propose the next bounded research phase.** Explain which algorithmic or
+   structural idea might bridge cap-17 calibration to the real minimum
+   supports of 93/191, why it is worth testing, and its cost model and stop
+   gates. Freeze genuinely fresh development/holdout cases and explicit
+   aggregate wall/CPU/memory/storage limits before evaluation. Obtain approval
+   for that proposal before any new solver, harvest or replication run.
+
+This update records the reviewer corrections; it does not implement the
+diagnostic field, update the README/onboarding, or start a research experiment.
+No archived report or old execution allowance is changed or renewed.
 
 ## Reviewed coordinator closeout snapshot (2026-10-26)
 
