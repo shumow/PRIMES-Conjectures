@@ -373,6 +373,12 @@ a fresh run by this planning update.
 
 ### A. Documentation closeout
 
+**Execution status (2026-11-02):** completed on `work/post-watchdog-followups`.
+The README/onboarding now distinguish the merged 274-test baseline from its
+historical 254-test study, cite independent POSIX/native-skip evidence, mark the
+repair landing complete and explain the timing and local-receipt limitations.
+No tests or experiments were rerun for that documentation-only change.
+
 Update the current [README test summary](../README.md#running-the-audit-checks)
 and [agent onboarding](../AGENTS.md#2-current-state-what-is-done) to identify
 the current 274-test suite (254 previous tests plus 20 watchdog/source-version

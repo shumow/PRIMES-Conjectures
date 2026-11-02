@@ -2,8 +2,9 @@
 
 This file orients an agent picking up work here. Read it before editing.
 The first-wave and declared S1/S2/S3 studies have landed on `main`.
-This checkout includes the shared watchdog repair; the current coordinator
-gate is independent review and authorized landing of that repair, not another run.
+The shared watchdog repair is also reviewed and on `main` through PR #14.
+Current work is the accepted documentation/diagnostics closeout and a separately
+bounded research proposal, not another run.
 Read the [study summary](README.md#boolean-feasibility-study-reviewed-integration)
 and current [PLAN.md](PLAN.md); its archived assignments and budgets are
 history, not renewed execution instructions. This file is a map and a set
@@ -42,8 +43,13 @@ before treating dated findings or historical PDFs as current conclusions.
   coordinator documentation in [PR #12](https://github.com/shumow/PRIMES-Conjectures/pull/12).
   The [README summary](README.md#boolean-feasibility-study-reviewed-integration)
   links all current findings, including preserved negative results.
-  The combined 254-test suite passed on Python 3.9.13 and 3.14.5 with the
-  optional native backend and no skips; the baseline remains stdlib-only.
+  The original study had 254 tests; the watchdog repair added 20. The resulting
+  274 tests passed on Windows Python 3.9.13 and 3.14.5 with the optional native
+  backend and no skips. The independent macOS/POSIX review ran 274 tests on
+  Python 3.9.6 and 3.13.14: 271 passed, three optional native skips on each.
+  See the [review record](doc/shared-watchdog-repair-plan.md#10-accepted-post-merge-review-follow-ups).
+  Local validation receipts are not repository evidence; use the committed
+  tests and linked review. The baseline remains stdlib-only.
 - **Feasibility study, first wave — merged.** Three tracks on `main`:
   - **A (solver controls)** `code/fs_controls.py`, `doc/fs-controls-findings.md`
   - **B (exact reachability)** `code/fs_reachability.py`, `doc/fs-reachability-findings.md`
@@ -135,6 +141,9 @@ before treating dated findings or historical PDFs as current conclusions.
    S2/S3's existing file workarounds remain as source-hashed historical code;
    do not remove them just to simplify the new transport. See the
    [repair record](doc/shared-watchdog-repair-plan.md#9-implementation-record-2026-10-30).
+   Elapsed includes result transfer and cleanup; an otherwise successful
+   result finishing parent-side handling after its deadline becomes `timeout`.
+   Keep S1's separate late-result guards. Cleanup overhead can exceed the deadline.
    Parent-side deserialization/OS I/O and memory are not independently hard-capped.
 6. **Tests are unittest-discoverable:**
    `python -m unittest discover -s code -p "*correctness.py"`.
@@ -173,12 +182,12 @@ before treating dated findings or historical PDFs as current conclusions.
 - Do **not** open a PR, push to a shared branch, or merge to `main` without
   explicit authorization from the user/coordinator.
 
-## 7. Current coordinator gate: review the watchdog repair
+## 7. Current coordinator gate: finish follow-ups and propose the next study
 
-The declared S1/S2/S3 scopes and planning landing are complete. The
-[current plan](PLAN.md) records the tested transport/provenance repair.
-Obtain independent review and explicit publication/merge authorization;
-verify live ancestry rather than repeat a landing already performed.
+The declared S1/S2/S3 scopes and reviewed watchdog repair have landed.
+The [current plan](PLAN.md) records the small accepted diagnostics follow-up
+and the separately bounded research proposal. Obtain authorization before
+publishing or merging new work; do not repeat the completed repair landing.
 
 Old assignments, unused gated cases and prior approvals do not authorize a
 new run. Further controls, replication, wider support, another harvest or a

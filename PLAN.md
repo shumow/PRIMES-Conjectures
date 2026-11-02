@@ -1,6 +1,6 @@
 # Research plan: Boolean feasibility and harvest structure
 
-## Current engineering follow-ups (2026-11-01)
+## Current engineering follow-ups (2026-11-02)
 
 The reviewed study and coordinator documentation have landed on `main` through
 [PR #11](https://github.com/shumow/PRIMES-Conjectures/pull/11) and
@@ -31,7 +31,7 @@ or WSL test claim.
 The [accepted review follow-ups](doc/shared-watchdog-repair-plan.md#10-accepted-post-merge-review-follow-ups)
 give the scope and acceptance checks:
 
-1. **Documentation closeout.** Refresh the current README/onboarding summary
+1. **Documentation closeout - completed on the working branch.** Refresh the current README/onboarding summary
    from 254 to 274 tests, mark the watchdog review/landing complete, and link
    the independent POSIX evidence. Keep historical 254-test records intact.
    Clearly label local validation receipts as local, not repository artifacts.
@@ -51,9 +51,12 @@ give the scope and acceptance checks:
    aggregate wall/CPU/memory/storage limits before evaluation. Obtain approval
    for that proposal before any new solver, harvest or replication run.
 
-This update records the reviewer corrections; it does not implement the
-diagnostic field, update the README/onboarding, or start a research experiment.
-No archived report or old execution allowance is changed or renewed.
+The reviewer-correction plan was published at `b032524` on
+`docs/watchdog-review-followups`. Execution is isolated on
+`work/post-watchdog-followups`; the README/onboarding closeout is complete.
+Diagnostics and the research proposal are the remaining work below. No new
+research experiment is authorized or started, and no archived report or old
+execution allowance is changed or renewed.
 
 ## Reviewed coordinator closeout snapshot (2026-10-26)
 

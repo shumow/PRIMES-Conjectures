@@ -35,11 +35,27 @@ feasibility tracks extend the combined suite to **116 passing tests on both
 runtimes**.
 
 The [reviewed Boolean Feasibility Study](#boolean-feasibility-study-reviewed-integration)
-extends the combined suite to **254 passing tests on Python 3.9.13 and
-3.14.5**, with the optional native backend present and no skips. The
-[pinned OR-Tools backend](requirements-bf-solver.txt) is needed only for the
+originally extended the combined suite to 254 tests. The merged
+[watchdog repair](doc/shared-watchdog-repair-plan.md#10-accepted-post-merge-review-follow-ups)
+adds 20 transport/source-version regressions: **274 tests passed on Windows
+Python 3.9.13 and 3.14.5**, with the optional native backend and no skips.
+The independent macOS/POSIX review ran 274 tests on Python 3.9.6 and 3.13.14:
+271 passed and three optional native tests skipped on each. These are recorded
+validation runs, not a Linux/WSL claim or a fresh run for this documentation.
+The [pinned OR-Tools backend](requirements-bf-solver.txt) is needed only for the
 three native CP-SAT tests; those tests explicitly skip when it is absent.
 Saved-report checking and the baseline remain standard-library-only.
+
+Watchdog elapsed time includes startup, result transfer and cleanup. An `ok`
+result whose parent-side handling finishes after its deadline is returned as
+`timeout`; cleanup can overrun that deadline, and parent I/O/deserialization
+and memory are not independently hard-capped. Existing S1 late-result guards
+remain in place.
+
+Local test receipts are execution audit records, not checked-in evidence.
+Use the committed tests, pinned implementation and
+[independent review](https://github.com/shumow/PRIMES-Conjectures/pull/14#pullrequestreview-5730974881)
+for reproduction; do not infer historical timing authenticity from a source match.
 
 ## Real-pool construction and validation pilot
 
@@ -102,10 +118,13 @@ papers remain unchanged by this feasibility integration.
 
 ## Boolean Feasibility Study: reviewed integration
 
-**Closeout status (2026-10-26):** the declared S1/S2/S3 work is complete and
-reviewed on `integration/boolean-feasibility-study`. [PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10)
-combined S1 with the already accepted S2/S3 work at `fd651caa`. Landing the
-combined study on `main` is the next coordinator gate, not another experiment.
+**Closeout status (2026-11-02):** the declared S1/S2/S3 work and coordinator
+documentation are on `main` through [PR #12](https://github.com/shumow/PRIMES-Conjectures/pull/12).
+[PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10) combined S1 with
+the accepted S2/S3 work at `fd651caa`; [PR #14](https://github.com/shumow/PRIMES-Conjectures/pull/14)
+subsequently landed the independently reviewed watchdog repair at `b2d5042`.
+Those landing gates are complete. Current follow-ups and the separately bounded
+next research proposal are in [PLAN.md](PLAN.md), not an automatic new experiment.
 
 | Track | Established result | Remaining limitation |
 |---|---|---|
