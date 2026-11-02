@@ -26,7 +26,7 @@ Python 3.9.6 and 3.13.14; each combined run discovered 274 tests, with 271 passi
 and three optional OR-Tools tests skipped. This is macOS evidence, not a Linux
 or WSL test claim.
 
-### Next actions, in order
+### Completed follow-up work and next approval gate
 
 The [accepted review follow-ups](doc/shared-watchdog-repair-plan.md#10-accepted-post-merge-review-follow-ups)
 give the scope and acceptance checks:
@@ -44,18 +44,29 @@ give the scope and acceptance checks:
    additive code/output-contract change, not documentation-only. Preserve
    existing summary fields, mathematical checks, complete-manifest validation
    and every archived artifact. Test the library and CLI paths before landing.
-3. **Propose the next bounded research phase.** Explain which algorithmic or
-   structural idea might bridge cap-17 calibration to the real minimum
-   supports of 93/191, why it is worth testing, and its cost model and stop
-   gates. Freeze genuinely fresh development/holdout cases and explicit
-   aggregate wall/CPU/memory/storage limits before evaluation. Obtain approval
-   for that proposal before any new solver, harvest or replication run.
+3. **Research proposal - prepared, not executed or approved.** The
+   [next-phase proposal](doc/boolean-feasibility-next-phase-proposal.md) recommends
+   binary-affine, exact-carry refinement on the unchanged anchor rather than
+   increasing the old sparse-shell enumeration. It declares fresh support
+   17/41/93 development/holdout cases, at most 18 proposed trials, explicit
+   per-call/aggregate wall, CPU, RSS and storage allowances, tiny-oracle and
+   independent-checker gates, and no S3/real-target search. This tests higher
+   planted-support recovery; it does not bridge the real 93/191 requirements
+   by theorem. The new solver is not implemented.
+
+The next step is review of the completed follow-ups and the proposed research
+design, with authorized publication/landing of the working branch. If the
+proposal is accepted, implement and validate its model/runner/checker on tiny
+fixtures, freeze code/protocol/target definitions, then request separate
+explicit approval for the one bounded full-pool batch. Neither proposal
+preparation nor implementation approval alone authorizes that execution.
 
 The reviewer-correction plan was published at `b032524` on
 `docs/watchdog-review-followups`. Execution is isolated on
 `work/post-watchdog-followups`; the README/onboarding and
 [tested diagnostics](doc/shared-watchdog-repair-plan.md#11-source-version-diagnostics-follow-up-2026-11-02)
-are complete. The research proposal is the remaining deliverable. No new
+are complete. All three requested work items are now complete on that branch;
+the research proposal awaits review and separate execution approval. No new
 research experiment is authorized or started, and no archived report or old
 execution allowance is changed or renewed.
 

@@ -193,7 +193,9 @@ before treating dated findings or historical PDFs as current conclusions.
 
 The declared S1/S2/S3 scopes and reviewed watchdog repair have landed.
 The [current plan](PLAN.md) records the completed diagnostics follow-up and
-the separately bounded research proposal. Obtain authorization before
+the [prepared research proposal](doc/boolean-feasibility-next-phase-proposal.md).
+The proposal's new solver and experimental batch are unimplemented/unrun.
+Obtain authorization before
 publishing or merging new work; do not repeat the completed repair landing.
 
 Old assignments, unused gated cases and prior approvals do not authorize a

@@ -134,8 +134,10 @@ documentation are on `main` through [PR #12](https://github.com/shumow/PRIMES-Co
 [PR #10](https://github.com/shumow/PRIMES-Conjectures/pull/10) combined S1 with
 the accepted S2/S3 work at `fd651caa`; [PR #14](https://github.com/shumow/PRIMES-Conjectures/pull/14)
 subsequently landed the independently reviewed watchdog repair at `b2d5042`.
-Those landing gates are complete. Current follow-ups and the separately bounded
-next research proposal are in [PLAN.md](PLAN.md), not an automatic new experiment.
+Those landing gates are complete. Current follow-ups are in [PLAN.md](PLAN.md).
+The [next research proposal](doc/boolean-feasibility-next-phase-proposal.md)
+declares a possible higher-support experiment; its solver is not implemented
+and its execution needs separate approval.
 
 | Track | Established result | Remaining limitation |
 |---|---|---|
